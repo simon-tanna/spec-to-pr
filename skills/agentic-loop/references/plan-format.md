@@ -87,7 +87,7 @@ Each task is 2–5 minute steps. Use checkbox syntax so progress is visible.
 - [ ] **Step 2: Run test, confirm expected failure mode.**
 - [ ] **Step 3: Write the minimal implementation that satisfies the assertions.**
 - [ ] **Step 4: Run test, confirm green.**
-- [ ] **Step 5: Run full gate** — `.claude/skills/agentic-loop/scripts/quality-gates.sh`.
+- [ ] **Step 5: Run full gate** — `${CLAUDE_PLUGIN_ROOT}/skills/agentic-loop/scripts/quality-gates.sh`.
 - [ ] **Step 6: Commit.** Message: `feat(foo): add bar [#<issue>]`. Body MUST include a `TDD:` line referencing the test (e.g. `TDD: __tests__/bar.test.ts:12-30 written before implementation`).
 ```
 

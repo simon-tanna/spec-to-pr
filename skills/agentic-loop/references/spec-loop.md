@@ -50,7 +50,7 @@ Both passes run every iteration. The structured pass drives the interview gate; 
 }
 ```
 
-**Pass 2 — validation.** Invoke the `validating-specs` skill via the Skill tool from the controller (inline in the main session — never as a subagent; see SKILL.md `## Spec & Plan Validation` for the full dispatch contract). Pass the explicit `spec.md` path and direct its merged report to `spec-validation.md` (NOT `spec-review.md`, which Pass 1 owns). It returns one `GO | REVISE | NO-GO` verdict. A `REVISE`/`NO-GO` verdict feeds back into the next draft cycle exactly like a `critical`/`important` structured finding. Commit `spec-validation.md` via `scripts/git-sync.sh commit`.
+**Pass 2 — validation.** Invoke the `spec-to-pr:validating-specs` skill via the Skill tool from the controller (inline in the main session — never as a subagent; see SKILL.md `## Spec & Plan Validation` for the full dispatch contract). Pass the explicit `spec.md` path and direct its merged report to `spec-validation.md` (NOT `spec-review.md`, which Pass 1 owns). It returns one `GO | REVISE | NO-GO` verdict. A `REVISE`/`NO-GO` verdict feeds back into the next draft cycle exactly like a `critical`/`important` structured finding. Commit `spec-validation.md` via `scripts/git-sync.sh commit`.
 
 ## Interview
 

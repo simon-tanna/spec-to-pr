@@ -81,7 +81,7 @@ Dispatch in parallel:
 
 Critical findings from the adversarial pass carry the same weight as critical findings from the standard review. Aggregate all verdicts into `plan-review.md` using the same JSON shape as `spec-review.md`. This is the gate that catches load-bearing decisions silently resolved against `source.md` (e.g. an irreversible operation shipped with no confirmation, an access-control or trust-boundary change, a data-retention reversal) — at plan-lock, not after the PR is open.
 
-**Then run the validation pass.** Invoke the `validating-specs` skill via the Skill tool from the controller (inline in the main session — never as a subagent; see SKILL.md `## Spec & Plan Validation`). Pass the explicit `plan.md` path as the document under review plus `spec.md` for context, and direct its merged report to `plan-validation.md`. It returns one `GO | REVISE | NO-GO` verdict; a `REVISE`/`NO-GO` feeds back into the next plan cycle like a `critical`/`important` finding. Commit `plan-validation.md` via `scripts/git-sync.sh commit`.
+**Then run the validation pass.** Invoke the `spec-to-pr:validating-specs` skill via the Skill tool from the controller (inline in the main session — never as a subagent; see SKILL.md `## Spec & Plan Validation`). Pass the explicit `plan.md` path as the document under review plus `spec.md` for context, and direct its merged report to `plan-validation.md`. It returns one `GO | REVISE | NO-GO` verdict; a `REVISE`/`NO-GO` feeds back into the next plan cycle like a `critical`/`important` finding. Commit `plan-validation.md` via `scripts/git-sync.sh commit`.
 
 ## Recurring-issue Escalation
 

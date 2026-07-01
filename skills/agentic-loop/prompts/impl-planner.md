@@ -29,7 +29,7 @@ When agents.specialists is unset, emit exactly:
 -->
 </roster>
 
-2. Return a `<dispatch_plan>` block conforming to the schema in `references/plan-format.md` (Dispatch Plan Schema). Do NOT make any Agent calls yourself — the controller dispatches specialists. Use exactly this shape:
+2. Return a `<dispatch_plan>` block conforming to the schema in `${CLAUDE_PLUGIN_ROOT}/skills/agentic-loop/references/plan-format.md` (Dispatch Plan Schema). Do NOT make any Agent calls yourself — the controller dispatches specialists. Use exactly this shape:
 
 ```
 <dispatch_plan>
@@ -87,9 +87,9 @@ You are the planner. The controller has collected domain plans from specialists 
    - Header: Goal, Architecture, Tech stack, Issue #, Branch
    - File Structure: every file to create or modify, one-line responsibility each
    - Tasks: ordered so deps precede usages, cross-domain integration tasks after unit tasks
-   - Each task follows the template in `references/plan-format.md` — exact file paths, **test signatures and assertion bullets** (NOT executable code), expected failure mode, minimal implementation surface, expected pass criteria, commit message
+   - Each task follows the template in `${CLAUDE_PLUGIN_ROOT}/skills/agentic-loop/references/plan-format.md` — exact file paths, **test signatures and assertion bullets** (NOT executable code), expected failure mode, minimal implementation surface, expected pass criteria, commit message
 
-2. Run the Self-Review Checklist from `references/plan-format.md`:
+2. Run the Self-Review Checklist from `${CLAUDE_PLUGIN_ROOT}/skills/agentic-loop/references/plan-format.md`:
    - Spec coverage: every goal and acceptance criterion maps to at least one task
    - No placeholders
    - Type/name consistency across tasks
@@ -97,7 +97,7 @@ You are the planner. The controller has collected domain plans from specialists 
    - Task granularity (2–5 min steps, one commit per task)
    - Test-first: every task's first step is a failing test (the implementer will write the test code)
 
-3. Also produce tasks.json (see `references/plan-loop.md` schema) listing each task with id, domain, file_targets, deps.
+3. Also produce tasks.json (see `${CLAUDE_PLUGIN_ROOT}/skills/agentic-loop/references/plan-loop.md` schema) listing each task with id, domain, file_targets, deps.
 
 ### Output
 

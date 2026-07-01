@@ -32,7 +32,7 @@ Closes #<issue>.
 ## Test Plan
 
 <one line per gate `quality-gates.sh` actually resolved + ran, read from `./.agentic-resolved-gates`, e.g. `- test: ` + the command>
-- Full gate: `bash .claude/skills/agentic-loop/scripts/quality-gates.sh`
+- Full gate: `bash ${CLAUDE_PLUGIN_ROOT}/skills/agentic-loop/scripts/quality-gates.sh`
 
 ## Risks & Notes
 

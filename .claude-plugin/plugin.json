@@ -6,10 +6,10 @@
     "name": "Simon Tanna",
     "url": "https://github.com/simon-tanna"
   },
-  "homepage": "https://github.com/simon-tanna/agent-loop-plugin",
+  "homepage": "https://github.com/simon-tanna/spec-to-pr",
   "repository": {
     "type": "git",
-    "url": "https://github.com/simon-tanna/agent-loop-plugin.git"
+    "url": "https://github.com/simon-tanna/spec-to-pr.git"
   },
   "license": "MIT",
   "keywords": [

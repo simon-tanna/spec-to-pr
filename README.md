@@ -37,7 +37,7 @@ provides all three together.
 ## Installation
 
 ```bash
-/plugin marketplace add simon-tanna/agent-loop-plugin
+/plugin marketplace add simon-tanna/spec-to-pr
 /plugin install spec-to-pr@spec-to-pr-marketplace
 ```
 
@@ -48,7 +48,7 @@ Restart Claude Code after installing.
 From a clone of this repo:
 
 ```bash
-/plugin marketplace add /path/to/agent-loop-plugin
+/plugin marketplace add /path/to/spec-to-pr
 /plugin install spec-to-pr@spec-to-pr-marketplace
 ```
 

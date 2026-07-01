@@ -85,7 +85,7 @@ $TASK_LIST
 ## Test Plan
 
 $GATE_LINES
-- Full gate: \`bash .claude/skills/agentic-loop/scripts/quality-gates.sh\`
+- Full gate: run the agentic-loop quality gate (\`quality-gates.sh\`)
 
 ## Risks & Notes
 

@@ -34,7 +34,10 @@ override the defaults. Read it once at loop start (Stage 1 ingest).
     // The review agent for spec/plan/compliance/quality/final passes and the adversarial
     // attack-surface pass. Default: "code-reviewer"; falls back to "general-purpose" with a
     // documented loss of review tuning (see SKILL.md "Model Tiering" / plan-loop adversarial pass).
-    "reviewer": "code-reviewer",
+    // Installed via the spec-to-pr plugin, the bundled reviewer is "spec-to-pr:code-reviewer";
+    // set that as the value (or dispatch by that plugin-qualified name) so the tuned agent is used
+    // rather than the general-purpose fallback.
+    "reviewer": "spec-to-pr:code-reviewer",
 
     // Domain specialists the planner may route tasks to. The controller validates every
     // dispatch_plan agent_type against this list. Default: a single general-purpose owner.
@@ -58,6 +61,6 @@ override the defaults. Read it once at loop start (Stage 1 ingest).
 | `base_ref`     | `main`                                                                                   |
 | quality gates  | `scripts/quality-gates.sh` detects the package manager from the lockfile and runs only the `package.json` scripts that exist among `test`/`lint`/`typecheck`/`build`; for non-JS repos it falls back to `cargo test` / `go test ./...` / `pytest`. See that script for the exact precedence and the no-gate-detected safety behaviour. |
 | `agents.planner`   | `general-purpose`                                                                    |
-| `agents.reviewer`  | `code-reviewer` if available, else `general-purpose` (degraded)                      |
+| `agents.reviewer`  | `spec-to-pr:code-reviewer` (the bundled agent) if available, else `general-purpose` (degraded) |
 | `agents.specialists` | `[{ "type": "general-purpose", "owns": "all code" }]`                              |
 | `risk_categories`  | the generic set only                                                                |

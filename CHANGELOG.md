@@ -24,4 +24,4 @@ project adheres to [Semantic Versioning](https://semver.org/).
   (block destructive git, block env/secret reads, block secret exfil,
   block TypeScript violations) and a CI skill-forcing hook.
 
-[0.1.0]: https://github.com/simon-tanna-dev/agent-loop-plugin/releases/tag/v0.1.0
+[0.1.0]: https://github.com/simon-tanna/spec-to-pr/releases/tag/v0.1.0
