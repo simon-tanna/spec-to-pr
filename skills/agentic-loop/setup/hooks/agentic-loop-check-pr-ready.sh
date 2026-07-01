@@ -84,7 +84,7 @@ fi
   echo "Finish all tasks (status:done, both review shas populated, and"
   echo "blocker_count < 2 — reset by plan-loop revision if it ever hit 2),"
   echo "and resolve any open questions before opening the PR."
-  echo "See .claude/skills/agentic-loop/SKILL.md §Stage 4 and"
-  echo ".claude/skills/agentic-loop/references/status-handling.md."
+  echo "See the agentic-loop skill's SKILL.md §Stage 4 and"
+  echo "the agentic-loop skill's references/status-handling.md."
 } >&2
 exit 2

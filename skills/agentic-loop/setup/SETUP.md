@@ -10,6 +10,14 @@ workflow, and one sibling skill). This guide installs that substrate. The loop r
 Run `scripts/check-substrate.sh` at any time to see whether the deterministic gate hooks are
 registered (they fire only when registered; otherwise the gates are model-enforced).
 
+> **Paths.** This skill ships in the `spec-to-pr` plugin. Wherever this guide says
+> `setup/…` or `scripts/…`, the file lives under
+> `${CLAUDE_PLUGIN_ROOT}/skills/agentic-loop/`. The hooks are **per-repo opt-in**: you
+> copy them into a target repo's `.claude/`, so they fire only in repos you set up —
+> never automatically in every repo where the plugin is installed.
+>
+> **Platform:** hooks and scripts are `bash` + `jq` (macOS/Linux; Windows via Git Bash).
+
 ---
 
 ## 1. Workflow env contract (`AGENTIC_*` + `CLAUDE_MODEL`) — CI only
@@ -47,23 +55,38 @@ Also set the `ANTHROPIC_API_KEY` **secret**.
 The three gate hooks make the stage gates *deterministic* (the harness blocks the bad tool call).
 Without registration the gates still hold, but only because the controller self-enforces them.
 
-1. Copy the gate hooks from `setup/hooks/` to `.claude/hooks/` (and keep the skill's context hooks
-   in `.claude/skills/agentic-loop/scripts/`). Make them executable (`chmod +x`).
+1. Copy the hook scripts into the target repo's `.claude/hooks/` and `chmod +x` them:
+   - the 3 gate hooks + any opt-in hooks from `${CLAUDE_PLUGIN_ROOT}/skills/agentic-loop/setup/hooks/`
+   - the 2 context hooks (`postooluse-context-check.sh`, `precompact-flush.sh`) from
+     `${CLAUDE_PLUGIN_ROOT}/skills/agentic-loop/scripts/`
+   - if you enable `precompact-flush.sh`, also copy `git-sync.sh` from that `scripts/` dir into
+     `.claude/hooks/` (the flush hook calls it; it no-ops safely if absent).
+
+   ```bash
+   mkdir -p .claude/hooks
+   SKILL="${CLAUDE_PLUGIN_ROOT}/skills/agentic-loop"
+   cp "$SKILL"/setup/hooks/agentic-loop-check-*.sh .claude/hooks/
+   cp "$SKILL"/scripts/postooluse-context-check.sh "$SKILL"/scripts/precompact-flush.sh "$SKILL"/scripts/git-sync.sh .claude/hooks/
+   chmod +x .claude/hooks/*.sh
+   ```
 2. Merge `setup/settings.snippet.json` into `.claude/settings.json` (create it if absent; deep-merge
-   the `hooks` arrays if it exists). This registers: the 3 gate hooks (PreToolUse), the context-check
-   (PostToolUse), and the precompact flush (PreCompact).
+   the `hooks` arrays if it exists). All hook commands reference `$CLAUDE_PROJECT_DIR/.claude/hooks/…`.
+   This registers: the 3 gate hooks (PreToolUse), the context-check (PostToolUse), and the precompact
+   flush (PreCompact).
 3. Run `scripts/check-substrate.sh` — it must report all three gate hooks registered.
 
-**Opt-in / repo-policy hooks (NOT in the snippet):** `block-ts-violations.sh` (language-specific —
+**Opt-in / repo-policy hooks (NOT in the snippet):** `block-ts-violations.sh` (TypeScript-only —
 register only on TS repos), `force-agentic-loop.sh` (CI-only; forces the skill on a pinned branch),
-and the `block-env-reads.sh` / `block-destructive-git.sh` / `block-secret-exfil.sh` security hooks
-(good defaults, but your call).
+and the `block-env-reads.sh` / `block-destructive-git.sh` / `block-secret-exfil.sh` security guardrails
+(good defaults, but your call). To use any of these, copy it into `.claude/hooks/` too and add its
+own PreToolUse entry pointing at `$CLAUDE_PROJECT_DIR/.claude/hooks/<name>.sh`.
 
 ## 4. `validating-specs` skill dependency — both modes
 
-The loop invokes the `validating-specs` skill (via the Skill tool) at spec-lock and plan-lock. It is
-a **hard dependency** — if absent, the validation gate cannot run and the loop treats it as a
-`BLOCKED_PERMISSION`-class setup failure. Install it alongside this skill.
+The loop invokes the `spec-to-pr:validating-specs` skill (via the Skill tool) at spec-lock and
+plan-lock. It is a **hard dependency** — if absent, the validation gate cannot run and the loop
+treats it as a `BLOCKED_PERMISSION`-class setup failure. It ships in the **same `spec-to-pr`
+plugin**, so installing this plugin already satisfies it — no separate install needed.
 
 ## 5. Optional `.agentic-loop.config.json` — both modes
 

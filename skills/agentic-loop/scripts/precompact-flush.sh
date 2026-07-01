@@ -10,9 +10,18 @@ set -euo pipefail
 [ "${GITHUB_ACTIONS:-}" = "true" ] || exit 0
 
 REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null)" || exit 0
-GIT_SYNC="$REPO_ROOT/.claude/skills/agentic-loop/scripts/git-sync.sh"
 
-[ -f "$GIT_SYNC" ] || exit 0
+# Locate git-sync.sh across install layouts: alongside this script (plugin
+# scripts dir), copied into the repo's .claude/hooks/, or the legacy in-repo
+# skill layout. No-op safely if none is found.
+GIT_SYNC=""
+for cand in \
+  "$(cd "$(dirname "$0")" && pwd)/git-sync.sh" \
+  "$REPO_ROOT/.claude/hooks/git-sync.sh" \
+  "$REPO_ROOT/.claude/skills/agentic-loop/scripts/git-sync.sh"; do
+  [ -f "$cand" ] && { GIT_SYNC="$cand"; break; }
+done
+[ -n "$GIT_SYNC" ] || exit 0
 
 bash "$GIT_SYNC" checkpoint "chore(loop): pre-compact state flush" 2>/dev/null || true
 

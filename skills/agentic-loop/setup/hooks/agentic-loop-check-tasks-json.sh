@@ -7,7 +7,7 @@
 # compliance + code-quality). The model has skipped this in past CI runs
 # to conserve turns. Hook makes the skip impossible.
 #
-# Pairs with .claude/skills/agentic-loop/SKILL.md §Stage 3.
+# Pairs with the agentic-loop skill's SKILL.md §Stage 3.
 
 set -euo pipefail
 
@@ -56,8 +56,8 @@ if [[ "$TOOL_NAME" == "Write" ]]; then
       echo "    round-trip through plan-loop revision (which resets"
       echo "    blocker_count to 0) before reaching done."
       echo ""
-      echo "See .claude/skills/agentic-loop/SKILL.md §Stage 3 and"
-      echo ".claude/skills/agentic-loop/references/status-handling.md."
+      echo "See the agentic-loop skill's SKILL.md §Stage 3 and"
+      echo "the agentic-loop skill's references/status-handling.md."
     } >&2
     exit 2
   fi
@@ -88,7 +88,7 @@ if [ "$HAS_SPEC" -eq 0 ] || [ "$HAS_QUAL" -eq 0 ]; then
     echo "  2. Use Write to overwrite the full tasks.json with the complete"
     echo "     task object including both shas."
     echo ""
-    echo "See .claude/skills/agentic-loop/SKILL.md §Stage 3."
+    echo "See the agentic-loop skill's SKILL.md §Stage 3."
   } >&2
   exit 2
 fi
@@ -107,7 +107,7 @@ if [ "$BLOCKER_HIGH" -gt 0 ]; then
     echo "A task that hit BLOCKED twice must round-trip through plan-loop"
     echo "revision (which resets blocker_count to 0) before reaching done."
     echo ""
-    echo "See .claude/skills/agentic-loop/references/status-handling.md."
+    echo "See the agentic-loop skill's references/status-handling.md."
   } >&2
   exit 2
 fi

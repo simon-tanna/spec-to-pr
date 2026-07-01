@@ -12,7 +12,7 @@
 # closes a bypass that allowed `echo done > .../.state` to set state
 # without going through Write.
 #
-# Pairs with .claude/skills/agentic-loop/SKILL.md §Stage Transition Gates.
+# Pairs with the agentic-loop skill's SKILL.md §Stage Transition Gates.
 
 set -euo pipefail
 
@@ -164,7 +164,7 @@ case "$NEW_STATE" in
         echo "  • $m"
       done
       echo ""
-      echo "Run Stage 2 (plan loop) per .claude/skills/agentic-loop/SKILL.md."
+      echo "Run Stage 2 (plan loop) per the agentic-loop skill's SKILL.md."
       echo "The plan is the contract the implementer satisfies; without it"
       echo "there is no TDD baseline and review has nothing to check against."
     } >&2
