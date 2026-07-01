@@ -7,10 +7,7 @@
     "url": "https://github.com/simon-tanna"
   },
   "homepage": "https://github.com/simon-tanna/spec-to-pr",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/simon-tanna/spec-to-pr.git"
-  },
+  "repository": "https://github.com/simon-tanna/spec-to-pr",
   "license": "MIT",
   "keywords": [
     "agentic-loop",
