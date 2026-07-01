@@ -1,0 +1,12 @@
+# OS / editor cruft
+.DS_Store
+*.swp
+*~
+
+# Agentic-loop run state (created inside target repos, never committed here)
+.agentic-loop/
+.agentic-loop.config.json
+.agentic-resolved-gates
+
+# Local test artifacts
+*.log

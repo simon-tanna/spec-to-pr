@@ -1,0 +1,23 @@
+{
+  "name": "spec-to-pr",
+  "version": "0.1.0",
+  "description": "An agentic development toolkit: an autonomous spec-to-PR loop plus supporting skills and agents for spec validation, code review, and documentation.",
+  "author": {
+    "name": "Simon Tanna",
+    "url": "https://github.com/simon-tanna"
+  },
+  "homepage": "https://github.com/simon-tanna/agent-loop-plugin",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/simon-tanna/agent-loop-plugin.git"
+  },
+  "license": "MIT",
+  "keywords": [
+    "agentic-loop",
+    "spec-to-pr",
+    "code-review",
+    "spec-validation",
+    "documentation",
+    "tdd"
+  ]
+}

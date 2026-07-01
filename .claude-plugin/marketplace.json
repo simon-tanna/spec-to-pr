@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
+  "name": "spec-to-pr-marketplace",
+  "description": "Marketplace for the spec-to-pr plugin.",
+  "owner": {
+    "name": "Simon Tanna"
+  },
+  "plugins": [
+    {
+      "name": "spec-to-pr",
+      "source": "./",
+      "version": "0.1.0",
+      "description": "An agentic development toolkit: an autonomous spec-to-PR loop plus supporting skills and agents for spec validation, code review, and documentation.",
+      "category": "development",
+      "author": {
+        "name": "Simon Tanna"
+      }
+    }
+  ]
+}
