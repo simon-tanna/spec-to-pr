@@ -5,7 +5,8 @@ of the instance owning the listed lens. **User `--skill` / `--mcp` flags always 
 top of this** — auto-detect only adds, never removes.
 
 When you add a tool, always pair it with the _reason_ in the instance prompt (e.g. "use the
-`cel` skill — it has cel-js bigint/list-membership details general knowledge gets wrong").
+`your-db-skill` skill — it has migration-ordering and transaction-boundary details general
+knowledge gets wrong").
 
 ## Doc-type signals (for the step 2.5 classification)
 
@@ -24,37 +25,35 @@ Doc-type sets the **default lens split** (SKILL.md step 3), not which skills/MCP
 
 ## Project skills
 
-| Spec signals (keywords / topics)                                                                                                                                                                 | Skill               | Lens                         |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------- | ---------------------------- |
-| CEL, cel-js, `celExpression`, policy expression, expression cache, fail-closed, bigint in CEL                                                                                                    | `cel`               | domain                       |
-| policy engine, `LoadedPolicyRule`, `LoadedPolicySet`, multicall ruleset, `decode_hints`, evaluation pipeline, OR-within/AND-across, rule matching, siwe / personal_sign / EIP-712 message policy | `policy-evaluation` | domain                       |
-| Fordefi, MPC wallet, vault, transaction approval, validator bot, signing flow                                                                                                                    | `fordefi`           | domain                       |
-| Fordefi **webhook**, X-Signature, approve/abort endpoint, `evm_message`, P-256 signature verification                                                                                            | `fordefi-webhooks`  | domain / security            |
-| D1, Drizzle, SQLite, migration, schema, table, integration test against DB                                                                                                                       | `miniflare-d1`      | domain / scope (testability) |
-| Terraform, OpenTofu, infra module, `.tf`, state, provider                                                                                                                                        | `terraform`         | architecture                 |
-| `turbo.json`, monorepo, package boundary, catalog dep, build caching, `--affected`, workspace                                                                                                    | `turborepo`         | architecture                 |
-| Clerk, authentication, sign-in/up, organizations, billing, `createServerFn` auth, `beforeLoad` guard                                                                                             | `clerk`             | domain / security            |
+> **Customize this table for your project.** The rows below are illustrative
+> examples of the mechanism: map spec keywords to a skill your repo installs and
+> the review lens that skill sharpens. Replace them with your own stack's skills
+> (your auth provider, your ORM/DB layer, your IaC tool, your domain libraries).
+
+| Spec signals (keywords / topics)                                                        | Skill (example)     | Lens                         |
+| --------------------------------------------------------------------------------------- | ------------------- | ---------------------------- |
+| ORM / query builder, migration, schema, table, integration test against the DB          | `your-db-skill`     | domain / scope (testability) |
+| Infrastructure-as-code, infra module, provider, state file                              | `your-iac-skill`    | architecture                 |
+| Monorepo, package boundary, workspace, build caching, affected-graph                     | `your-monorepo-skill` | architecture               |
+| Authentication, sign-in/up, sessions, organizations, route guards                        | `your-auth-skill`   | domain / security            |
 
 ## MCP servers
 
 | Spec signals                                                                                                                                                             | MCP server           | Lens                      | Note                                                                                  |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------- | ------------------------- | ------------------------------------------------------------------------------------- |
 | **Version-specific / migration** claim, or an **unfamiliar / less-common** library / SDK / API (skip for ubiquitous, stable libs unless a version/API claim is in doubt) | `context7`           | the lens making the claim | `resolve-library-id` → `query-docs`; query the narrowest topic, not a broad overview. |
-| Cloudflare Workers, wrangler, KV, R2, Durable Objects, Workers AI, Vectorize, Hyperdrive                                                                                 | `cloudflare-docs`    | architecture              | `search_cloudflare_documentation`                                                     |
-| Turnkey, sub-org, WebAuthn passkey via Turnkey, session keys                                                                                                             | `Mintlify` (turnkey) | domain                    | `search_turnkey` / `query_docs_filesystem_turnkey`                                    |
-| References a ticket/issue (ROCK-NNNN, Linear) for requirements context                                                                                                   | `Linear`             | scope                     | Pull the issue to check spec vs. stated requirements                                  |
-| References a GitHub issue/PR (#NNN) for context                                                                                                                          | `github`             | scope                     |                                                                                       |
-| 1inch, swap, limit order, Fusion, cross-chain swap                                                                                                                       | `1inch`              | domain                    |                                                                                       |
+| References a GitHub issue/PR (#NNN) for context                                                                                                                          | `github`             | scope                     | Pull the issue to check spec vs. stated requirements                                  |
+| References a project tracker ticket (e.g. `TICKET-NNNN`) for requirements context                                                                                        | your tracker MCP     | scope                     | Add your issue tracker's MCP server here (Linear, Jira, …)                             |
+| Mentions a specific cloud/platform SDK or an internal service with its own docs MCP                                                                                      | that service's docs MCP | architecture           | Add your platform/service documentation MCP servers here                              |
 
 ## Lens trigger keywords (for fan-out decisions)
 
 Add a **`security`** instance when the spec mentions any of:
-auth, JWS, JWE, KMS, signing, private key, secret, credential, cosigner, webhook signature
-verification, reentrancy, access control, on-chain attack surface, `process.env`, token/session.
+auth, JWS, JWE, KMS, signing, private key, secret, credential, webhook signature
+verification, access control, injection/attack surface, `process.env`, token/session.
 
 The **`domain`** lens is warranted whenever the spec encodes project-specific business logic
-(policy/CEL semantics, Fordefi flows, vault accounting, on-chain contract behavior) rather than
-generic CRUD/UI.
+(your project's core rules, workflows, and invariants) rather than generic CRUD/UI.
 
 Add an **`execution`** instance when the artifact is an execution/implementation plan or mentions
 any of: phases, milestones, sequencing, dependency ordering, critical path, parallel workstream,

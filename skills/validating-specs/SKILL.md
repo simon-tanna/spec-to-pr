@@ -65,7 +65,7 @@ Invocation arguments (when the user supplies them): `<spec-path…> [--mcp a,b] 
 - **spec-path** — one or more files. If omitted, search `docs/`, `.agentic-loop/*/spec.md`,
   `*.md` for the candidate and confirm with the user before proceeding.
 - **--mcp** — comma list of MCP servers to require (e.g. `context7,linear,github`).
-- **--skill** — comma list of project skills to require (e.g. `cel,fordefi`).
+- **--skill** — comma list of project skills to require (e.g. `your-db-skill,your-auth-skill`).
 - **--instances N** / **--split a,b,c** / **--single** — override fan-out (see step 3).
 
 Auto-trigger (no flags): treat the spec the user pointed at as the positional arg; flags are empty.
@@ -97,10 +97,10 @@ two lenses own the same surface, so parallel instances never re-litigate the sam
 | Lens             | Covers                                                                                                                            | Include when                                                                 |
 | ---------------- | --------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
 | **architecture** | codebase fit, component boundaries, package/monorepo conventions, data flow                                                       | always                                                                       |
-| **domain**       | project-specific semantics (CEL, policy eval, Fordefi, on-chain, auth model)                                                      | spec encodes domain logic                                                    |
+| **domain**       | project-specific semantics (your core business rules, workflows, invariants, auth model)                                          | spec encodes domain logic                                                    |
 | **scope**        | requirements, scope boundaries, out-of-scope declarations, acceptance criteria, test-plan coverage                                | always                                                                       |
 | **execution**    | dependency ordering, critical path, parallelizable workstreams, estimate realism, rollback/migration, rollout & review/test gates | artifact is an execution/implementation plan or has phased rollout/migration |
-| **security**     | auth, signing/KMS/JWS, secrets, webhook verification, on-chain attack surface                                                     | spec touches any of these                                                    |
+| **security**     | auth, signing/KMS/JWS, secrets, webhook verification, injection/attack surface                                                    | spec touches any of these                                                    |
 
 **Boundary (scope vs execution):** `scope` owns _what_ must be true (requirements, acceptance
 criteria, test-plan **coverage**). `execution` owns _how/when_ it gets built (sequencing, critical
@@ -169,9 +169,9 @@ the controller writes the single human-facing 10-section report in step 6).
 | Execution / implementation plan (`*-plan.md`)  | split: `execution` + `scope` + `architecture` (+ `security`/`domain` if triggered) |
 | Design doc (`*-design.md`)                     | split: `architecture` + `domain` (+ `scope` if requirements present)               |
 | Spec / PRD                                     | split: `scope` + `domain` (+ `architecture`)                                       |
-| User passed `--skill cel`                      | `cel` required on the domain instance, even if auto-detect missed it               |
+| User passed `--skill your-db-skill`            | that skill required on the domain instance, even if auto-detect missed it          |
 | Spec mentions a library/version                | add `context7` MCP to the relevant instance                                        |
-| Spec touches signing/secrets/webhooks/on-chain | add a `security` instance                                                          |
+| Spec touches signing/secrets/webhooks/auth     | add a `security` instance                                                          |
 | Instance needs an MCP tool                     | prompt MUST tell it to `ToolSearch` the schema first                               |
 
 ## Common Mistakes

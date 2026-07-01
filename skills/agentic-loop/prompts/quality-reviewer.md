@@ -17,7 +17,7 @@ Use the dimensions for the relevant domain; these are examples — apply whichev
 - frontend / UI: XSS and output escaping, auth-state handling, accessibility, unvalidated user input, leaking data into the DOM
 - data / persistence: migration safety, transaction boundaries, N+1 queries, PII handling, index coverage
 - cli / tooling: pipe-awareness, TTY detection, EPIPE handling, argument escaping when shelling out, signal handling
-- (domain-specific example) smart-contract: reentrancy, rounding direction, oracle trust, access control, external call ordering
+- (domain-specific example) concurrency / distributed: race conditions, lock ordering, idempotency of retried operations, rounding direction, trust boundaries between services
 - docs (all domains): every newly exported symbol has a doc comment per the project's comment policy (`.claude/rules/comments.md` if present; else the language's standard API-doc convention)
 
 ## Checklist

@@ -58,10 +58,10 @@ consumed by a controller that merges it with sibling instances — do not addres
 - `{{LENS}}` / `{{LENS_DESCRIPTION}}` — one of the five canonical lenses from SKILL.md
   step 3, or `all domains` for single-instance:
   - `architecture` — codebase fit, component boundaries, package/monorepo conventions, data flow
-  - `domain` — project-specific semantics (CEL, policy eval, Fordefi, on-chain, auth model)
+  - `domain` — project-specific semantics (your core business rules, workflows, invariants, auth model)
   - `scope` — requirements, scope boundaries, acceptance criteria, test-plan coverage
   - `execution` — dependency ordering, critical path, parallelizable workstreams, estimate realism, rollback/migration, rollout & review/test gates
-  - `security` — auth, signing/KMS/JWS, secrets, webhook verification, on-chain attack surface
+  - `security` — auth, signing/KMS/JWS, secrets, webhook verification, injection/attack surface
 - `{{OTHER_LENSES}}` — the lenses the _other_ dispatched instances own (for disjointness).
 - `{{REQUIRED_SKILLS}}` / `{{REQUIRED_MCPS}}` — resolved in SKILL.md step 4 (user flags +
   detection-map auto-detect). Each carries the _reason_ it's needed.
