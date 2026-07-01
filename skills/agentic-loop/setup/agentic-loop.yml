@@ -1,0 +1,115 @@
+# agentic-loop CI workflow — TEMPLATE.
+#
+# Copy to .github/workflows/agentic-loop.yml and adapt. This is a starting skeleton, not a
+# turnkey file: fill in the marked <PLACEHOLDERS>, set the required repo variables and secrets
+# (see setup/SETUP.md), and confirm your runner has `gh`, `jq`, and your toolchain installed.
+#
+# What it does: on a labelled issue (or an auto-resume / @claude comment), it pins a deterministic
+# feature branch, exports the AGENTIC_* env contract the skill consumes, writes the MCP config,
+# and invokes Claude Code with the agentic-loop skill. The skill drives spec → plan → implement → PR.
+
+name: agentic-loop
+
+on:
+  issues:
+    types: [labeled]            # fire when an issue gets the trigger label (e.g. "agentic-loop")
+  issue_comment:
+    types: [created]            # auto-resume (bot eject comment) and human @claude commands
+  pull_request_review:
+    types: [submitted]
+  pull_request_review_comment:
+    types: [created]
+
+permissions:
+  contents: write               # branch + commits
+  issues: write                 # progress/interview comments
+  pull-requests: write          # open the PR
+
+concurrency:
+  # One run per issue at a time; cancel-in-progress is OFF so a resume never kills a live run.
+  group: agentic-loop-${{ github.event.issue.number || github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  run:
+    # Fire on: the trigger label; OR an auto-resume comment from the bot (matched by BOTH id and
+    # login — ids are immutable, see references/auto-resume-config.md); OR a human "@claude" command.
+    if: >-
+      (github.event_name == 'issues' && github.event.label.name == 'agentic-loop') ||
+      (github.event_name == 'issue_comment' &&
+        ((github.event.comment.user.id == vars.AGENTIC_BOT_USER_ID &&
+          github.event.comment.user.login == vars.AGENTIC_BOT_LOGIN &&
+          contains(github.event.comment.body, vars.AGENTIC_RESUME_MARKER)) ||
+         startsWith(github.event.comment.body, '@claude'))) ||
+      github.event_name == 'pull_request_review' ||
+      github.event_name == 'pull_request_review_comment'
+    runs-on: ubuntu-latest
+    env:
+      # --- Model (drives eject thresholds in scripts/postooluse-context-check.sh) ---
+      CLAUDE_MODEL: <claude-model-id>            # e.g. the Opus id; MUST match the --model passed to Claude
+      # --- Auto-resume contract (repo variables → env, with fallbacks; see auto-resume-config.md) ---
+      AGENTIC_RESUME_CAP: ${{ vars.AGENTIC_RESUME_CAP || '10' }}
+      AGENTIC_RESUME_MARKER: ${{ vars.AGENTIC_RESUME_MARKER || 'AGENTIC-LOOP-AUTO-RESUME' }}
+      AGENTIC_BOT_LOGIN: ${{ vars.AGENTIC_BOT_LOGIN || 'claude[bot]' }}
+      AGENTIC_BOT_USER_ID: ${{ vars.AGENTIC_BOT_USER_ID || '209825114' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0          # full history so origin/<base>...HEAD diffs resolve in CI
+
+      - name: Pin agentic-loop branch
+        # Resolves the issue number, slug, author, and base ref, creates/checks out the deterministic
+        # feature branch, and exports the AGENTIC_* contract the skill reads. Skipped on review events
+        # (no issue) — the skill falls back via ${AGENTIC_BASE_REF:-main} there.
+        if: ${{ github.event_name == 'issues' || github.event_name == 'issue_comment' }}
+        run: |
+          set -euo pipefail
+          ISSUE="${{ github.event.issue.number }}"
+          TITLE="${{ github.event.issue.title }}"
+          AUTHOR="${{ github.event.issue.user.login }}"
+          SLUG="$(echo "$TITLE" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g; s/^-+|-+$//g' | cut -c1-40)"
+          # Base ref resolution: .agentic-loop.config.json base_ref → issue "Base branch:" field →
+          # "base:<ref>" label → main.
+          BASE="main"
+          if [ -f .agentic-loop.config.json ] && command -v jq >/dev/null; then
+            CFG_BASE="$(jq -r '.base_ref // empty' .agentic-loop.config.json)"; [ -n "$CFG_BASE" ] && BASE="$CFG_BASE"
+          fi
+          BODY_BASE="$(printf '%s' "${{ github.event.issue.body }}" | sed -nE 's/^[[:space:]]*Base branch:[[:space:]]*([^[:space:]]+).*/\1/p' | head -1)"
+          [ -n "$BODY_BASE" ] && BASE="$BODY_BASE"
+          LABEL_BASE="$(printf '%s' '${{ toJSON(github.event.issue.labels.*.name) }}' | jq -r '.[]? | select(startswith("base:")) | sub("^base:";"")' | head -1 || true)"
+          [ -n "${LABEL_BASE:-}" ] && BASE="$LABEL_BASE"
+
+          BRANCH="feat/${ISSUE}-${SLUG}"
+          git fetch origin "$BASE" || true
+          git checkout -B "$BRANCH" "origin/${BASE}" 2>/dev/null || git checkout -B "$BRANCH"
+          git push -u origin "$BRANCH" || true
+
+          {
+            echo "AGENTIC_ISSUE=$ISSUE"
+            echo "AGENTIC_BRANCH=$BRANCH"
+            echo "AGENTIC_SLUG=$SLUG"
+            echo "AGENTIC_BASE_REF=$BASE"
+            echo "AGENTIC_AUTHOR=$AUTHOR"
+            echo "AGENTIC_RUN_STARTED_AT=$(date -u +%s)"
+          } >> "$GITHUB_ENV"
+
+      - name: Write MCP config
+        # Register any MCP servers the loop/specialists need (e.g. context7). The skill and its
+        # subagents inherit these. Adjust to your servers.
+        run: |
+          cat > /tmp/mcp-config.json <<'JSON'
+          { "mcpServers": { } }
+          JSON
+
+      - name: Run agentic-loop
+        uses: anthropics/claude-code-action@v1   # <verify the action ref you use>
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          model: <claude-model-id>               # MUST equal CLAUDE_MODEL above
+          mcp_config: /tmp/mcp-config.json
+          # Grant the tools the loop needs (Agent dispatch, Bash for scripts, file tools, gh, the
+          # Skill tool for validating-specs, and the MCP tools you registered). Tighten as desired.
+          claude_args: >-
+            --allowed-tools "Agent,Bash,Read,Write,Edit,Glob,Grep,Skill,WebFetch"
+          prompt: |
+            Use the agentic-loop skill to take issue #${{ github.event.issue.number }} from spec to PR.

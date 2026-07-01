@@ -1,0 +1,40 @@
+{
+  "//": "agentic-loop substrate registration. Merge the `hooks` block below into your repo's .claude/settings.json (create the file if absent; deep-merge the arrays if it exists). These make the loop's gates deterministic and its context-hygiene/auto-resume safety nets fire. Each agentic-loop hook no-ops outside loop context, so registering them is safe for normal work. NOT included here (repo-policy / opt-in — see SETUP.md): block-ts-violations.sh (language-specific), force-agentic-loop.sh (CI-only, forces the skill on a pinned branch), and the block-env-reads/block-destructive-git/block-secret-exfil security hooks.",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          { "type": "command", "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/agentic-loop-check-tasks-json.sh" }
+        ]
+      },
+      {
+        "matcher": "Write|Bash",
+        "hooks": [
+          { "type": "command", "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/agentic-loop-check-state-transition.sh" }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          { "type": "command", "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/agentic-loop-check-pr-ready.sh" }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "*",
+        "hooks": [
+          { "type": "command", "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/skills/agentic-loop/scripts/postooluse-context-check.sh" }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "hooks": [
+          { "type": "command", "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/skills/agentic-loop/scripts/precompact-flush.sh" }
+        ]
+      }
+    ]
+  }
+}

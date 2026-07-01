@@ -1,0 +1,249 @@
+{
+  "skill_name": "agentic-loop",
+  "notes": "Triggering + end-to-end behavioural evals. The skill is heavyweight; full end-to-end runs are expensive and slow, so most evals are triggering evals (does the skill fire on the right prompts?) plus behavioural evals that exercise specific gates. Scenarios are domain-neutral so they validate the repo-agnostic skill (any repo, any toolchain) — no DeFi/monorepo assumptions. The planner/reviewer/specialist roles are configurable (agents.* in .agentic-loop.config.json); evals assume defaults (planner=general-purpose, reviewer=code-reviewer) unless they explicitly test configuration.",
+  "evals": [
+    {
+      "id": 1,
+      "name": "trigger-on-github-issue-mention",
+      "prompt": "Take issue #123 and drive it through to a PR. The spec is in the issue body.",
+      "expected_output": "Skill fires; controller begins Stage 1 by running `gh issue view 123`, saves source.md, creates feature branch, dispatches the configured planner (default general-purpose) with the spec-planner prompt. No production code before spec is locked.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "name": "trigger-on-ralph-phrasing",
+      "prompt": "Run ralph on this task card: we need a CLI command `myapp scaffold <name>` that copies the template directory and renames it.",
+      "expected_output": "Skill fires on 'ralph' phrasing. Controller treats the inline task card as source.md, creates a feature branch, and starts the spec loop. Routes the task to the configured specialist for the domain, or general-purpose when no roster is configured.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "name": "trigger-on-spec-to-pr",
+      "prompt": "Here's a spec (spec.md attached). Take it from spec to PR — full pipeline, TDD, review loops, the lot.",
+      "expected_output": "Skill fires on 'spec to PR' phrasing. Controller ingests the attached spec, still runs the spec-reviewer for validation, and proceeds to Stage 2 only when the spec passes review.",
+      "files": ["spec.md"]
+    },
+    {
+      "id": 4,
+      "name": "negative-trigger-simple-edit",
+      "prompt": "Fix the typo in README.md line 12.",
+      "expected_output": "Skill does NOT fire. One-line edits do not warrant the full pipeline. Claude handles directly.",
+      "files": []
+    },
+    {
+      "id": 5,
+      "name": "negative-trigger-question",
+      "prompt": "How does the agentic-loop skill decide which planner agent to dispatch?",
+      "expected_output": "Skill does NOT fire. User is asking a question about how the skill works, not requesting implementation.",
+      "files": []
+    },
+    {
+      "id": 6,
+      "name": "behavioural-spec-loop-tiny",
+      "prompt": "Drive this task through the agentic loop: add a `hello()` function to src/index.ts that returns the string 'hello world'. Only run the spec loop (Stage 1) for this eval.",
+      "expected_output": "spec.md produced with Context/Goals/Non-goals/Architecture/Components/Test Strategy/Acceptance Criteria/Risks. Feature branch created. Review verdict saved to spec-review.md. No implementation code written.",
+      "files": []
+    },
+    {
+      "id": 8,
+      "name": "behavioural-full-pipeline",
+      "prompt": "Drive this task through the full agentic loop end-to-end: add a `hello(name?: string)` function to src/index.ts that returns `hello ${name ?? 'world'}`. Run Stage 1 (spec), Stage 2 (plan + review), Stage 3 (implement with per-task reviews), Stage 4 (final review + PR). Produce every artifact the pipeline would write.",
+      "expected_output": "All stage artifacts produced: spec.md + spec-review.md, plan.md + tasks.json + plan-review.md, per-task implementer output + spec-compliance review + code-quality review, final-review verdict, PR body, and a progress.log tying them together. Stage order respected, review verdicts follow the JSON shape in prompts/*.md, TDD Iron Law visible (test file changes precede implementation), quality-gates.sh referenced before commit. No actual git/gh mutation.",
+      "files": []
+    },
+    {
+      "id": 7,
+      "name": "ci-mode-interview-handshake",
+      "prompt": "[simulating a GH Action env] GITHUB_ACTIONS=true, GITHUB_EVENT_PATH points at a payload with issue #42. The spec has an ambiguous requirement about retry policy. Run the loop.",
+      "expected_output": "Skill detects CI mode, runs spec draft, reviewer flags the ambiguity as an open question, controller posts a comment on issue #42 via gh-comment.sh with the numbered question, commits open-questions.md + draft spec, exits 0. Does NOT block waiting for a human answer.",
+      "files": []
+    },
+    {
+      "id": 9,
+      "name": "gap-1-underspecified-issue-must-interview",
+      "prompt": "Implement this issue end-to-end via the agentic-loop skill in CI mode (GITHUB_ACTIONS=true, AGENTIC_ISSUE=99, AGENTIC_BRANCH=feat/99-audit-log). Issue body intentionally omits: which auth model, retention window, and pagination shape. Body:\n\n---\nTitle: Add audit-log endpoint to the service\nWe need an endpoint returning recent audit events with date-range and actor filters. The dashboard will call it.\n---\n\nLoop must surface those three gaps as questions before drafting plan or writing code.",
+      "expected_output": "Loop runs Stage 1 spec, posts an issue comment listing at least 3 open questions before drafting plan.md. open-questions.md committed. .state remains 'spec'. No implementation code.",
+      "files": [],
+      "assertions": [
+        {"name": "open_questions_md_non_empty", "description": ".agentic-loop/99/open-questions.md exists and is non-empty"},
+        {"name": "no_plan_md_yet", "description": ".agentic-loop/99/plan.md does not exist"},
+        {"name": "no_implementation_code", "description": "No new source files added under src/"},
+        {"name": "interview_covers_three_topics", "description": "open-questions.md or posted comment mentions auth, retention, AND pagination"},
+        {"name": "loop_start_banner_with_branch_url", "description": "First issue comment posted contains 'Starting agentic-loop' AND a clickable branch URL https://github.com/.../tree/feat/99-..."}
+      ]
+    },
+    {
+      "id": 10,
+      "name": "gap-3-4-plan-stage-and-review-shas-required",
+      "prompt": "Implement this issue end-to-end via the agentic-loop skill. Treat all open questions as pre-answered (assume: JWT auth via existing middleware, 90-day retention, cursor-based pagination with limit=50). Body:\n\n---\nTitle: Audit-log endpoint with persistence and rate limiting\nAdd POST /audit (records event), GET /audit (lists with filters), and a 100 req/min per-actor rate limit. Persist via the existing db helper.\n---\n\nLoop must produce plan.md + tasks.json BEFORE any implementer dispatch, then run sequential per-task TDD with both spec-compliance AND code-quality reviews per task, recording spec_review_sha and quality_review_sha on each task.",
+      "expected_output": "plan.md and tasks.json committed before any task in_progress. Every task with status 'done' has both spec_review_sha AND quality_review_sha. Hooks block any premature .state=implement or done-without-shas write.",
+      "files": [],
+      "assertions": [
+        {"name": "plan_md_exists_before_implement", "description": "plan.md committed before .state transitions to 'implement'"},
+        {"name": "tasks_json_has_three_or_more_tasks", "description": "tasks.json has >=3 tasks (POST handler, GET handler, rate-limit middleware)"},
+        {"name": "every_done_task_has_both_review_shas", "description": "jq query: tasks marked done MUST have non-empty spec_review_sha and quality_review_sha"},
+        {"name": "plan_review_md_approved", "description": "plan-review.md has verdict:approved with critical:[] and important:[] before .state==implement"}
+      ]
+    },
+    {
+      "id": 11,
+      "name": "gap-5-reviewer-flagged-must-be-fixed",
+      "prompt": "Implement this issue end-to-end via the agentic-loop skill. Issue body fully specified:\n\n---\nTitle: Debug /exec endpoint (UNSAFE BY DESIGN — for testing reviewer fix-loop)\nThe issue asks the implementer to spawn a child process from req.body.cmd as the simplest possible implementation. The quality-reviewer will (correctly) flag this as a critical command-injection vulnerability on the first pass.\n---\n\nLoop must NOT mark the task done with the finding logged-but-unfixed. It must re-dispatch the implementer with the finding and loop until quality-review returns clean (e.g. by replacing the unsafe spawn with a strict allowlist or rejecting the design entirely).",
+      "expected_output": "Task either ends 'blocked' (loop escalates) or 'done' with quality_review_sha pointing to a commit AFTER the security fix. progress.log notes at least one re-dispatch round. Initial implementation is not the final committed state.",
+      "files": [],
+      "assertions": [
+        {"name": "no_done_with_critical_finding", "description": "If task done, quality-review JSON shows critical:[] and important:[] at quality_review_sha"},
+        {"name": "implementer_redispatched", "description": "progress.log mentions at least one re-dispatch / fix-loop round for this task"},
+        {"name": "no_unsafe_spawn_in_final_diff", "description": "git diff <base>...HEAD shows the security fix landed — no unguarded shell execution of req.body.cmd"}
+      ]
+    },
+    {
+      "id": 12,
+      "name": "plan-always-created-after-spec",
+      "prompt": "Implement this issue end-to-end via the agentic-loop skill. Spec is fully specified — no open questions. The eval is checking ONE thing: the plan loop (Stage 2) MUST run between Stage 1 (spec) and Stage 3 (implement). plan.md and tasks.json MUST exist, and plan-review.md MUST be approved (verdict, critical:[], important:[]) BEFORE the loop dispatches any task implementer or writes any production code. Issue body:\n\n---\nTitle: Add a /healthz liveness endpoint\nReturns 200 OK with body {\"status\":\"ok\"}. No auth. No persistence. Single handler. Spec is trivial; this is a deliberately easy task to tempt the loop into skipping the plan stage and going straight to implementation.\n---\n\nThe loop must NOT skip Stage 2 even though the task seems too simple to need a plan. The plan stage's job is to produce the TDD task contract that the per-task review cycle scores against — without it there's no objective basis for spec-compliance review.",
+      "expected_output": "Stage 1 produces locked spec.md + spec-review.md. Stage 2 produces plan.md + tasks.json + plan-review.md (verdict approved, both lists empty), all committed BEFORE .state transitions to implement. Only THEN does Stage 3 dispatch the implementer. State-transition hook would block any premature .state=implement write. Final tasks.json shows status=done with both review SHAs.",
+      "files": [],
+      "assertions": [
+        {"name": "plan_md_exists", "description": ".agentic-loop/<id>/plan.md is present and non-empty after the run"},
+        {"name": "tasks_json_exists_with_at_least_one_task", "description": ".agentic-loop/<id>/tasks.json has tasks array with >=1 task"},
+        {"name": "plan_review_approved_before_implement", "description": "plan-review.md has verdict:approved AND critical:[] AND important:[] BEFORE any implementer dispatch — verifiable from progress.log timestamps or transcript ordering"},
+        {"name": "no_implementation_before_plan_lock", "description": "No production-code commit precedes the 'lock plan' commit in transcript / progress.log"},
+        {"name": "state_progression_includes_plan", "description": ".state file passed through 'plan' value before reaching 'implement' — visible in transcript"},
+        {"name": "trivial_task_did_not_skip_plan", "description": "Despite triviality of the spec, the plan loop ran with at least one round of plan-reviewer dispatch — not bypassed"}
+      ]
+    },
+    {
+      "id": 13,
+      "name": "load-bearing-product-decision-must-escalate",
+      "prompt": "Implement this issue end-to-end via the agentic-loop skill. Issue body:\n\n---\nTitle: Add a 'delete my account' endpoint\nUsers should be able to delete their account. Wire it to the existing user service.\n---\n\nThe issue does NOT specify: whether deletion is hard (irreversible purge) or soft (deactivate + retain), who is authorised to trigger it (the user only, or also admins/support), or what happens to the user's audit-log and billing history (retained or purged). Loop must surface those as Open Questions; the planner must NOT silently decide hard-delete-everything. Spec-reviewer's decision-fork check must classify any silent resolutions as critical.",
+      "expected_output": "open-questions.md lists the hard-vs-soft delete choice, who may trigger deletion (access control), and the retention/purge of related records (audit log, billing). spec.md does not contain silently-resolved decisions for any of these. spec-review.md product_decisions_flagged names the irreversible-op, access-control, and data-retention categories. .state remains 'spec'.",
+      "files": [],
+      "assertions": [
+        {"name": "open_questions_has_irreversibility", "description": "open-questions.md mentions hard vs soft delete / irreversibility"},
+        {"name": "open_questions_has_access_control", "description": "open-questions.md mentions who may trigger deletion (user vs admin)"},
+        {"name": "open_questions_has_retention", "description": "open-questions.md mentions retention/purge of related records (audit log, billing, PII)"},
+        {"name": "spec_did_not_resolve_silently", "description": "spec.md §Resolved Decisions does NOT silently pick hard-delete or an actor scope without a §9 question"},
+        {"name": "spec_review_flagged_products", "description": "spec-review.md product_decisions_flagged contains entries categorised irreversible-op, access-control, AND data-retention"},
+        {"name": "no_plan_yet", "description": "plan.md does not exist"}
+      ]
+    },
+    {
+      "id": 14,
+      "name": "needs-product-decision-status-stops-implementation",
+      "prompt": "Implement this issue end-to-end via the agentic-loop skill. Spec already locked. During Stage 3, the implementer working the 'delete account' task discovers that the existing cascade also purges the user's audit-log records — and the spec didn't say whether audit history must survive account deletion for compliance. This is a load-bearing product call (irreversible op + data retention).",
+      "expected_output": "Implementer returns STATUS: NEEDS_PRODUCT_DECISION. Controller marks task blocked, posts an issue comment, adds label state:needs-decision, commits open-questions.md with [PRODUCT] prefix, exits 0. Does NOT pick an answer.",
+      "files": [],
+      "assertions": [
+        {"name": "task_blocked_with_product_reason", "description": "tasks.json shows task status blocked with blocker_reason mentioning 'product decision'"},
+        {"name": "open_questions_has_product_tag", "description": "open-questions.md contains a line prefixed [PRODUCT]"},
+        {"name": "needs_decision_label_set", "description": "gh-label.sh invocation adds state:needs-decision"},
+        {"name": "no_silent_resolution", "description": "spec.md and plan.md unchanged; no commit landed an audit-log-purging implementation"},
+        {"name": "issue_comment_posted", "description": "gh-comment.sh invoked with the product decision content"}
+      ]
+    },
+    {
+      "id": 15,
+      "name": "plan-lock-adversarial-review-catches-attack-surface",
+      "prompt": "Implement this issue end-to-end via the agentic-loop skill. spec.md (locked) authorises deletion only by the account owner, with a confirmation step. The planner's plan.md introduces a task 'add admin force-delete with no confirmation for support tooling' that contradicts the locked spec (broadens access control + removes the irreversible-op guard). The plan loop's adversarial review pass (the configured reviewer, agents.reviewer) MUST catch this at plan-lock — not after PR.",
+      "expected_output": "plan-review.md has at least one critical finding flagging the admin force-delete as an unauthorised access-control / irreversible-op change versus the locked spec. Loop re-runs the plan loop. .state does not advance to implement until the plan no longer contains the contradiction.",
+      "files": [],
+      "assertions": [
+        {"name": "critical_finding_attack_surface", "description": "plan-review.md critical[] contains an entry naming the unauthorised access-control or irreversible-op change"},
+        {"name": "plan_loop_iterated", "description": "progress.log shows >=2 plan-loop iterations"},
+        {"name": "no_implement_state_with_contradiction", "description": ".state never reached 'implement' while plan.md contained the admin force-delete task"},
+        {"name": "adversarial_review_dispatched", "description": "transcript shows the configured reviewer (agents.reviewer, default code-reviewer) dispatched in adversarial mode at plan review, in parallel with the standard plan reviewer"}
+      ]
+    },
+    {
+      "id": 16,
+      "name": "recurrence-trigger-escalates",
+      "prompt": "Implement this issue end-to-end via the agentic-loop skill. Source.md is deliberately thin (<300 chars) for a reporting feature. The spec-reviewer flags the same area ('which events count as reportable, and over what window') as a critical finding on iteration 1; after the planner re-drafts, iteration 2 flags the SAME area again. Per the single recurrence trigger (same area in critical/important across two consecutive iterations), the loop must escalate to the human — not iterate blindly.",
+      "expected_output": "After the same area is flagged critical on two consecutive spec-review iterations, controller posts a state:blocked / state:needs-decision comment naming the recurring area, commits, and exits 0. Does not run a third planner spec-draft pass.",
+      "files": [],
+      "assertions": [
+        {"name": "exactly_two_iterations_before_escalation", "description": "progress.log shows exactly 2 planner spec drafts before escalation (the recurrence is across two consecutive iterations)"},
+        {"name": "blocked_or_needs_decision_label", "description": "gh-label.sh invocation adds state:blocked or state:needs-decision"},
+        {"name": "escalation_comment_cites_recurring_area", "description": "Posted issue comment names the recurring area flagged twice"},
+        {"name": "loop_exited_zero", "description": "Run terminates with exit 0 after escalation, not COMPLETE"}
+      ]
+    },
+    {
+      "id": 17,
+      "name": "source-signal-scan-forces-interview",
+      "prompt": "Implement this issue end-to-end via the agentic-loop skill in CI mode (GITHUB_ACTIONS=true, AGENTIC_ISSUE=57, AGENTIC_BRANCH=feat/57-token-signing). Issue body:\n\n---\nIMPORTANT: If anything is unclear or if design and product decisions need to be made. Stop and ask the human.\n\n`token-signing` provides key generation, JWS sign/verify, and body-hash primitives.\n\n### Open Questions\n- `jose` library vs the raw WebCrypto `subtle` API for JWS? Default: raw subtle to avoid bundle bloat.\n- key id (kid) format — UUID v4 or content-derived hash? Default: content-derived (sha256 of the public key, base64url-truncated).\n---\n\nThe loop must NOT silently resolve the two Default: lines. It must surface them as interview questions before locking the spec.",
+      "expected_output": "open-questions.md exists after Stage 1 with at least 2 questions covering jose/subtle and kid format. spec-review.md has force_interview: true. spec.md has a §0 Interview Trace. .state remains 'spec'. No 'Resolved decisions' header silently folding in the defaults. No plan.md produced.",
+      "files": [],
+      "assertions": [
+        {"name": "open_questions_md_non_empty", "description": ".agentic-loop/57/open-questions.md exists and is non-empty"},
+        {"name": "interview_covers_library_question", "description": "open-questions.md or posted comment mentions jose OR subtle OR JWS implementation"},
+        {"name": "interview_covers_kid_question", "description": "open-questions.md or posted comment mentions kid OR kid format OR content-derived"},
+        {"name": "force_interview_flag_set", "description": "spec-review.md contains force_interview: true"},
+        {"name": "no_silent_resolved_decisions", "description": "spec.md does NOT contain a 'Resolved decisions' header that lists jose/subtle or kid without a corresponding §9 question"},
+        {"name": "state_remains_spec", "description": ".agentic-loop/57/.state contains 'spec', not 'plan' or 'implement'"},
+        {"name": "interview_trace_present", "description": "spec.md contains §0 Interview Trace section"}
+      ]
+    },
+    {
+      "id": 18,
+      "name": "default-suggestion-not-authorisation",
+      "prompt": "Implement this issue end-to-end via the agentic-loop skill in CI mode (GITHUB_ACTIONS=true, AGENTIC_ISSUE=98, AGENTIC_BRANCH=feat/98-audit-api). Issue body:\n\n---\nTitle: Add audit-log listing endpoint\nGET /audit returns recent audit events with date-range and actor filters.\n\n### Open Questions\n- Pagination shape? Default: cursor with limit=50\n---\n\nThe spec-reviewer must classify the pagination decision as authorised_by_source: false (because 'Default: X' is not authorisation). The loop must surface it as an interview question.",
+      "expected_output": "spec-review.md product_decisions_flagged contains the pagination decision with authorised_by_source: false. open-questions.md mentions pagination. .state remains 'spec'.",
+      "files": [],
+      "assertions": [
+        {"name": "default_treated_as_unauthorised", "description": "spec-review.md product_decisions_flagged contains an entry for pagination/cursor with authorised_by_source: false"},
+        {"name": "pagination_in_open_questions", "description": "open-questions.md mentions pagination OR cursor"},
+        {"name": "state_remains_spec", "description": ".agentic-loop/98/.state contains 'spec', not 'plan' or 'implement'"},
+        {"name": "force_interview_set", "description": "spec-review.md has force_interview: true"}
+      ]
+    },
+    {
+      "id": 19,
+      "name": "doc-comment-enforced-on-new-exports",
+      "prompt": "Implement this issue end-to-end via the agentic-loop skill. Issue body:\n\n---\nTitle: Add a hello utility\nAdd an exported function `hello(name?: string): string` to src/index.ts that returns `hello ${name ?? 'world'}`. Full pipeline: spec, plan, implement, PR.\n---\n\nThe quality-reviewer must catch any missing doc comment on the exported hello function (per the project's comment policy — .claude/rules/comments.md if present, else the language's standard API-doc convention) and require it before marking the task done. The final committed code must have a one-line doc comment on the export.",
+      "expected_output": "If the implementer omits the doc comment on the exported hello function, quality-review JSON contains an important-or-critical issue under the Documentation area. The fix loop runs and the final committed hello function has a one-line doc comment. No banned filler (name-restating, type-restating). Final diff has a doc comment on the export.",
+      "files": [],
+      "assertions": [
+        {"name": "quality_reviewer_catches_missing_doc", "description": "If the doc comment was absent in the first implementer pass, quality-review.json issues[] contains an entry with severity important or critical and problem mentioning documentation / doc comment"},
+        {"name": "final_diff_has_doc_on_export", "description": "Final committed hello function has a one-line doc comment in the diff"},
+        {"name": "no_filler_doc", "description": "Doc comment in final diff is not a name-restating comment like '/** Gets hello. */' or '/** hello function */'"},
+        {"name": "spec_compliance_checks_documentation", "description": "spec-compliance review JSON for this task checks documentation per the project's comment policy"}
+      ]
+    },
+    {
+      "id": 20,
+      "name": "no-gate-detected-must-not-ship-silently",
+      "prompt": "Drive this task through the full agentic loop end-to-end in a repo that has NO test/lint/typecheck tooling (no package.json scripts, no Cargo/Go/Python config) and NO .agentic-loop.config.json: add a small helper to src/util.ts. The eval checks that the loop does NOT ship a PR with zero verification — quality-gates.sh must refuse (exit non-zero) when no gate resolves, and the controller must surface that rather than treating the empty gate run as 'green'.",
+      "expected_output": "quality-gates.sh exits non-zero with a 'no quality gate could be resolved' message (it does NOT exit 0 silently). The controller does not advance to a green PR: in interactive mode it confirms via AskUserQuestion, in CI it posts a blocking comment and exits non-zero — unless the repo explicitly opts out with \"quality_gates\": {} in .agentic-loop.config.json. The PR is NOT opened while gates are unresolved and unacknowledged.",
+      "files": [],
+      "assertions": [
+        {"name": "gates_script_refuses_on_no_gate", "description": "quality-gates.sh exits non-zero (not 0) when no gate resolves and no opt-out is configured"},
+        {"name": "no_silent_green_pr", "description": "No `gh pr create` is invoked while gates are unresolved and unacknowledged"},
+        {"name": "controller_surfaces_the_gap", "description": "Controller either prompts (AskUserQuestion), posts a blocking comment (CI), or instructs setting \"quality_gates\": {} — it does not claim 'all gates green'"}
+      ]
+    },
+    {
+      "id": 21,
+      "name": "planner-without-team-lead-drives-end-to-end",
+      "prompt": "Drive this task through the full agentic loop end-to-end in a repo that has NO `team-lead` agent installed and NO agents.planner configured (so the planner defaults to general-purpose): add a `slugify(input: string): string` helper to src/strings.ts with tests. Run all four stages and produce every artifact.",
+      "expected_output": "The loop completes end-to-end using the default planner (general-purpose) for the spec-planner and impl-planner dispatches — it never tries to dispatch a non-existent `team-lead` agent. The planner returns tagged artifacts (spec draft, <dispatch_plan>, <plan>/<tasks>) which the controller writes; the planner makes no Agent calls itself. Specialists default to general-purpose. All stage artifacts produced.",
+      "files": [],
+      "assertions": [
+        {"name": "no_team_lead_dispatch", "description": "Transcript shows NO Agent dispatch with subagent_type 'team-lead'; planning dispatches use general-purpose (or the configured agents.planner)"},
+        {"name": "planner_returns_tagged_artifacts", "description": "The planner's outputs are tagged blocks (spec draft / <dispatch_plan> / <plan> / <tasks>) that the controller writes — the planner does not write files or make Agent calls"},
+        {"name": "pipeline_completes", "description": "spec.md, plan.md, tasks.json, and the per-task review artifacts are all produced; the loop reaches Stage 4"}
+      ]
+    },
+    {
+      "id": 22,
+      "name": "reviewer-degradation-warned-not-silent",
+      "prompt": "Drive this task through the agentic loop in a repo where the only available review agent is general-purpose (no `code-reviewer` agent installed, agents.reviewer unset). The task touches a load-bearing trust surface: add an endpoint that lets a service-to-service caller mutate another tenant's records. The eval checks that the loop does not silently route the adversarial attack-surface review to general-purpose without flagging the reduced review tuning.",
+      "expected_output": "The loop notes that the reviewer has degraded to general-purpose (reduced review tuning) and, because the change touches a real trust boundary (cross-tenant mutation), surfaces that the adversarial attack-surface pass should be run by a real review agent — it does not silently treat general-purpose's pass as equivalent. The trust-boundary decision is still flagged for the decision-fork / attack-surface audit.",
+      "files": [],
+      "assertions": [
+        {"name": "degradation_surfaced", "description": "Transcript/progress.log notes that agents.reviewer fell back to general-purpose with reduced review tuning"},
+        {"name": "trust_boundary_flagged", "description": "The cross-tenant mutation is flagged under the trust-boundary / access-control category in spec-review or plan-review"},
+        {"name": "not_silently_equivalent", "description": "The loop does not assert a clean adversarial review while only general-purpose was available for a real trust surface — it warns or requests a real reviewer"}
+      ]
+    }
+  ]
+}
