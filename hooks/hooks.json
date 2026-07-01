@@ -1,0 +1,15 @@
+{
+  "//": "Plugin-level hooks, active wherever the spec-to-pr plugin is installed. The UserPromptSubmit nudge is the local parallel to the CI-only setup/hooks/force-agentic-loop.sh: it detects spec-shaped prompts and steers Claude to invoke Skill(spec-to-pr:agentic-loop) before defaulting to plan mode / brainstorming. It is a NUDGE, never a block, no-ops in CI, and can be disabled with AGENTIC_LOOP_NO_NUDGE=1. The per-repo gate/context hooks are NOT here — they need $CLAUDE_PROJECT_DIR and are registered per-repo (see skills/agentic-loop/setup/SETUP.md).",
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/inject-agentic-loop-nudge.sh"
+          }
+        ]
+      }
+    ]
+  }
+}

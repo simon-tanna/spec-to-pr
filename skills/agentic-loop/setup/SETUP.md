@@ -7,6 +7,16 @@ workflow, and one sibling skill). This guide installs that substrate. The loop r
   it asks design questions via `AskUserQuestion`. Skip the CI/workflow buckets entirely.
 - **CI (GitHub Actions)** — unattended runs triggered by labelled issues. Needs all six buckets.
 
+> **Local triggering (automatic).** The plugin ships an always-active
+> `UserPromptSubmit` hook (`hooks/inject-agentic-loop-nudge.sh`) that detects
+> spec-shaped prompts and nudges Claude to invoke `Skill(spec-to-pr:agentic-loop)`
+> before falling into plain plan mode or `superpowers:brainstorming`. It is the
+> local parallel to the CI-only `force-agentic-loop.sh`. It no-ops in CI, when a
+> loop is already running, and after nudging once per session. To disable it, set
+> `AGENTIC_LOOP_NO_NUDGE=1` in your environment (or `.claude/settings.json` `env`).
+> Unlike the gate hooks below, this one needs no per-repo setup — it is active
+> wherever the plugin is installed.
+
 Run `scripts/check-substrate.sh` at any time to see whether the deterministic gate hooks are
 registered (they fire only when registered; otherwise the gates are model-enforced).
 
@@ -67,6 +77,9 @@ Without registration the gates still hold, but only because the controller self-
    SKILL="${CLAUDE_PLUGIN_ROOT}/skills/agentic-loop"
    cp "$SKILL"/setup/hooks/agentic-loop-check-*.sh .claude/hooks/
    cp "$SKILL"/scripts/postooluse-context-check.sh "$SKILL"/scripts/precompact-flush.sh "$SKILL"/scripts/git-sync.sh .claude/hooks/
+   # lib-mode.sh: the shared interactivity resolver the two context hooks call.
+   # Copy it alongside them; without it they fall back to the legacy GITHUB_ACTIONS check.
+   cp "$SKILL"/scripts/lib-mode.sh .claude/hooks/
    chmod +x .claude/hooks/*.sh
    ```
 2. Merge `setup/settings.snippet.json` into `.claude/settings.json` (create it if absent; deep-merge
@@ -80,6 +93,11 @@ register only on TS repos), `force-agentic-loop.sh` (CI-only; forces the skill o
 and the `block-env-reads.sh` / `block-destructive-git.sh` / `block-secret-exfil.sh` security guardrails
 (good defaults, but your call). To use any of these, copy it into `.claude/hooks/` too and add its
 own PreToolUse entry pointing at `$CLAUDE_PROJECT_DIR/.claude/hooks/<name>.sh`.
+
+The two "force the skill" hooks are separate: `force-agentic-loop.sh` is a CI-only `PreToolUse`
+**hard block** (copy in per-repo, fires only on a pinned branch or when a headless harness sets
+`AGENTIC_FORCE=1`); the plugin-level `hooks/inject-agentic-loop-nudge.sh` is a local
+`UserPromptSubmit` **nudge** (ships active, opt out with `AGENTIC_LOOP_NO_NUDGE=1`).
 
 ## 4. `validating-specs` skill dependency — both modes
 

@@ -244,6 +244,62 @@
         {"name": "trust_boundary_flagged", "description": "The cross-tenant mutation is flagged under the trust-boundary / access-control category in spec-review or plan-review"},
         {"name": "not_silently_equivalent", "description": "The loop does not assert a clean adversarial review while only general-purpose was available for a real trust surface — it warns or requests a real reviewer"}
       ]
+    },
+    {
+      "id": 23,
+      "name": "trigger-local-build-out-end-to-end",
+      "prompt": "Here's the feature description for a rate limiter. Build this out end to end and open a PR when it's done.",
+      "expected_output": "Skill fires on the 'build this out end to end' + 'open a PR' phrasing even though the loop is not named. Controller treats the inline feature description as source.md and starts Stage 1. Must win over plain plan-mode planning / brainstorming — a concrete spec is being handed off for full implementation.",
+      "files": []
+    },
+    {
+      "id": 24,
+      "name": "trigger-local-implement-spec-open-pr",
+      "prompt": "I've written up a spec in SPEC.md for the new export pipeline. Implement this spec and open a PR.",
+      "expected_output": "Skill fires on 'implement this spec and open a PR'. This is the exact phrasing that would otherwise be intercepted by superpowers:brainstorming ('let's build X'); the sharpened description must make agentic-loop win. Controller ingests SPEC.md and begins the spec loop.",
+      "files": ["SPEC.md"]
+    },
+    {
+      "id": 25,
+      "name": "trigger-unnamed-pipeline-described",
+      "prompt": "Take the requirements in issue #204 and just get it all the way to a pull request — plan it, test it, review it, ship the PR.",
+      "expected_output": "Skill fires: the user describes the full pipeline in their own words without naming the loop. Must beat plan mode. Controller runs `gh issue view 204`, saves source.md, and starts Stage 1.",
+      "files": []
+    },
+    {
+      "id": 26,
+      "name": "trigger-terse-local-handoff",
+      "prompt": "Can you handle GH-88 end to end for me? Everything's specced in the issue.",
+      "expected_output": "Skill fires on a terse, unnamed hand-off — validates the 'even when the loop is not named' catch-all. Controller reads the issue and begins the spec loop.",
+      "files": []
+    },
+    {
+      "id": 27,
+      "name": "negative-trigger-greenfield-ideation",
+      "prompt": "Let's build a new notifications feature — I haven't figured out what it should even do yet. Help me think through it.",
+      "expected_output": "Skill does NOT fire. This is greenfield ideation with no spec; it belongs to brainstorming, not agentic-loop, despite the word 'build'. Tests that the 'prefer over brainstorming' clause is correctly scoped to concrete hand-offs only.",
+      "files": []
+    },
+    {
+      "id": 28,
+      "name": "negative-trigger-multi-repo",
+      "prompt": "Implement dark mode across all three of our repos and open PRs on each.",
+      "expected_output": "Skill does NOT fire. Implementation-shaped and PR-shaped, but multi-repo / multi-PR — the loop owns exactly one issue → one branch → one PR. Tests the cross-repo negative boundary.",
+      "files": []
+    },
+    {
+      "id": 29,
+      "name": "negative-trigger-merge-deploy",
+      "prompt": "The spec-to-PR loop already opened PR #305 — can you merge it and deploy to staging?",
+      "expected_output": "Skill does NOT fire. Names the loop and a PR, but the ask is merge/deploy past PR-open — outside the loop's scope (it stops at PR open). Tests the merge/deploy negative boundary against keyword-match false positives.",
+      "files": []
+    },
+    {
+      "id": 30,
+      "name": "negative-trigger-spec-present-analysis-only",
+      "prompt": "Read through the auth spec and tell me whether the retry design is sound — I just want your assessment, don't build anything.",
+      "expected_output": "Skill does NOT fire. A spec is present and named, but the deliverable is analysis, not code. The sharpest test that the pushier description did not bleed into pure research/Q&A territory.",
+      "files": []
     }
   ]
 }

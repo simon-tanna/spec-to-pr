@@ -14,8 +14,12 @@ The workflow's "Pin agentic-loop branch" step (in `.github/workflows/claude.yml`
 
 ## Detection
 
+Interactivity is resolved by `scripts/lib-mode.sh` (the single source of truth) into `interactive` | `headless`. GitHub Actions is one headless harness; `AGENTIC_HEADLESS=1` / `AGENTIC_MODE=headless` opt any other harness in. See SKILL.md §Operating Modes for the two-axis model (interactivity + `IO_ADAPTER`).
+
 ```bash
-[ "${GITHUB_ACTIONS:-}" = "true" ] && MODE=ci || MODE=interactive
+MODE="$(bash "${CLAUDE_PLUGIN_ROOT}/skills/agentic-loop/scripts/lib-mode.sh")"  # interactive | headless
+# GitHub Actions resolves to MODE=headless, IO_ADAPTER=github — the pair this
+# document historically called "CI mode". Its behaviour is unchanged.
 ```
 
 ## Environment
@@ -37,7 +41,7 @@ If no issue number is available, the workflow was misconfigured — exit non-zer
 
 ## Interview Handshake
 
-In interactive mode, `AskUserQuestion` blocks. In CI that is not possible. Protocol below covers Stage 1 spec questions; for ANY stage producing an open question, see SKILL.md §Mid-Stage Question Protocol — same shape, stage-agnostic. For permission denials see `references/permissions-handshake.md`.
+In interactive mode, `AskUserQuestion` blocks. In headless mode that is not possible (no human in the loop) — GitHub Actions is one such harness; a Cloudflare Sandbox/Container or self-hosted runner is another. Protocol below covers Stage 1 spec questions; for ANY stage producing an open question, see SKILL.md §Mid-Stage Question Protocol — same shape, stage-agnostic. For permission denials see `references/permissions-handshake.md`.
 
 **The interview gate fires when ANY of the following is true on the latest `spec-review.md`:**
 
@@ -51,19 +55,21 @@ An empty `open_questions[]` does NOT mean the spec is locked. The gate checks al
 
 1. Collect questions from BOTH `open_questions[]` AND from `product_decisions_flagged[where !authorised_by_source]`. Frame each unauthorised product decision as a Confirm question: "Confirm: <decision>? Suggested default (if any): <X>".
 2. Write them to `.agentic-loop/<id>/open-questions.md` as a numbered list.
-3. Post a single issue comment via `scripts/gh-comment.sh` with the questions and a reply format (one answer per numbered line, or inline under each heading).
-4. **Write `.state` = `spec` to `.agentic-loop/<id>/.state`.** This is mandatory even on a fresh-start run where `.state` did not previously exist — the file must be on disk so the next CI trigger knows to resume at the spec stage rather than re-ingest from scratch.
-5. Run `scripts/git-sync.sh commit "chore(loop): pause for open questions on #<issue>"`. This commits and pushes `spec.md` draft + `open-questions.md` + `.state`.
-6. Exit 0 from the workflow. The loop halts.
+3. Emit them via `scripts/notify.sh questions "$ID" .agentic-loop/<id>/open-questions.md` with a reply format (one answer per numbered line, or inline under each heading). The adapter decides the transport: `github` posts an issue comment; `file`/`webhook`/`command` write/POST the same content for the harness to surface.
+4. **Write `.state` = `spec` to `.agentic-loop/<id>/.state`.** This is mandatory even on a fresh-start run where `.state` did not previously exist — the file must be on disk so the next trigger knows to resume at the spec stage rather than re-ingest from scratch.
+5. Run `scripts/git-sync.sh commit "chore(loop): pause for open questions on #<issue>"`. This commits (and, where a remote exists, pushes) `spec.md` draft + `open-questions.md` + `.state`.
+6. **Adapter-aware exit:**
+   - `github` → `exit 0`. The workflow resumes on the next human issue-comment.
+   - `file`/`webhook`/`command` → drop `.agentic-loop/<id>/NEEDS_INPUT` (containing the reason) and `exit 78` (the "needs input" convention) so a non-GitHub harness can detect the pause deterministically without parsing logs.
 
-On the next `issue_comment` trigger:
+**Resume** — the transport of the answer differs, the parsing does not:
 
-1. Check whether the comment is from a human (not the bot) and on the same issue.
-2. Parse answers against the stored `open-questions.md`.
-3. Resume the spec loop with the answers folded into the next draft.
-4. Delete `open-questions.md`.
+- `github`: on the next `issue_comment` trigger, check the comment is from a human (not the bot) on the same issue, then parse.
+- `file`/`webhook`/`command`: the harness re-invokes the skill after writing answers to `.agentic-loop/<id>/answers.md` (or inline under each question in `open-questions.md`).
 
-If the comment cannot be parsed cleanly, post a follow-up comment asking for the expected format and exit.
+Then, in both cases: parse answers against the stored `open-questions.md`, fold them into the next `spec.md`/`plan.md`/task draft, and **mechanically clear both `open-questions.md` and `answers.md`** (`: >` or `rm` — never leave placeholder bytes; the PR-ready hook treats any byte as an unresolved interview).
+
+If answers cannot be parsed cleanly, re-notify asking for the expected format and pause again.
 
 ## Label Management
 
