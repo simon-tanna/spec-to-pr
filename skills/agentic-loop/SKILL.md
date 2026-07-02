@@ -4,7 +4,7 @@ description: >-
   Use for autonomous end-to-end implementation of a SINGLE spec, task card,
   GitHub issue, or feature description: ingest the requirement, then plan with
   TDD, run review loops and quality gates, and open one PR. Triggers on "run the
-  agentic loop", "ralph this", "implement this issue", "take this from spec to PR",
+  agentic loop", "implement this issue", "take this from spec to PR",
   "build this out end to end", "implement this spec and open a PR", a GitHub Action invoking
   the agent with an issue payload — and on ANY hand-off of a spec/issue/feature
   for full implementation, even when the loop is not named. Prefer over

@@ -9,9 +9,11 @@
 #               confirms the `plan` gate deterministically BLOCKS a manual
 #               `.state=plan` while open-questions is non-empty.
 set -uo pipefail
-WS="/Users/simontanna/Repos/github/agent-loop-plugin/skills/agentic-loop-workspace"
+# Derive paths from this script's location (it lives in the workspace dir), with
+# an env override for the plugin/repo root.
+WS="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 IT="$WS/iteration-3"
-PLUGIN="/Users/simontanna/Repos/github/agent-loop-plugin"
+PLUGIN="${PLUGIN_ROOT:-$(cd "$WS/../.." && pwd)}"
 STATE_HOOK="$PLUGIN/skills/agentic-loop/setup/hooks/agentic-loop-check-state-transition.sh"
 
 echo "";echo "########## RUN 1: eval 6 + hooks — §8 Resolved Decisions + §10 Risks, plan-gate happy path ##########"

@@ -7,7 +7,10 @@ set -uo pipefail
 ID="$1"; SLUG="$2"; BUDGET="$3"; PROMPT_FILE="$4"; OUT_DIR="$5"; shift 5
 if [ "$#" -gt 0 ]; then EXTRA_ENV=("$@"); else EXTRA_ENV=(); fi
 
-PLUGIN_ROOT="/Users/simontanna/Repos/github/agent-loop-plugin"
+# Resolve the plugin/repo root from this script's location (this file lives at
+# <root>/skills/agentic-loop-workspace/), with an env override for odd layouts.
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PLUGIN_ROOT="${PLUGIN_ROOT:-$(cd "$SCRIPT_DIR/../.." && pwd)}"
 HOOKS_SRC="$PLUGIN_ROOT/skills/agentic-loop"
 BASE="/tmp/agentic-loop-eval"
 REPO="$BASE/run-$ID"; ORIGIN="$BASE/run-$ID-origin.git"; BRANCH="feat/$ID-$SLUG"
@@ -20,19 +23,28 @@ git remote add origin "$ORIGIN"; git push -q origin main
 git checkout -q -b "$BRANCH"; git push -q -u origin "$BRANCH"
 
 # --- Register the deterministic gate hooks in the scratch repo ---
+# Mirrors skills/agentic-loop/setup/settings.snippet.json so the harness exercises
+# the SAME substrate as a documented install (incl. the TDD-trace gate and the
+# context-hygiene PostToolUse hook — which needs lib-mode.sh to resolve
+# AGENTIC_MODE=headless instead of falling back to GITHUB_ACTIONS).
 mkdir -p .claude/hooks
 cp "$HOOKS_SRC/setup/hooks/agentic-loop-check-state-transition.sh" .claude/hooks/
 cp "$HOOKS_SRC/setup/hooks/agentic-loop-check-tasks-json.sh"       .claude/hooks/
 cp "$HOOKS_SRC/setup/hooks/agentic-loop-check-pr-ready.sh"         .claude/hooks/
+cp "$HOOKS_SRC/setup/hooks/agentic-loop-check-tdd-trace.sh"        .claude/hooks/
 cp "$HOOKS_SRC/scripts/postooluse-context-check.sh"               .claude/hooks/ 2>/dev/null || true
+cp "$HOOKS_SRC/scripts/lib-mode.sh"                               .claude/hooks/ 2>/dev/null || true
 chmod +x .claude/hooks/*.sh
 cat > .claude/settings.json <<'JSON'
 {
   "hooks": {
     "PreToolUse": [
-      { "matcher": "Write|Edit", "hooks": [ { "type": "command", "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/agentic-loop-check-tasks-json.sh" } ] },
+      { "matcher": "Write|Edit", "hooks": [ { "type": "command", "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/agentic-loop-check-tasks-json.sh" }, { "type": "command", "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/agentic-loop-check-tdd-trace.sh" } ] },
       { "matcher": "Write|Bash", "hooks": [ { "type": "command", "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/agentic-loop-check-state-transition.sh" } ] },
       { "matcher": "Bash", "hooks": [ { "type": "command", "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/agentic-loop-check-pr-ready.sh" } ] }
+    ],
+    "PostToolUse": [
+      { "matcher": "*", "hooks": [ { "type": "command", "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/postooluse-context-check.sh" } ] }
     ]
   }
 }

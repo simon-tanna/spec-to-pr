@@ -14,7 +14,10 @@ ID="$1"; SLUG="$2"; BUDGET="$3"; PROMPT_FILE="$4"; OUT_DIR="$5"; shift 5
 # Guard empty-array expansion under `set -u` on bash 3.2 (macOS default).
 if [ "$#" -gt 0 ]; then EXTRA_ENV=("$@"); else EXTRA_ENV=(); fi
 
-PLUGIN_ROOT="/Users/simontanna/Repos/github/agent-loop-plugin"
+# Resolve the plugin/repo root from this script's location (this file lives at
+# <root>/skills/agentic-loop-workspace/), with an env override for odd layouts.
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PLUGIN_ROOT="${PLUGIN_ROOT:-$(cd "$SCRIPT_DIR/../.." && pwd)}"
 BASE="/tmp/agentic-loop-eval"
 REPO="$BASE/run-$ID"
 ORIGIN="$BASE/run-$ID-origin.git"

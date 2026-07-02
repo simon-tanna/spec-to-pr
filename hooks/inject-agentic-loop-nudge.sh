@@ -46,7 +46,11 @@ fi
 
 # 4. Nudge at most once per session. The sentinel is only set on a MATCH below,
 #    so non-matching prompts never burn it — the first spec-shaped prompt wins.
-SENTINEL="/tmp/agentic-loop-nudged-${SESSION_ID:-nosession}"
+#    Sanitize session_id to a safe filename subset first: it comes from hook
+#    input JSON and is interpolated into a /tmp path, so a value carrying `/` or
+#    `..` could otherwise steer `touch` outside /tmp (path traversal).
+SAFE_SESSION="$(printf '%s' "${SESSION_ID:-nosession}" | tr -c 'A-Za-z0-9_-' '_')"
+SENTINEL="/tmp/agentic-loop-nudged-${SAFE_SESSION}"
 [ -f "$SENTINEL" ] && exit 0
 
 # 5. Spec-shaped heuristic (two tiers, deliberately conservative).
