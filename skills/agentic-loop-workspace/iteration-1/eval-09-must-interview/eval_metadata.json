@@ -1,0 +1,25 @@
+{
+  "eval_id": 9,
+  "eval_name": "gap-1-underspecified-issue-must-interview",
+  "prompt": "Drive an underspecified audit-log issue (omits auth model, retention, pagination) through the loop; it MUST surface those as interview questions before drafting a plan or code.",
+  "assertions": [
+    {
+      "text": "open-questions.md exists and is non-empty"
+    },
+    {
+      "text": "no plan.md yet (halted before planning)"
+    },
+    {
+      "text": "no implementation code added under src/"
+    },
+    {
+      "text": "interview covers auth, retention AND pagination"
+    },
+    {
+      "text": "loop-start banner includes a clickable branch URL"
+    },
+    {
+      "text": "loop PAUSED rather than proceeding under assumptions"
+    }
+  ]
+}

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Smoke tests for the three agentic-loop hooks.
+# Smoke tests for the four agentic-loop gate hooks.
 # Runs all hooks against synthetic PreToolUse payloads and verifies exit
 # codes match expectations. No git mutations; uses a temp .agentic-loop/
 # tree which is cleaned up at exit.
@@ -15,10 +15,12 @@ HOOKS="$(cd "$(dirname "$0")/.." && pwd)"
 TASKS_JSON="$HOOKS/agentic-loop-check-tasks-json.sh"
 STATE_TRANS="$HOOKS/agentic-loop-check-state-transition.sh"
 PR_READY="$HOOKS/agentic-loop-check-pr-ready.sh"
+TDD_TRACE="$HOOKS/agentic-loop-check-tdd-trace.sh"
 
 [ -x "$TASKS_JSON" ]  || { echo "missing $TASKS_JSON"; exit 1; }
 [ -x "$STATE_TRANS" ] || { echo "missing $STATE_TRANS"; exit 1; }
 [ -x "$PR_READY" ]    || { echo "missing $PR_READY"; exit 1; }
+[ -x "$TDD_TRACE" ]   || { echo "missing $TDD_TRACE"; exit 1; }
 command -v jq >/dev/null 2>&1 || { echo "jq required"; exit 1; }
 
 # Hooks short-circuit when .agentic-loop/ does not exist in cwd; the
@@ -117,6 +119,32 @@ echo "$TASK_CLEAN" > .agentic-loop/99/tasks.json
 run_case "8: .state=done all clean" 0 "$STATE_TRANS" "$(mk_state_write_payload "done")"
 
 echo ""
+echo "== state-transition hook: spec→plan gate =="
+
+# Stage 1 → 2 preconditions: spec.md + approved JSON spec-review.md + no open questions.
+echo "stub spec" > .agentic-loop/99/spec.md
+rm -f .agentic-loop/99/spec-review.md .agentic-loop/99/open-questions.md
+
+# P1: .state=plan with no spec-review.md → block
+run_case "P1: .state=plan, no spec-review.md" 2 "$STATE_TRANS" "$(mk_state_write_payload "plan")"
+
+# P2: spec-review verdict needs-changes → block
+echo '{"verdict":"needs-changes","force_interview":true,"critical":[],"important":[{"x":1}]}' > .agentic-loop/99/spec-review.md
+run_case "P2: .state=plan, spec-review needs-changes" 2 "$STATE_TRANS" "$(mk_state_write_payload "plan")"
+
+# P3: approved + force_interview false + no open questions → allow
+echo '{"verdict":"approved","force_interview":false,"critical":[],"important":[]}' > .agentic-loop/99/spec-review.md
+run_case "P3: .state=plan, approved spec-review" 0 "$STATE_TRANS" "$(mk_state_write_payload "plan")"
+
+# P4: approved but open-questions.md non-empty → block
+echo "Q1 unanswered" > .agentic-loop/99/open-questions.md
+run_case "P4: .state=plan, approved but open questions" 2 "$STATE_TRANS" "$(mk_state_write_payload "plan")"
+rm -f .agentic-loop/99/open-questions.md
+
+# P5: entering spec is always a free pass (regression) → allow
+run_case "P5: .state=spec free pass" 0 "$STATE_TRANS" "$(mk_state_write_payload "spec")"
+
+echo ""
 echo "== pr-ready hook =="
 
 # Scenario 9: gh pr create with one task at blocker_count 2 → block
@@ -126,6 +154,52 @@ AGENTIC_ISSUE=99 run_case "9: gh pr create, task blocker_count 2" 2 "$PR_READY" 
 # Bonus: pr-ready with clean tasks → allow
 echo "$TASK_CLEAN" > .agentic-loop/99/tasks.json
 AGENTIC_ISSUE=99 run_case "9b: gh pr create, all clean" 0 "$PR_READY" "$(mk_pr_create_payload)"
+
+echo ""
+echo "== tdd-trace hook =="
+
+# This hook inspects real commits, so stand up a throwaway git repo in the
+# sandbox (cwd already == sandbox, which contains .agentic-loop/).
+if git init -q 2>/dev/null; then
+  GIT="git -c user.email=t@t -c user.name=t -c commit.gpgsign=false"
+
+  # Good commit: test file present + TDD: line in the message body.
+  printf 'test\n' > foo.test.ts
+  printf 'impl\n'  > foo.ts
+  $GIT add foo.test.ts foo.ts
+  $GIT commit -q -m "feat(foo): add foo" -m "TDD: foo.test.ts:1-5 written before implementation"
+  SHA_GOOD=$($GIT rev-parse HEAD)
+
+  # Bad commit: implementation only — no test file, no TDD: line.
+  printf 'impl2\n' > bar.ts
+  $GIT add bar.ts
+  $GIT commit -q -m "feat(bar): add bar"
+  SHA_BAD=$($GIT rev-parse HEAD)
+
+  mk_done_tasks() { # $1 = commit sha
+    jq -n --arg s "$1" '{tasks:[{id:"T1",status:"done",commit_sha:$s,spec_review_sha:"a",quality_review_sha:"b"}]}'
+  }
+
+  # T1: done task whose commit has test + TDD: line → allow
+  run_case "T1: done, commit has test + TDD line" 0 "$TDD_TRACE" "$(mk_write_payload "$(mk_done_tasks "$SHA_GOOD")")"
+
+  # T2: done task whose commit lacks test + TDD: line → block
+  run_case "T2: done, commit missing test + TDD line" 2 "$TDD_TRACE" "$(mk_write_payload "$(mk_done_tasks "$SHA_BAD")")"
+
+  # T3: done task with empty commit_sha → allow (presence-only, non-flaky)
+  run_case "T3: done, empty commit_sha" 0 "$TDD_TRACE" "$(mk_write_payload "$(mk_done_tasks "")")"
+
+  # T4: done task with a sha not in the repo → allow
+  run_case "T4: done, unresolvable commit_sha" 0 "$TDD_TRACE" "$(mk_write_payload "$(mk_done_tasks "0000000000000000000000000000000000000000")")"
+
+  # T5: Edit fragment sets done + bad commit_sha → block
+  run_case "T5: Edit done + bad commit_sha" 2 "$TDD_TRACE" "$(mk_edit_payload "\"status\": \"done\", \"commit_sha\": \"$SHA_BAD\"")"
+
+  # T6: non-tasks.json write is ignored → allow
+  run_case "T6: non-tasks.json write ignored" 0 "$TDD_TRACE" "$(jq -n '{tool_name:"Write",tool_input:{file_path:".agentic-loop/99/spec.md",content:"x"}}')"
+else
+  echo "  (skipped — git init unavailable)"
+fi
 
 echo ""
 echo "==========================="

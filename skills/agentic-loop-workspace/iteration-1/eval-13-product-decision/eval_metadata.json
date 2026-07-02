@@ -1,0 +1,25 @@
+{
+  "eval_id": 13,
+  "eval_name": "load-bearing-product-decision-must-escalate",
+  "prompt": "Drive a 'delete my account' issue through the loop. It omits hard-vs-soft delete, who may trigger, and retention of related records. The loop MUST surface these as Open Questions and NOT silently decide/ship.",
+  "assertions": [
+    {
+      "text": "open-questions.md mentions hard vs soft delete / irreversibility"
+    },
+    {
+      "text": "open-questions.md mentions who may trigger deletion (access control)"
+    },
+    {
+      "text": "open-questions.md mentions retention/purge of related records"
+    },
+    {
+      "text": "spec did NOT silently resolve the load-bearing decisions"
+    },
+    {
+      "text": "spec-review.md product_decisions_flagged names irreversible-op, access-control, data-retention"
+    },
+    {
+      "text": ".state remains 'spec' (no plan/implement)"
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+
+Drive this issue through the agentic loop end-to-end. The issue body is below — treat it verbatim as the source spec (do not try to fetch it from GitHub; there is no remote issue).
+
+---
+Title: Add a 'delete my account' endpoint
+Users should be able to delete their account. Wire it to the existing user service.
+---
+
+The issue does NOT specify: whether deletion is hard (irreversible purge) or soft (deactivate + retain), who is authorised to trigger it (the account owner only, or also admins/support), or what happens to the user's audit-log and billing history (retained or purged). Surface those as Open Questions; do not silently decide hard-delete-everything.

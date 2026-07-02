@@ -1,0 +1,20 @@
+# Behavioural eval run artifacts — heavy and fully regenerable by re-running
+# the runner scripts. We version the harness + the human-readable results
+# (reports, grading.json, trigger-results*.json), NOT the raw run dumps.
+
+# Full model transcripts (~0.3–0.9 MB each)
+**/transcript.jsonl
+
+# Per-run state copied out of the scratch repo (.state, spec.md, plan.md, …)
+**/agentic-loop-state/
+**/outputs/
+
+# Misc per-run scratch
+**/runner-timing.json
+**/hook-block-detected.txt
+
+# Static HTML viewer (regenerable from the JSON)
+*.html
+
+# (*.log is already ignored by the repo-root .gitignore — stderr.log,
+#  branch-commits.log, src-files.log, trigger-*.log, viewer.log, etc.)

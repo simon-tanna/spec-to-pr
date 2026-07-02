@@ -65,7 +65,7 @@ Exit criteria (all must hold):
 - `important` empty
 - `spec-validation.md` verdict is `GO` (a `REVISE`/`NO-GO` blocks the exit exactly like an `important` finding)
 - `open_questions` empty
-- Spec has: Context, Goals, Non-goals, Architecture, Components, Test Strategy, Risks, and at least one acceptance criterion per goal
+- Spec has: Context, Goals, Non-goals, Architecture, Components, Test Strategy, Resolved Decisions, Open Questions, Risks, and at least one acceptance criterion per goal
 
 On exit, advance `.state` to `plan`, then run `scripts/git-sync.sh commit "chore(loop): lock spec for #<issue>"`.
 

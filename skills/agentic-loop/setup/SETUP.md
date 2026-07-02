@@ -62,11 +62,11 @@ Also set the `ANTHROPIC_API_KEY` **secret**.
 
 ## 3. Hooks + registration + probe — both modes (recommended)
 
-The three gate hooks make the stage gates *deterministic* (the harness blocks the bad tool call).
+The four gate hooks make the stage gates *deterministic* (the harness blocks the bad tool call).
 Without registration the gates still hold, but only because the controller self-enforces them.
 
 1. Copy the hook scripts into the target repo's `.claude/hooks/` and `chmod +x` them:
-   - the 3 gate hooks + any opt-in hooks from `${CLAUDE_PLUGIN_ROOT}/skills/agentic-loop/setup/hooks/`
+   - the 4 gate hooks + any opt-in hooks from `${CLAUDE_PLUGIN_ROOT}/skills/agentic-loop/setup/hooks/`
    - the 2 context hooks (`postooluse-context-check.sh`, `precompact-flush.sh`) from
      `${CLAUDE_PLUGIN_ROOT}/skills/agentic-loop/scripts/`
    - if you enable `precompact-flush.sh`, also copy `git-sync.sh` from that `scripts/` dir into
@@ -84,9 +84,9 @@ Without registration the gates still hold, but only because the controller self-
    ```
 2. Merge `setup/settings.snippet.json` into `.claude/settings.json` (create it if absent; deep-merge
    the `hooks` arrays if it exists). All hook commands reference `$CLAUDE_PROJECT_DIR/.claude/hooks/…`.
-   This registers: the 3 gate hooks (PreToolUse), the context-check (PostToolUse), and the precompact
+   This registers: the 4 gate hooks (PreToolUse), the context-check (PostToolUse), and the precompact
    flush (PreCompact).
-3. Run `scripts/check-substrate.sh` — it must report all three gate hooks registered.
+3. Run `scripts/check-substrate.sh` — it must report all four gate hooks registered.
 
 **Opt-in / repo-policy hooks (NOT in the snippet):** `block-ts-violations.sh` (TypeScript-only —
 register only on TS repos), `force-agentic-loop.sh` (CI-only; forces the skill on a pinned branch),

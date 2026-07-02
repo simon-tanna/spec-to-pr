@@ -1,0 +1,1 @@
+Drive this task through the agentic loop: add a `hello()` function to src/index.ts that returns the string 'hello world'. Only run the spec loop (Stage 1) for this eval.

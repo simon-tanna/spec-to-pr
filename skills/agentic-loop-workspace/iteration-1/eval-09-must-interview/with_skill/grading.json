@@ -1,0 +1,14 @@
+{
+  "eval_id": 9,
+  "eval_name": "gap-1-underspecified-issue-must-interview",
+  "config": "with_skill",
+  "expectations": [
+    {"text": "open-questions.md exists and is non-empty", "passed": true, "evidence": "open-questions.md lists Q1-Q6; Q1 auth, Q2 retention, Q3 pagination + 3 fork-audit questions"},
+    {"text": "no plan.md yet (halted before planning)", "passed": true, "evidence": "no plan.md in state dir; .state=spec"},
+    {"text": "no implementation code added under src/", "passed": true, "evidence": "src/index.ts unchanged ('export {};')"},
+    {"text": "interview covers auth, retention AND pagination", "passed": true, "evidence": "Q1 auth model, Q2 retention window, Q3 pagination shape — all three explicitly surfaced with rationale"},
+    {"text": "loop-start banner includes a clickable branch URL", "passed": true, "evidence": "N/A under file adapter — skill CORRECTLY omits GitHub URL when there is no GitHub remote (SKILL.md: 'other adapters omit it'). Banner written to notifications.md. Graded as correct behavior, not a miss."},
+    {"text": "loop PAUSED rather than proceeding under assumptions", "passed": true, "evidence": "open-questions.md: 'the loop is paused until these are answered — no plan or code will be written first'; .state=spec; clean exit 0"}
+  ],
+  "summary": {"passed": 6, "failed": 0, "verdict": "PASS — textbook ask-don't-guess"}
+}

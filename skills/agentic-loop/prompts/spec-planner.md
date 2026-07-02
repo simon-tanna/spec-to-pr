@@ -91,7 +91,7 @@ trigger: "if anything is unclear ... stop and ask the human" (line 3)
 
 ```
 
-### §1–§9 spec sections
+### §1–§10 spec sections
 
 1. Context — why this change, what problem, what prompted it
 2. Goals — bulleted, specific, verifiable
@@ -100,8 +100,9 @@ trigger: "if anything is unclear ... stop and ask the human" (line 3)
 5. Components — for each, name its responsibility, interface, and which goal(s) it implements
 6. Test Strategy — name the test types (unit/integration/e2e/property/fuzz) and which components each covers. Every goal must have at least one test.
 7. Acceptance Criteria — per goal, bulleted, testable
-8. Risks — what could go wrong, what might need migration
+8. Resolved Decisions — every decision that genuinely has one defensible answer, each recorded with its authorising source and one-line rationale (Step 0.5 populates this). It MUST NOT contain any "Default:" resolution or any product-level item — those belong in §9 Open Questions. Include the section even if empty (write "None") so its absence is never mistaken for a silently-resolved decision.
 9. Open Questions — anything you cannot answer from the source material, plus every "Default:" line reframed as a Confirm question
+10. Risks — what could go wrong, what might need migration
 
 Constraints:
 - No placeholders. No "TBD", "TODO", "decide later".
