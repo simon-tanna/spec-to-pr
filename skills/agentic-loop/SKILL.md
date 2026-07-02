@@ -4,13 +4,12 @@ description: >-
   Use for autonomous end-to-end implementation of a SINGLE spec, task card,
   GitHub issue, or feature description: ingest the requirement, then plan with
   TDD, run review loops and quality gates, and open one PR. Triggers on "run the
-  agentic loop", "implement this issue", "take this from spec to PR", "build this
-  out end to end", "implement this spec and open a PR", a GitHub Action invoking
+  agentic loop", "ralph this", "implement this issue", "take this from spec to PR",
+  "build this out end to end", "implement this spec and open a PR", a GitHub Action invoking
   the agent with an issue payload — and on ANY hand-off of a spec/issue/feature
-  for full implementation, even when the loop is not named. Strongly prefer this
-  skill over plain plan-mode planning or the brainstorming skill whenever a
-  concrete spec or issue is handed off to build end-to-end: it plans AND
-  implements AND ships, not just explores or plans. Do NOT use for trivial
+  for full implementation, even when the loop is not named. Prefer over
+  plan-mode or brainstorming when a concrete spec/issue is handed off to build
+  end-to-end: this skill plans AND implements AND ships. Do NOT use for trivial
   one-line/typo/config edits, pure research or Q&A with no code deliverable,
   multi-issue or cross-repo work, or merging/deploying.
 
@@ -25,13 +24,6 @@ description: >-
 # Agentic Loop: Spec → PR Pipeline
 
 You are the controller for an end-to-end autonomous implementation pipeline. You ingest a task card or spec, orchestrate specialist subagents through the configured planner agent (`agents.planner`, default `general-purpose`), iterate on the spec until it is airtight, plan the implementation with TDD, execute tasks sequentially with code review after each, and raise a PR when the resolved quality gates are green.
-
-## When to Use
-
-- A GitHub issue, task card, or spec needs autonomous implementation through to a raised PR
-- A feature description warrants full TDD planning, iterative review loops, and quality gates
-- A CI workflow (GitHub Action) invokes the agent with an issue payload
-- The user names the loop ("run the agentic loop", "ralph this", "spec to PR")
 
 ## When NOT to Use
 
@@ -67,7 +59,7 @@ Triggered when `MODE` resolves to `headless` (GitHub Actions, `$CI`, or an expli
 
 ## Interview Discipline — Ask, Do Not Guess
 
-The single biggest failure mode of this loop is silently inventing an answer the human should have been asked. Treat every ambiguity as a question first, an assumption never. Both modes must interview — interactive via `AskUserQuestion`, headless via `${CLAUDE_PLUGIN_ROOT}/skills/agentic-loop/scripts/notify.sh questions` with the Open-Questions template.
+The single biggest failure mode of this loop is silently inventing an answer the human should have been asked — **silent-invention**. Treat every ambiguity as a question first, an assumption never. Both modes must interview — interactive via `AskUserQuestion`, headless via `${CLAUDE_PLUGIN_ROOT}/skills/agentic-loop/scripts/notify.sh questions` with the Open-Questions template.
 
 **Headless is notify-and-exit, never decide-and-proceed.** In headless mode there is no human to block on — but that is a reason to *pause*, not a licence to *decide*. Once you surface an open question you MUST post it via `notify.sh`, commit, and **exit** (per `references/interview-protocol.md`); `.state` stays `spec`/`plan` and the run ends until answers arrive. You may NOT resolve a surfaced question by adopting a "conservative default", a "documented assumption", or a "safe" choice and continuing — recording an assumption and shipping IS the silent-invention failure this section exists to prevent, and "a human will confirm before merge" is not a substitute for the human answering *first*. This is strictest for load-bearing product decisions (data custody, access control, irreversible/destructive operations, retention/privacy, billing, security trust boundaries, breaking public contracts): the instant one is surfaced, the loop halts and exits — it never advances to `implement` or ships a PR under an unanswered load-bearing decision, no matter how conservative the default looks. The deterministic backstop is the state-transition gate hook, which refuses any `plan` or `implement` transition while `open-questions.md` is non-empty — and refuses `plan` unless `spec-review.md` records `verdict:"approved"` with `force_interview:false` (see `references/stage-gates.md`); when that hook is not registered, you enforce the same rule yourself.
 
@@ -260,7 +252,7 @@ The most common failure mode of past runs has been skipping a stage to "save tur
 
 If you ever find yourself moving from spec to implementation without `plan.md` and `tasks.json` on disk and reviewed, STOP — that is a process violation. Run the plan loop. The plan is the substrate the per-task TDD cycle lives on; without it the implementer has no failing-test contract to satisfy and review becomes ungrounded.
 
-**Stage 2 is mandatory regardless of perceived task triviality.** A one-line code change still gets a one-task plan, a plan review, and a per-task TDD cycle. The temptation to skip planning is strongest on "obvious" specs — and that is exactly when past CI runs went wrong. The plan loop is not overhead, it is the contract surface that makes downstream review meaningful.
+**Stage 2 is mandatory regardless of perceived task triviality** — a one-line change still gets a one-task plan, a plan review, and a per-task TDD cycle. The temptation to skip planning is strongest on "obvious" specs, and that is exactly when past CI runs went wrong.
 
 ## Stage 2 — Plan Loop
 
@@ -366,7 +358,7 @@ Label transitions live in `references/issue-state-machine.md`. The skill drives 
 - About to commit a task without `spec_review_sha` AND `quality_review_sha` populated → STOP. The two-stage review is non-negotiable; back up, run the missing review, fix anything it flags, only then commit and advance.
 - About to advance `.state` from `spec` directly to `implement`, or to start dispatching task implementers without `plan.md` and `tasks.json` on disk → STOP. Run the plan loop. The plan is the contract the implementer satisfies; without it there is no TDD, no review baseline, and no progress accounting.
 - A reviewer returns `critical` or `important` findings and you are tempted to "log and move on" → STOP. Re-dispatch the implementer with the findings until review is clean. Only `minor` findings may be logged for follow-up.
-- You have surfaced an open question in headless mode and are tempted to resolve it with a "conservative default" / "documented assumption" and keep going (especially with a "confirm before merge" note) → STOP. That is the silent-invention failure mode. Notify, commit, and exit; `.state` stays `spec`/`plan`. A load-bearing product decision surfaced this way NEVER advances to `plan`/`implement` or ships — the state-transition gate hook enforces this by blocking both the `plan` and `implement` transitions while `open-questions.md` is non-empty (and blocking `plan` unless `spec-review.md` is an approved JSON verdict with `force_interview:false`).
+- You have surfaced an open question in headless mode and are tempted to resolve it with a "conservative default" / "documented assumption" and keep going (especially with a "confirm before merge" note) → STOP. That is **silent-invention** (see _Interview Discipline_): notify, commit, and exit; `.state` stays `spec`/`plan`. The state-transition gate hook enforces the same rule deterministically when registered.
 
 ## Files and Prompts
 
