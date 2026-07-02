@@ -1,0 +1,28 @@
+{
+  "eval_id": 6,
+  "eval_name": "behavioural-spec-loop-tiny",
+  "prompt": "Drive this task through the agentic loop: add a hello() function to src/index.ts returning 'hello world'. Only run the spec loop (Stage 1).",
+  "assertions": [
+    {
+      "text": "Feature branch feat/<id>-<slug> created and committed to"
+    },
+    {
+      "text": "spec.md produced with the required TDD sections (Context/Goals/Non-goals/Architecture/Components/Test Strategy/Acceptance Criteria)"
+    },
+    {
+      "text": "spec.md includes a Risks section (named in SKILL.md spec format and eval expected_output)"
+    },
+    {
+      "text": "Structured review verdict saved to spec-review.md"
+    },
+    {
+      "text": "Validation pass ran and saved to spec-validation.md with a GO/REVISE/NO-GO verdict"
+    },
+    {
+      "text": "No implementation code written (TDD: no production code before spec lock)"
+    },
+    {
+      "text": "Respected 'Stage 1 only' scope \u2014 halted at spec->plan boundary without entering plan work"
+    }
+  ]
+}

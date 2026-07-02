@@ -24,9 +24,9 @@ Protocol:
 1. Mark the task `blocked` in `tasks.json` with `blocker_reason: "needs product decision: <one-sentence summary>"`.
 2. Append the question to `.agentic-loop/<id>/open-questions.md` prefixed `[PRODUCT][<task-id>]`.
 3. Add label `state:needs-decision` via `scripts/gh-label.sh`.
-4. Post a single comment on the issue via `scripts/gh-comment.sh` using the Open-Questions template.
+4. Emit a single message via `scripts/notify.sh blocked "$ID" -` using the Open-Questions template.
 5. In interactive mode, also raise via `AskUserQuestion`.
-6. `scripts/git-sync.sh commit "chore(loop): pause for product decision on #<issue>"`. Exit 0.
+6. `scripts/git-sync.sh commit "chore(loop): pause for product decision on #<issue>"`. Then adapter-aware exit: `github` → `exit 0`; other adapters → drop `.agentic-loop/<id>/NEEDS_INPUT` and `exit 78`.
 
 This is the ONE Stage-3 question type that IS allowed to escalate to the human — because by definition the spec/plan was wrong to resolve it, and the cost of guessing is high. All other Stage-3 ambiguities still go through the spec/plan revision path, not the human inbox.
 
@@ -38,7 +38,7 @@ Common causes:
 
 - The task referenced a type/function defined in an earlier task that the implementer could not locate — include the file path and excerpt.
 - External dependency: library docs, API schema, contract ABI — fetch and include.
-- Product decision: ambiguity in the spec — escalate to human in interactive mode; post question comment in CI mode.
+- Product decision: ambiguity in the spec — escalate to human in interactive mode; emit a question via `scripts/notify.sh` in headless mode.
 
 ## BLOCKED
 
@@ -65,13 +65,15 @@ Protocol:
    of _why_ the subagent reached for it, if obvious from the prior thinking step).
 2. Append to `.agentic-loop/<id>/blockers.md`:
    - timestamp, stage, task id (if any), denied tool, reason
-3. Post a single issue comment via `scripts/gh-comment.sh` with the format
+3. Emit a single message via `scripts/notify.sh blocked "$ID" -` with the format
    in `references/permissions-handshake.md` — explicitly listing the tool to
    grant and how (workflow `--allowed-tools`, settings.json permission, or
    `additional_permissions:` input).
 4. `scripts/git-sync.sh commit "chore(loop): pause for permission grant on #<issue>"`
-5. Exit 0. Do NOT retry the denied tool. Do NOT silently fall back to a
-   different tool unless the alternative is explicitly equivalent.
+5. Adapter-aware exit: `github` → `exit 0`; other adapters → drop
+   `.agentic-loop/<id>/NEEDS_INPUT` and `exit 78`. Do NOT retry the denied tool.
+   Do NOT silently fall back to a different tool unless the alternative is
+   explicitly equivalent.
 
 On the next `issue_comment` trigger:
 

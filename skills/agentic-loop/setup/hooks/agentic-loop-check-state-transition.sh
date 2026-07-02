@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # PreToolUse hook — agentic-loop .state transition gate.
-# Block transitions into `implement` or `done` without preconditions on disk.
+# Block transitions into `plan`, `implement`, or `done` without their
+# preconditions on disk (Stage 1→2 requires an approved spec-review;
+# Stage 2→3 requires an approved plan; Stage 3→4 requires all tasks reviewed).
 #
 # Triggers on:
 #   • Write tool with file_path matching .agentic-loop/<id>/.state
@@ -130,8 +132,47 @@ esac
 DIR=".agentic-loop/$ID"
 
 case "$NEW_STATE" in
-  spec|plan)
+  spec)
     exit 0
+    ;;
+  plan)
+    # Stage 1 → Stage 2 gate. Symmetric with the `implement` gate below:
+    # leaving the spec loop requires the structured spec-review to exist,
+    # be machine-readable JSON, and be `approved` with no outstanding
+    # interview. Past headless runs surfaced load-bearing questions and
+    # then advanced straight to plan/implement under self-approved
+    # "assumptions" without ever persisting a spec-review — the wording
+    # fix halts that, and this is its deterministic backstop.
+    MISSING=()
+    [ -s "$DIR/spec.md" ]        || MISSING+=("$DIR/spec.md (non-empty)")
+    [ -s "$DIR/spec-review.md" ] || MISSING+=("$DIR/spec-review.md (non-empty, JSON)")
+
+    if [ -s "$DIR/spec-review.md" ]; then
+      grep -qE '"verdict"\s*:\s*"approved"'    "$DIR/spec-review.md" || MISSING+=('spec-review.md verdict != "approved"')
+      grep -qE '"force_interview"\s*:\s*false'  "$DIR/spec-review.md" || MISSING+=('spec-review.md force_interview != false')
+    fi
+
+    if [ -f "$DIR/open-questions.md" ] && [ -s "$DIR/open-questions.md" ]; then
+      MISSING+=("$DIR/open-questions.md must be empty or absent before plan")
+    fi
+
+    [ ${#MISSING[@]} -eq 0 ] && exit 0
+
+    {
+      echo "Blocked by agentic-loop state-transition gate."
+      echo ""
+      echo "Cannot enter \`plan\` for #$ID. Missing Stage 1 preconditions:"
+      for m in "${MISSING[@]}"; do
+        echo "  • $m"
+      done
+      echo ""
+      echo "Finish Stage 1 (spec loop) first. The structured spec-review MUST be"
+      echo "saved verbatim as JSON to spec-review.md with verdict \"approved\" and"
+      echo "force_interview false, and open-questions.md must be empty or absent."
+      echo "A load-bearing decision surfaced during spec must be answered by the"
+      echo "human before advancing — see the agentic-loop skill's Interview Discipline."
+    } >&2
+    exit 2
     ;;
   implement)
     MISSING=()

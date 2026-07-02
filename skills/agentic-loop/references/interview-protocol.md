@@ -6,14 +6,16 @@ Open-questions to the human are allowed **only** when `.state` is `spec` or `pla
 
 The operative bar for what counts as an open question is the "two reasonable alternatives" rule defined in `prompts/spec-planner.md` §Step 0.5 and audited in `prompts/spec-reviewer.md` check 13 — not the planner's confidence that it knows the answer. If the planner or reviewer can name a second defensible option and `source.md` does not literally authorise the chosen one, it is an open question, regardless of category (product, architectural, library, or threshold).
 
-When a subagent or you encounter a question that requires human input (product decision, ambiguous spec line, missing acceptance criterion, any decision-fork hit), do not guess and do not block on `AskUserQuestion` (unavailable in CI). Instead:
+**Surfacing a question is a full stop, not a checkpoint you pass through.** In headless mode the absence of a human means the run *pauses and exits* — it does NOT mean you are now authorised to pick the answer. Adopting a "conservative default", a "documented assumption", or a "safe" choice and then continuing to plan/implement/ship is the exact silent-invention failure this protocol prevents; "a human will confirm before merge" does not license proceeding without the answer. This binds hardest for load-bearing product decisions (data custody, access control, irreversible/destructive ops, retention/privacy, billing, trust boundaries, breaking public contracts): once one is surfaced, `.state` stays `spec`/`plan` and the run exits — it never reaches `implement` or opens a PR under the unanswered decision.
+
+When a subagent or you encounter a question that requires human input (product decision, ambiguous spec line, missing acceptance criterion, any decision-fork hit), do not guess and do not block on `AskUserQuestion` (unavailable in headless mode). Instead:
 
 1. Append the question to `.agentic-loop/<id>/open-questions.md`, prefixed with the originating stage and (if any) task id.
-2. Post a single issue comment via `scripts/gh-comment.sh` using the Open-Questions template in `ci-mode.md`.
+2. Emit them via `scripts/notify.sh questions "$ID" .agentic-loop/<id>/open-questions.md` using the Open-Questions template in `ci-mode.md` (the adapter picks the transport — issue comment, file, webhook, or command).
 3. `scripts/git-sync.sh commit "chore(loop): pause for open questions on #<issue>"`
-4. Exit 0.
+4. Adapter-aware exit: `github` → `exit 0`; other adapters → drop `.agentic-loop/<id>/NEEDS_INPUT` and `exit 78` (see `ci-mode.md §Interview Handshake`).
 
-On resume (`issue_comment` trigger), parse the reply against `open-questions.md`, fold answers into wherever they belong (`spec.md` / `plan.md` / a specific task's context), and **clear the questions file mechanically**:
+On resume (an `issue_comment` trigger under `github`, or a harness re-invocation with `.agentic-loop/<id>/answers.md` under other adapters), parse the reply against `open-questions.md`, fold answers into wherever they belong (`spec.md` / `plan.md` / a specific task's context), and **clear the questions file mechanically** (also clear `answers.md` if present):
 
 - Either truncate it to zero bytes (`: > .agentic-loop/<id>/open-questions.md`) or `rm` it.
 - **Never** write a placeholder, header, or "All questions resolved" summary into the file. The PR-ready hook (`agentic-loop-check-pr-ready.sh`) treats any byte as an open interview and will block `gh pr create` — past runs lost ~3 minutes of token budget at Stage 4 because of placeholder text.

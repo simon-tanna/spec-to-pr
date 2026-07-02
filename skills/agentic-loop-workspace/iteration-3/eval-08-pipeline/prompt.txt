@@ -1,0 +1,1 @@
+Drive this task through the full agentic loop end-to-end: add a `hello(name?: string)` function to src/index.ts that returns `hello ${name ?? 'world'}`. Run Stage 1 (spec), Stage 2 (plan + review), Stage 3 (implement with per-task reviews), Stage 4 (final review + PR). Produce every artifact the pipeline would write.

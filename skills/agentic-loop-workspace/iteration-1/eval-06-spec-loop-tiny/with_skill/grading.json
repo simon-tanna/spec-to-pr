@@ -1,0 +1,15 @@
+{
+  "eval_id": 6,
+  "eval_name": "behavioural-spec-loop-tiny",
+  "config": "with_skill",
+  "expectations": [
+    {"text": "Feature branch feat/<id>-<slug> created and committed to", "passed": true, "evidence": "branch feat/6-hello-fn with 6 loop commits: ingest -> draft -> resolve open questions -> structured review -> validation -> lock spec"},
+    {"text": "spec.md produced with the required TDD sections (Context/Goals/Non-goals/Architecture/Components/Test Strategy/Acceptance Criteria)", "passed": true, "evidence": "spec.md has §1 Context, §2 Goals, §3 Non-goals, §4 Architecture, §5 Components, §6 Test Strategy, §7 Acceptance Criteria, §8 Resolved Decisions, §9 Open Questions (empty)"},
+    {"text": "spec.md includes a Risks section (named in SKILL.md spec format and eval expected_output)", "passed": false, "evidence": "No Risks section present; spec stops at §9 Open Questions. ROOT CAUSE (found iteration 3): a §8 numbering collision — spec-planner.md's canonical section list called §8 'Risks' while its own Step-0.5 prose AND spec-reviewer check 12 called §8 'Resolved Decisions' (which had no slot in the numbered list). The model resolved the clash by emitting §8 Resolved Decisions and silently dropping Risks. FIXED iteration 3: Resolved Decisions promoted to a first-class §8, Open Questions stays §9, Risks moved to §10 — both now have distinct numbers and every cross-reference agrees. Behavioural re-run pending to confirm both sections emit."},
+    {"text": "Structured review verdict saved to spec-review.md", "passed": true, "evidence": "spec-review.md: verdict: approved, force_interview: false, empty critical/important/open_questions/product_decisions_flagged"},
+    {"text": "Validation pass ran and saved to spec-validation.md with a GO/REVISE/NO-GO verdict", "passed": true, "evidence": "spec-validation.md: '## VERDICT: GO', Blockers: 0 (validating-specs pass executed as a second gate)"},
+    {"text": "No implementation code written (TDD: no production code before spec lock)", "passed": true, "evidence": "src/index.ts unchanged ('export {};'); diffstat shows only .agentic-loop/6/* files changed"},
+    {"text": "Respected 'Stage 1 only' scope — halted at spec->plan boundary without entering plan work", "passed": true, "evidence": ".state=plan (spec locked); no plan.md; progress.log: 'Stage 1 complete. Halting before Stage 2 per eval scope.'"}
+  ],
+  "summary": {"passed": 6, "failed": 1, "verdict": "PASS (1 minor gap: missing Risks section)"}
+}

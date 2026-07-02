@@ -8,8 +8,16 @@
 
 set -euo pipefail
 
-# Only active in GitHub Actions
-[ "${GITHUB_ACTIONS:-}" = "true" ] || exit 0
+# Active in ANY headless harness, not just GitHub Actions. Context-hygiene eject
+# is a headless-only safety net (interactive runs pause via AskUserQuestion).
+# Resolve via lib-mode.sh when it was copied alongside; else fall back to the
+# legacy GITHUB_ACTIONS check so behaviour never silently regresses.
+_MODE_LIB="$(cd "$(dirname "$0")" && pwd)/lib-mode.sh"
+if [ -f "$_MODE_LIB" ]; then
+  [ "$(bash "$_MODE_LIB")" = "headless" ] || exit 0
+else
+  [ "${GITHUB_ACTIONS:-}" = "true" ] || exit 0
+fi
 
 REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null)" || exit 0
 STATE_DIR="$REPO_ROOT/.agentic-loop"

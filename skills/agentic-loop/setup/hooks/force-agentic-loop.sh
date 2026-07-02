@@ -1,22 +1,28 @@
 #!/usr/bin/env bash
 # PreToolUse hook: force first tool call to be Skill(skill='agentic-loop')
-# when running in CI on a pinned agentic-loop branch.
+# when running headless on a pinned agentic-loop task.
+#
+# Fires when the GitHub pin step ran ($AGENTIC_BRANCH set) OR a non-GitHub
+# headless harness opts in with $AGENTIC_FORCE=1. Needs a task id for the
+# sentinel/state path: $AGENTIC_TASK_ID (falls back to $AGENTIC_ISSUE).
 #
 # No-op when:
-#   - $AGENTIC_BRANCH unset (interactive use, or non-issue CI events)
-#   - .agentic-loop/<issue>/.state already exists (skill already ran once)
+#   - neither $AGENTIC_BRANCH nor $AGENTIC_FORCE=1 is set (interactive use, non-issue events)
+#   - no task id resolvable
+#   - .agentic-loop/<id>/.state already exists (skill already ran once)
 #
 # Block exit 2 when:
-#   - Pin step ran (AGENTIC_BRANCH set) AND state file missing
+#   - gate active AND state file missing
 #   - AND the proposed tool call is anything other than Skill(skill='agentic-loop')
 
 set -euo pipefail
 
-[ -z "${AGENTIC_BRANCH:-}" ] && exit 0
-[ -z "${AGENTIC_ISSUE:-}" ] && exit 0
+: "${AGENTIC_TASK_ID:=${AGENTIC_ISSUE:-}}"
+{ [ -n "${AGENTIC_BRANCH:-}" ] || [ "${AGENTIC_FORCE:-}" = "1" ]; } || exit 0
+[ -z "$AGENTIC_TASK_ID" ] && exit 0
 
-SENTINEL="/tmp/agentic-loop-launched-${AGENTIC_ISSUE}"
-STATE_FILE=".agentic-loop/${AGENTIC_ISSUE}/.state"
+SENTINEL="/tmp/agentic-loop-launched-${AGENTIC_TASK_ID}"
+STATE_FILE=".agentic-loop/${AGENTIC_TASK_ID}/.state"
 
 # Skill already launched once OR state file persisted; hook is a no-op.
 [ -f "$SENTINEL" ] && exit 0
@@ -35,10 +41,10 @@ if [ "$TOOL_NAME" = "Skill" ] && { [ "$SKILL_PARAM" = "spec-to-pr:agentic-loop" 
 fi
 
 cat >&2 <<MSG
-Blocked: agentic-loop skill must be your first tool call in this CI run.
+Blocked: agentic-loop skill must be your first tool call in this headless run.
 
-Pinned branch: $AGENTIC_BRANCH
-Issue: #$AGENTIC_ISSUE
+Pinned branch: ${AGENTIC_BRANCH:-<none>}
+Task: ${AGENTIC_TASK_ID}
 
 Invoke the skill now:
   Skill(skill='spec-to-pr:agentic-loop')

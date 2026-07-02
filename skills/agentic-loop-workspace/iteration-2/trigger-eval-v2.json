@@ -1,0 +1,83 @@
+[
+  {
+    "query": "Take issue #123 and drive it through to a PR. The spec is in the issue body.",
+    "should_trigger": true
+  },
+  {
+    "query": "Run ralph on this task card: we need a CLI command `myapp scaffold <name>` that copies the template directory and renames it.",
+    "should_trigger": false,
+    "_note": "expectation flipped in iter2: 'ralph this' dropped from description; correctly cedes to ralph-loop plugin"
+  },
+  {
+    "query": "Here's a spec (spec.md attached). Take it from spec to PR \u2014 full pipeline, TDD, review loops, the lot.",
+    "should_trigger": true
+  },
+  {
+    "query": "Here's the feature description for a token-bucket rate limiter (60 req/min per API key, sliding window, returns 429 with Retry-After). Build this out end to end and open a PR when it's done.",
+    "should_trigger": true
+  },
+  {
+    "query": "I've written up a spec in SPEC.md for the new export pipeline. Implement this spec and open a PR.",
+    "should_trigger": true
+  },
+  {
+    "query": "Take the requirements in issue #204 and just get it all the way to a pull request \u2014 plan it, test it, review it, ship the PR.",
+    "should_trigger": true
+  },
+  {
+    "query": "Can you handle GH-88 end to end for me? Everything's specced in the issue.",
+    "should_trigger": true
+  },
+  {
+    "query": "ok the ticket LINEAR-441 has the full writeup for the new webhook retry logic \u2014 exponential backoff, max 5 attempts, dead-letter after that. can you just take it from here and get a PR up? tests and all",
+    "should_trigger": true
+  },
+  {
+    "query": "there's a design doc at docs/rfcs/0007-idempotency-keys.md, it's pretty complete. i want you to actually build it \u2014 write the tests first, implement, review it properly, and open a PR against main",
+    "should_trigger": true
+  },
+  {
+    "query": "got a github issue (#312) describing a csv export endpoint with date-range filters. spec's solid, no open questions. run the whole thing for me start to finish \u2014 plan, tdd, self-review, pr",
+    "should_trigger": true
+  },
+  {
+    "query": "Fix the typo in README.md line 12 \u2014 it says 'recieve' instead of 'receive'.",
+    "should_trigger": false
+  },
+  {
+    "query": "How does the agentic-loop skill decide which planner agent to dispatch when there's no roster configured?",
+    "should_trigger": false
+  },
+  {
+    "query": "Let's build a new notifications feature \u2014 I haven't figured out what it should even do yet. Help me think through the options.",
+    "should_trigger": false
+  },
+  {
+    "query": "Implement dark mode across all three of our repos (web, mobile, docs) and open PRs on each.",
+    "should_trigger": false
+  },
+  {
+    "query": "The spec-to-PR loop already opened PR #305 \u2014 can you merge it and deploy to staging?",
+    "should_trigger": false
+  },
+  {
+    "query": "Read through the auth spec in docs/auth.md and tell me whether the token-refresh design is sound \u2014 I just want your assessment, don't build anything.",
+    "should_trigger": false
+  },
+  {
+    "query": "can you review PR #77 for me? it implements the new billing webhook handler and i want a thorough code review of the diff before i approve and merge it",
+    "should_trigger": false
+  },
+  {
+    "query": "bump the version in package.json to 2.4.0 and add a matching entry at the top of CHANGELOG.md",
+    "should_trigger": false
+  },
+  {
+    "query": "i've got a spec for the notification service in NOTIFY_SPEC.md \u2014 can you validate it and tell me if it's watertight enough to start building? not asking you to build it yet",
+    "should_trigger": false
+  },
+  {
+    "query": "our CI is failing on the main branch after the last merge \u2014 the audit-log test times out intermittently. can you dig in and figure out what's causing the flake?",
+    "should_trigger": false
+  }
+]

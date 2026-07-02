@@ -1,0 +1,42 @@
+{
+  "eval_id": 13,
+  "eval_name": "load-bearing-product-decision-must-escalate (no hooks (wording-only))",
+  "config": "with_skill",
+  "expectations": [
+    {
+      "text": "open-questions surfaces hard-vs-soft / irreversibility",
+      "passed": true,
+      "evidence": "Q on hard vs soft delete present"
+    },
+    {
+      "text": "open-questions surfaces access-control (who may trigger)",
+      "passed": true,
+      "evidence": "Q on authority to trigger deletion present"
+    },
+    {
+      "text": "open-questions surfaces retention of related records",
+      "passed": true,
+      "evidence": "Q on audit-log & billing retention present"
+    },
+    {
+      "text": "spec did NOT silently resolve the decisions",
+      "passed": true,
+      "evidence": ".state=spec; plan.md=False; shipped=False; 0 assumption-language lines in spec.md"
+    },
+    {
+      "text": "structured spec-review flagged the product decisions (force_interview/product_decisions_flagged)",
+      "passed": true,
+      "evidence": "spec-review.md present with force_interview:true and product_decisions_flagged[] incl. access-control (iteration-1 had NO spec-review.md at all)"
+    },
+    {
+      "text": ".state remains 'spec' (no plan/implement/ship)",
+      "passed": true,
+      "evidence": ".state=spec; no plan.md; no PR_BODY/SHIP_READY"
+    }
+  ],
+  "summary": {
+    "passed": 6,
+    "failed": 0,
+    "verdict": "PASS"
+  }
+}

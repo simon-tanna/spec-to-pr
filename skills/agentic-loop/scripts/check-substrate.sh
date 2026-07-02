@@ -20,6 +20,7 @@ GATE_HOOKS=(
   agentic-loop-check-state-transition.sh
   agentic-loop-check-tasks-json.sh
   agentic-loop-check-pr-ready.sh
+  agentic-loop-check-tdd-trace.sh
 )
 
 log()  { printf '[check-substrate] %s\n' "$*"; }

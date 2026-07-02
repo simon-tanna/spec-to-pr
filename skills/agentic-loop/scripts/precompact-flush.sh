@@ -7,7 +7,14 @@
 
 set -euo pipefail
 
-[ "${GITHUB_ACTIONS:-}" = "true" ] || exit 0
+# Active in ANY headless harness (see lib-mode.sh). Fall back to the legacy
+# GITHUB_ACTIONS check if lib-mode.sh was not copied alongside this hook.
+_MODE_LIB="$(cd "$(dirname "$0")" && pwd)/lib-mode.sh"
+if [ -f "$_MODE_LIB" ]; then
+  [ "$(bash "$_MODE_LIB")" = "headless" ] || exit 0
+else
+  [ "${GITHUB_ACTIONS:-}" = "true" ] || exit 0
+fi
 
 REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null)" || exit 0
 

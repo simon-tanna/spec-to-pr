@@ -1,0 +1,6 @@
+Drive this issue through the agentic loop end-to-end. The issue body is below — treat it verbatim as the source spec (do not try to fetch it from GitHub; there is no remote issue). It intentionally omits three things: which auth model to use, what retention window to keep events for, and what pagination shape the listing should use. The loop must surface those gaps as interview questions BEFORE drafting a plan or writing any code.
+
+---
+Title: Add audit-log endpoint to the service
+We need an endpoint returning recent audit events with date-range and actor filters. The dashboard will call it.
+---

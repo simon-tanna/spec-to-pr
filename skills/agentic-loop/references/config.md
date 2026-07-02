@@ -50,7 +50,18 @@ override the defaults. Read it once at loop start (Stage 1 ingest).
   // (auth/access, data ownership, irreversible ops, money/fees, retention/PII, trust
   // boundaries, external-service trust, breaking public-contract changes). Drives the
   // decision-fork interview and the adversarial attack-surface review pass.
-  "risk_categories": []
+  "risk_categories": [],
+
+  // I/O adapter for all human-facing messages (banners, open questions, progress,
+  // escalations) and PR creation — see SKILL.md §Operating Modes, Axis B. Absent ⇒
+  // "github" when the gh CLI is authenticated (or $GITHUB_ACTIONS=true), else "file"
+  // (a gh-free sandbox writes to .agentic-loop/<id>/notifications.md and pauses).
+  // Overridable at runtime via $AGENTIC_IO_ADAPTER.
+  "io": {
+    "adapter": "github",     // "github" | "file" | "webhook" | "command"
+    "webhook_url": "",        // adapter=="webhook"; or $AGENTIC_NOTIFY_WEBHOOK
+    "notify_command": ""      // adapter=="command"; executable receiving (kind, id) argv + body on stdin
+  }
 }
 ```
 
@@ -64,3 +75,4 @@ override the defaults. Read it once at loop start (Stage 1 ingest).
 | `agents.reviewer`  | `spec-to-pr:code-reviewer` (the bundled agent) if available, else `general-purpose` (degraded) |
 | `agents.specialists` | `[{ "type": "general-purpose", "owns": "all code" }]`                              |
 | `risk_categories`  | the generic set only                                                                |
+| `io.adapter`       | `github` if the gh CLI is authenticated or `$GITHUB_ACTIONS=true`, else `file`      |

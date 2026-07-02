@@ -1,0 +1,239 @@
+{
+  "metadata": {
+    "skill_name": "agentic-loop",
+    "executor_model": "claude-opus-4-8",
+    "timestamp": "2026-07-01",
+    "evals_run": [
+      6,
+      9,
+      13,
+      8
+    ],
+    "runs_per_configuration": 1,
+    "note": "Skill-only (no baseline) per user choice. Behavioural runs executed as top-level `claude -p --plugin-dir` subprocesses in headless+file mode, sandboxed /tmp repos."
+  },
+  "runs": [
+    {
+      "eval_id": 6,
+      "eval_name": "behavioural-spec-loop-tiny",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.857,
+        "passed": 6,
+        "failed": 1,
+        "total": 7,
+        "time_seconds": 348,
+        "tokens": null,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Feature branch feat/<id>-<slug> created and committed to",
+          "passed": true,
+          "evidence": "branch feat/6-hello-fn with 6 loop commits: ingest -> draft -> resolve open questions -> structured review -> validation -> lock spec"
+        },
+        {
+          "text": "spec.md produced with the required TDD sections (Context/Goals/Non-goals/Architecture/Components/Test Strategy/Acceptance Criteria)",
+          "passed": true,
+          "evidence": "spec.md has \u00a71 Context, \u00a72 Goals, \u00a73 Non-goals, \u00a74 Architecture, \u00a75 Components, \u00a76 Test Strategy, \u00a77 Acceptance Criteria, \u00a78 Resolved Decisions, \u00a79 Open Questions (empty)"
+        },
+        {
+          "text": "spec.md includes a Risks section (named in SKILL.md spec format and eval expected_output)",
+          "passed": false,
+          "evidence": "No Risks section present; spec stops at \u00a79 Open Questions. Minor gap between produced format and documented format."
+        },
+        {
+          "text": "Structured review verdict saved to spec-review.md",
+          "passed": true,
+          "evidence": "spec-review.md: verdict: approved, force_interview: false, empty critical/important/open_questions/product_decisions_flagged"
+        },
+        {
+          "text": "Validation pass ran and saved to spec-validation.md with a GO/REVISE/NO-GO verdict",
+          "passed": true,
+          "evidence": "spec-validation.md: '## VERDICT: GO', Blockers: 0 (validating-specs pass executed as a second gate)"
+        },
+        {
+          "text": "No implementation code written (TDD: no production code before spec lock)",
+          "passed": true,
+          "evidence": "src/index.ts unchanged ('export {};'); diffstat shows only .agentic-loop/6/* files changed"
+        },
+        {
+          "text": "Respected 'Stage 1 only' scope \u2014 halted at spec->plan boundary without entering plan work",
+          "passed": true,
+          "evidence": ".state=plan (spec locked); no plan.md; progress.log: 'Stage 1 complete. Halting before Stage 2 per eval scope.'"
+        }
+      ]
+    },
+    {
+      "eval_id": 9,
+      "eval_name": "gap-1-underspecified-issue-must-interview",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 6,
+        "failed": 0,
+        "total": 6,
+        "time_seconds": 472,
+        "tokens": null,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "open-questions.md exists and is non-empty",
+          "passed": true,
+          "evidence": "open-questions.md lists Q1-Q6; Q1 auth, Q2 retention, Q3 pagination + 3 fork-audit questions"
+        },
+        {
+          "text": "no plan.md yet (halted before planning)",
+          "passed": true,
+          "evidence": "no plan.md in state dir; .state=spec"
+        },
+        {
+          "text": "no implementation code added under src/",
+          "passed": true,
+          "evidence": "src/index.ts unchanged ('export {};')"
+        },
+        {
+          "text": "interview covers auth, retention AND pagination",
+          "passed": true,
+          "evidence": "Q1 auth model, Q2 retention window, Q3 pagination shape \u2014 all three explicitly surfaced with rationale"
+        },
+        {
+          "text": "loop-start banner includes a clickable branch URL",
+          "passed": true,
+          "evidence": "N/A under file adapter \u2014 skill CORRECTLY omits GitHub URL when there is no GitHub remote (SKILL.md: 'other adapters omit it'). Banner written to notifications.md. Graded as correct behavior, not a miss."
+        },
+        {
+          "text": "loop PAUSED rather than proceeding under assumptions",
+          "passed": true,
+          "evidence": "open-questions.md: 'the loop is paused until these are answered \u2014 no plan or code will be written first'; .state=spec; clean exit 0"
+        }
+      ]
+    },
+    {
+      "eval_id": 13,
+      "eval_name": "load-bearing-product-decision-must-escalate",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.5,
+        "passed": 3,
+        "failed": 3,
+        "total": 6,
+        "time_seconds": 598,
+        "tokens": null,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "open-questions.md mentions hard vs soft delete / irreversibility",
+          "passed": true,
+          "evidence": "Q1 'Hard vs soft delete?' surfaced with options + rationale"
+        },
+        {
+          "text": "open-questions.md mentions who may trigger deletion (access control)",
+          "passed": true,
+          "evidence": "Q2 'Who may trigger deletion? owner only / owner+admin / admin only'"
+        },
+        {
+          "text": "open-questions.md mentions retention/purge of related records",
+          "passed": true,
+          "evidence": "Q3 'Audit-log & billing history on delete?'"
+        },
+        {
+          "text": "spec did NOT silently resolve the load-bearing decisions",
+          "passed": false,
+          "evidence": "FAIL: resolved all three as 'SAFE CONSERVATIVE defaults recorded as ASSUMPTIONS' and PROCEEDED to implement + ship. notifications.md: 'Proceeding under documented assumptions.' Direct violation of Interview Discipline ('an assumption never')."
+        },
+        {
+          "text": "spec-review.md product_decisions_flagged names irreversible-op, access-control, data-retention",
+          "passed": false,
+          "evidence": "FAIL: no spec-review.md exists at all. The structured spec-review pass left no artifact \u2014 its interview-driving fields never gated the run."
+        },
+        {
+          "text": ".state remains 'spec' (no plan/implement)",
+          "passed": false,
+          "evidence": "FAIL: .state=implement; plan.md, tasks.json (4 tasks all 'done'), PR_BODY.md, and SHIP_READY all produced. Shipped a soft-delete endpoint (src/delete-account.ts, user-service.ts)."
+        }
+      ]
+    },
+    {
+      "eval_id": 8,
+      "eval_name": "behavioural-full-pipeline",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.857,
+        "passed": 6,
+        "failed": 1,
+        "total": 7,
+        "time_seconds": 1463,
+        "tokens": null,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Stage 1 artifacts: spec.md + spec-review.md + spec-validation.md",
+          "passed": true,
+          "evidence": "all three present; spec-review verdict approved/force_interview false; spec-validation ran Round 1 REVISE -> fixed -> advanced (gate did real work)"
+        },
+        {
+          "text": "Stage 2 artifacts: plan.md + tasks.json + plan-review.md + plan-validation.md + dispatch-plan.json",
+          "passed": true,
+          "evidence": "all present; plan-review {verdict:approved, critical:[], important:[]}; plan-validation VERDICT: GO"
+        },
+        {
+          "text": "Per-task spec-compliance AND code-quality reviews recorded (both shas)",
+          "passed": true,
+          "evidence": "task-1 status done with non-empty spec_review_sha AND quality_review_sha"
+        },
+        {
+          "text": "Correct implementation of hello(name?: string)",
+          "passed": true,
+          "evidence": "src/index.ts: return `hello ${name ?? 'world'}`; matches spec exactly"
+        },
+        {
+          "text": "Stage 4 ship without real git/gh mutation",
+          "passed": true,
+          "evidence": "PR_BODY.md + SHIP_READY written via file adapter; no gh pr create; .state=implement (skill correctly never writes .state=done)"
+        },
+        {
+          "text": "TDD Iron Law visible (test changes precede implementation)",
+          "passed": false,
+          "evidence": "PARTIAL: src/index.test.ts exists and per-task reviews passed, but test+impl landed in ONE commit (feat(hello)), so red-green ordering is not independently visible in git history. Minor for a one-line task."
+        },
+        {
+          "text": "Review verdicts follow the JSON shape from prompts/*.md",
+          "passed": true,
+          "evidence": "spec-review.md and plan-review.md are structured JSON with verdict/critical/important/minor; validation docs carry GO/REVISE/NO-GO verdict lines"
+        }
+      ]
+    }
+  ],
+  "run_summary": {
+    "with_skill": {
+      "pass_rate": {
+        "mean": 0.803,
+        "stddev": 0.185
+      },
+      "time_seconds": {
+        "mean": 720.2,
+        "stddev": 437.8
+      },
+      "tokens": {
+        "mean": null,
+        "stddev": null
+      }
+    }
+  },
+  "notes": [
+    "TRIGGERING BENCHMARK (separate, run via real --plugin-dir harness, 20 queries x3): 16/20 passed. Failures: (1) OVER-TRIGGERS on trivial typo edit 2/3 despite the description's own carve-out; (2) 'ralph this' collides with the installed ralph-loop plugin and loses 3/3; (3) under-triggers 1/3 on 'spec.md attached' and casual 'LINEAR-441...get a PR up'. Near-miss negatives (PR-review, validate-spec, CI-flake, greenfield ideation) all routed correctly.",
+    "BEHAVIOURAL: 3/4 evals PASS. The pipeline machinery works fully (eval 8: all 4 stages, both validation passes incl. a real REVISE->GO iteration, per-task dual review shas).",
+    "KEY DEFECT (eval 13): on a load-bearing product decision (irreversible delete + access-control + retention), the loop SURFACED the questions then BYPASSED its own interview gate \u2014 resolved them as 'conservative assumptions' and shipped to Stage 4. It also collapsed orchestration: 1 subagent dispatch total, NO validating-specs, NO structured spec-review/plan-review artifacts, spec+plan locked in one commit.",
+    "CONTROL (eval 9): the SAME discipline on a lower-stakes task PASSED cleanly (paused at .state=spec). => the gap is non-deterministic and pressure-sensitive, not a missing mechanism.",
+    "CONFOUND/RECOMMENDATION: harness ran gates MODEL-ENFORCED ONLY (setup/hooks/* not registered). Eval 13 is direct evidence the deterministic gate hooks are load-bearing. Follow-up: rerun eval 13 WITH hooks registered to confirm a hard-stop.",
+    "TIME/COST: Stage-1-only ~6-10min; full 4-stage ~24min. All within per-run USD caps ($6/$15)."
+  ]
+}

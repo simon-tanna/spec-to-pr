@@ -1,0 +1,7 @@
+{
+  "wall_seconds": 348,
+  "total_duration_seconds": 348,
+  "budget_usd_cap": 6,
+  "completed_within_budget": true,
+  "note": "Stage-1-only run; halted intentionally at spec-lock, not budget-cut (exit 0)."
+}

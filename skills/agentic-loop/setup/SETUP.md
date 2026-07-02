@@ -7,6 +7,16 @@ workflow, and one sibling skill). This guide installs that substrate. The loop r
   it asks design questions via `AskUserQuestion`. Skip the CI/workflow buckets entirely.
 - **CI (GitHub Actions)** — unattended runs triggered by labelled issues. Needs all six buckets.
 
+> **Local triggering (automatic).** The plugin ships an always-active
+> `UserPromptSubmit` hook (`hooks/inject-agentic-loop-nudge.sh`) that detects
+> spec-shaped prompts and nudges Claude to invoke `Skill(spec-to-pr:agentic-loop)`
+> before falling into plain plan mode or `superpowers:brainstorming`. It is the
+> local parallel to the CI-only `force-agentic-loop.sh`. It no-ops in CI, when a
+> loop is already running, and after nudging once per session. To disable it, set
+> `AGENTIC_LOOP_NO_NUDGE=1` in your environment (or `.claude/settings.json` `env`).
+> Unlike the gate hooks below, this one needs no per-repo setup — it is active
+> wherever the plugin is installed.
+
 Run `scripts/check-substrate.sh` at any time to see whether the deterministic gate hooks are
 registered (they fire only when registered; otherwise the gates are model-enforced).
 
@@ -52,11 +62,11 @@ Also set the `ANTHROPIC_API_KEY` **secret**.
 
 ## 3. Hooks + registration + probe — both modes (recommended)
 
-The three gate hooks make the stage gates *deterministic* (the harness blocks the bad tool call).
+The four gate hooks make the stage gates *deterministic* (the harness blocks the bad tool call).
 Without registration the gates still hold, but only because the controller self-enforces them.
 
 1. Copy the hook scripts into the target repo's `.claude/hooks/` and `chmod +x` them:
-   - the 3 gate hooks + any opt-in hooks from `${CLAUDE_PLUGIN_ROOT}/skills/agentic-loop/setup/hooks/`
+   - the 4 gate hooks + any opt-in hooks from `${CLAUDE_PLUGIN_ROOT}/skills/agentic-loop/setup/hooks/`
    - the 2 context hooks (`postooluse-context-check.sh`, `precompact-flush.sh`) from
      `${CLAUDE_PLUGIN_ROOT}/skills/agentic-loop/scripts/`
    - if you enable `precompact-flush.sh`, also copy `git-sync.sh` from that `scripts/` dir into
@@ -67,19 +77,27 @@ Without registration the gates still hold, but only because the controller self-
    SKILL="${CLAUDE_PLUGIN_ROOT}/skills/agentic-loop"
    cp "$SKILL"/setup/hooks/agentic-loop-check-*.sh .claude/hooks/
    cp "$SKILL"/scripts/postooluse-context-check.sh "$SKILL"/scripts/precompact-flush.sh "$SKILL"/scripts/git-sync.sh .claude/hooks/
+   # lib-mode.sh: the shared interactivity resolver the two context hooks call.
+   # Copy it alongside them; without it they fall back to the legacy GITHUB_ACTIONS check.
+   cp "$SKILL"/scripts/lib-mode.sh .claude/hooks/
    chmod +x .claude/hooks/*.sh
    ```
 2. Merge `setup/settings.snippet.json` into `.claude/settings.json` (create it if absent; deep-merge
    the `hooks` arrays if it exists). All hook commands reference `$CLAUDE_PROJECT_DIR/.claude/hooks/…`.
-   This registers: the 3 gate hooks (PreToolUse), the context-check (PostToolUse), and the precompact
+   This registers: the 4 gate hooks (PreToolUse), the context-check (PostToolUse), and the precompact
    flush (PreCompact).
-3. Run `scripts/check-substrate.sh` — it must report all three gate hooks registered.
+3. Run `scripts/check-substrate.sh` — it must report all four gate hooks registered.
 
 **Opt-in / repo-policy hooks (NOT in the snippet):** `block-ts-violations.sh` (TypeScript-only —
 register only on TS repos), `force-agentic-loop.sh` (CI-only; forces the skill on a pinned branch),
 and the `block-env-reads.sh` / `block-destructive-git.sh` / `block-secret-exfil.sh` security guardrails
 (good defaults, but your call). To use any of these, copy it into `.claude/hooks/` too and add its
 own PreToolUse entry pointing at `$CLAUDE_PROJECT_DIR/.claude/hooks/<name>.sh`.
+
+The two "force the skill" hooks are separate: `force-agentic-loop.sh` is a CI-only `PreToolUse`
+**hard block** (copy in per-repo, fires only on a pinned branch or when a headless harness sets
+`AGENTIC_FORCE=1`); the plugin-level `hooks/inject-agentic-loop-nudge.sh` is a local
+`UserPromptSubmit` **nudge** (ships active, opt out with `AGENTIC_LOOP_NO_NUDGE=1`).
 
 ## 4. `validating-specs` skill dependency — both modes
 

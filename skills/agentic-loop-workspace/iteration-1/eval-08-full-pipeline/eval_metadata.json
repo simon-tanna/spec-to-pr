@@ -1,0 +1,28 @@
+{
+  "eval_id": 8,
+  "eval_name": "behavioural-full-pipeline",
+  "prompt": "Drive add hello(name?: string) through the full loop end-to-end: Stage 1 (spec), Stage 2 (plan+review), Stage 3 (implement w/ per-task reviews), Stage 4 (final review + PR). Produce every artifact.",
+  "assertions": [
+    {
+      "text": "Stage 1 artifacts: spec.md + spec-review.md + spec-validation.md"
+    },
+    {
+      "text": "Stage 2 artifacts: plan.md + tasks.json + plan-review.md + plan-validation.md + dispatch-plan.json"
+    },
+    {
+      "text": "Per-task spec-compliance AND code-quality reviews recorded (both shas)"
+    },
+    {
+      "text": "Correct implementation of hello(name?: string)"
+    },
+    {
+      "text": "Stage 4 ship without real git/gh mutation"
+    },
+    {
+      "text": "TDD Iron Law visible (test changes precede implementation)"
+    },
+    {
+      "text": "Review verdicts follow the JSON shape from prompts/*.md"
+    }
+  ]
+}
