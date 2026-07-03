@@ -46,6 +46,16 @@ override the defaults. Read it once at loop start (Stage 1 ingest).
     ]
   },
 
+  // Tooling every run must consult. This is the headless/CI equivalent of the --skill/--mcp
+  // invocation flags (a GitHub Action run has no typed flags). Resolved set = args ∪ these,
+  // deduped; forwarded to the validating-specs passes too. Absent ⇒ empty. See
+  // references/invocation-args.md. NOTE: an "mcps" entry is only satisfiable on the
+  // implementation hop when the specialist is a wildcard-tool agent (see that reference).
+  "required": {
+    "skills": [],
+    "mcps":   []
+  },
+
   // Extra repo-specific load-bearing decision categories appended to the generic set
   // (auth/access, data ownership, irreversible ops, money/fees, retention/PII, trust
   // boundaries, external-service trust, breaking public-contract changes). Drives the
@@ -74,5 +84,6 @@ override the defaults. Read it once at loop start (Stage 1 ingest).
 | `agents.planner`   | `general-purpose`                                                                    |
 | `agents.reviewer`  | `spec-to-pr:code-reviewer` (the bundled agent) if available, else `general-purpose` (degraded) |
 | `agents.specialists` | `[{ "type": "general-purpose", "owns": "all code" }]`                              |
+| `required.skills` / `required.mcps` | empty — no forced tooling unless args or config supply it            |
 | `risk_categories`  | the generic set only                                                                |
 | `io.adapter`       | `github` if the gh CLI is authenticated or `$GITHUB_ACTIONS=true`, else `file`      |
