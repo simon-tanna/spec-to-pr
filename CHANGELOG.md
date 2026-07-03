@@ -4,6 +4,16 @@ All notable changes to the `spec-to-pr` plugin are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/), and the
 project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.1.2] - 2026-07-03
+
+### Fixed
+
+- **Duplicate hooks load error** — removed the redundant `"hooks":
+  "./hooks/hooks.json"` field from `plugin.json`. Current Claude Code loads the
+  standard `hooks/hooks.json` automatically, so the explicit manifest reference
+  to the same path caused a "Duplicate hooks file detected" failure on install.
+  `manifest.hooks` is now reserved for *additional* hook files only.
+
 ## [0.1.1] - 2026-07-03
 
 ### Added
@@ -35,5 +45,6 @@ project adheres to [Semantic Versioning](https://semver.org/).
   (block destructive git, block env/secret reads, block secret exfil,
   block TypeScript violations) and a CI skill-forcing hook.
 
+[0.1.2]: https://github.com/simon-tanna/spec-to-pr/releases/tag/v0.1.2
 [0.1.1]: https://github.com/simon-tanna/spec-to-pr/releases/tag/v0.1.1
 [0.1.0]: https://github.com/simon-tanna/spec-to-pr/releases/tag/v0.1.0
