@@ -21,23 +21,26 @@ marketplace with `source: "./"`.
 
 ## Release checklist
 
-1. Update `CHANGELOG.md` — move `Unreleased` to the new version with a date.
-2. Bump the version in **both** files (keep identical):
+1. Review user docs for anything added this release — a new flag, config key, or capability should
+   reach `README.md`, the relevant skill `setup/SETUP.md`, and `CHANGELOG.md`, not just the skill's
+   internal `references/`.
+2. Update `CHANGELOG.md` — move `Unreleased` to the new version with a date.
+3. Bump the version in **both** files (keep identical):
    - `.claude-plugin/plugin.json` → `"version"`
    - `.claude-plugin/marketplace.json` → the `spec-to-pr` entry's `"version"`
-3. Validate:
+4. Validate:
    ```bash
    claude plugin validate .
    jq . .claude-plugin/plugin.json .claude-plugin/marketplace.json
    ```
-4. Commit, tag, push:
+5. Commit, tag, push:
    ```bash
    git add -A
    git commit -m "Release vX.Y.Z"
    git tag vX.Y.Z
    git push origin main --tags
    ```
-5. (Optional) Cut a GitHub Release from the tag using the CHANGELOG section.
+6. (Optional) Cut a GitHub Release from the tag using the CHANGELOG section.
 
 ## How users update
 

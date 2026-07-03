@@ -34,6 +34,30 @@ agentic-loop  ──dispatches──►  code-reviewer          (spec/plan/code 
 and on `code-reviewer` for its structured review passes. Installing this plugin
 provides all three together.
 
+## Steering a run
+
+Pin the skills, MCP servers, and implementation subagents a single run uses by
+appending flags to the invocation — no config edit needed:
+
+| Flag | Effect |
+|------|--------|
+| `--skill a,b` | Require these project skills; the run and its subagents consult them. |
+| `--mcp x,y` | Require these MCP servers for research and verification. |
+| `--subagent t1,t2` | Set the specialist roster that implements the code (`agentic-loop` only; each must be a registered, code-capable agent). |
+
+```text
+/spec-to-pr:agentic-loop implement issue #42 --skill payments-db --mcp context7
+/spec-to-pr:validating-specs docs/checkout-spec.md --skill payments-db --mcp context7
+```
+
+A headless or CI run has no typed flags, so set the same tooling in
+`.agentic-loop.config.json` — a `required: { skills, mcps }` block, plus
+`agents.specialists` for the roster.
+
+`--mcp` needs a wildcard-tool specialist (`general-purpose`, `team-lead`); named
+code agents cannot load MCP tools. Full grammar and rules live in
+[`skills/agentic-loop/references/invocation-args.md`](skills/agentic-loop/references/invocation-args.md).
+
 ## Installation
 
 ```bash

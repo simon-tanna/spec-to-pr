@@ -18,14 +18,17 @@ You are the planner. The spec is locked. The controller has NOT passed a `<domai
 
 ### Your task
 
-1. Identify which specialists own which components. Use ONLY `agent_type` values from the roster below, which the controller filled in from the repo's `agents.specialists` config (default: a single `general-purpose` agent owning all code — in which case put everything under that one specialist):
+1. Identify which specialists own which components. Use ONLY `agent_type` values from the roster below, which the controller filled in from the run's resolved specialists (a `--subagent` override, else `agents.specialists`, else a single `general-purpose` agent owning all code — in which case put everything under that one specialist). If a specialist's `<owns>` is the placeholder `code (planner allocates)`, **you own the allocation** — split the spec's components sensibly across the listed specialists:
 
 <roster>
-<!-- Controller: emit one line per configured specialist as "  - <type>: <owns>", e.g.
+<!-- Controller: emit one line per resolved specialist as "  - <type>: <owns>", e.g.
   - api-developer: server APIs, services, persistence, auth
   - ui-developer: UI components, routing, client state
-When agents.specialists is unset, emit exactly:
+When the roster is the default, emit exactly:
   - general-purpose: all code
+When it came from a bare multi-type --subagent override (no owns map), emit each as:
+  - <type>: code (planner allocates)
+and the planner assigns components across them in step 1.
 -->
 </roster>
 

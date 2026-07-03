@@ -104,14 +104,21 @@ The two "force the skill" hooks are separate: `force-agentic-loop.sh` is a CI-on
 The loop invokes the `spec-to-pr:validating-specs` skill (via the Skill tool) at spec-lock and
 plan-lock. It is a **hard dependency** — if absent, the validation gate cannot run and the loop
 treats it as a `BLOCKED_PERMISSION`-class setup failure. It ships in the **same `spec-to-pr`
-plugin**, so installing this plugin already satisfies it — no separate install needed.
+plugin**, so installing this plugin already satisfies it — no separate install needed. A run's
+`--skill`/`--mcp` flags (or the config `required` block, §5) are forwarded to this pass, so the same
+tooling gates both the spec and the plan.
 
 ## 5. Optional `.agentic-loop.config.json` — both modes
 
 Repo root. Everything in it is optional; absent ⇒ auto-detect defaults. Declares the base ref,
-quality-gate commands, agent roster (planner/reviewer/specialists), and extra `risk_categories`.
+quality-gate commands, agent roster (planner/reviewer/specialists), a `required: { skills, mcps }`
+block (skills and MCP servers every run must consult), and extra `risk_categories`.
 See `references/config.md` for the full shape and the auto-detect defaults. The most common reason
 to add it: your quality gates aren't standard `package.json` scripts, or you want named specialists.
+
+The `required` block is the headless/CI equivalent of the `--skill`/`--mcp` invocation flags: a
+GitHub Action run has no typed flags, so it sources required tooling from here. Local runs pass the
+same via flags. See `references/invocation-args.md` for the grammar and the `--subagent` roster override.
 
 ## 6. Quality gates — both modes
 

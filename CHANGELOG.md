@@ -23,5 +23,11 @@ project adheres to [Semantic Versioning](https://semver.org/).
   gate hooks for the loop state machine plus defensive-security guardrails
   (block destructive git, block env/secret reads, block secret exfil,
   block TypeScript violations) and a CI skill-forcing hook.
+- **Invocation arguments** — steer a single run's tooling with `--skill a,b`,
+  `--mcp x,y`, and (`agentic-loop` only) `--subagent t1,t2`. The headless/CI
+  equivalent is the `required: { skills, mcps }` block in
+  `.agentic-loop.config.json`. A run's `--skill`/`--mcp` are forwarded to the
+  `validating-specs` spec and plan gates. See
+  `skills/agentic-loop/references/invocation-args.md`.
 
 [0.1.0]: https://github.com/simon-tanna/spec-to-pr/releases/tag/v0.1.0

@@ -50,8 +50,13 @@ anti-sycophancy protocols — you own routing, configuration, and synthesis.
 3. **Fan out by domain, auto-scaled.** One instance for small/single-domain specs;
    split into parallel domain-scoped instances for large/multi-domain specs. Scopes
    are disjoint — each instance is told to stay in its lane.
-4. **User flags always win; auto-detect augments.** MCPs/skills the user names are
-   always required. You add more by scanning the spec against the detection map.
+4. **User-named tooling always wins; auto-detect augments.** Any MCP/skill the user names —
+   whether via a `--mcp`/`--skill` flag **or in prose** ("…and use context7 for this") — is always
+   required on every lens-relevant instance; auto-detect (the detection map) may only _add_, never drop
+   one. A `--token` outside the known grammar `{mcp, skill, instances, split, single}` is **echoed back
+   as an unrecognised flag and the run still proceeds** (so a typo like `--skil` is never silently
+   swallowed); a named value that resolves to no real skill/MCP is **surfaced to the user**, not quietly
+   dropped.
 5. **One verdict out.** Merge instance reports into a single deduplicated report with
    one GO / NO-GO / REVISE verdict (most-severe-wins; a Major-only spec is a judgment
    call — see step 6).
@@ -62,13 +67,28 @@ anti-sycophancy protocols — you own routing, configuration, and synthesis.
 
 Invocation arguments (when the user supplies them): `<spec-path…> [--mcp a,b] [--skill x,y] [--instances N] [--split lensA,lensB] [--single]`
 
+The raw invocation string is delivered right here, at the parse step:
+
+```
+$ARGUMENTS
+```
+
+Parse the spec path(s) and flags out of that line. That placeholder is the **sole flag-delivery sink**:
+because the token appears in this body, Claude Code does **not** append its usual `ARGUMENTS:` trailer
+(the two are mutually exclusive), so read flags from the fenced line above and nowhere else. When it is
+**empty or appears unsubstituted** — the normal case when the skill is auto-triggered by the model
+rather than invoked with typed flags — treat it as **no flags**. This "sole sink" is scoped to the flag
+_mechanism_ only; it does **not** override Core Principle 4 — tooling the user names in prose is still
+required even when no flag is typed.
+
 - **spec-path** — one or more files. If omitted, search `docs/`, `.agentic-loop/*/spec.md`,
   `*.md` for the candidate and confirm with the user before proceeding.
 - **--mcp** — comma list of MCP servers to require (e.g. `context7,linear,github`).
 - **--skill** — comma list of project skills to require (e.g. `your-db-skill,your-auth-skill`).
 - **--instances N** / **--split a,b,c** / **--single** — override fan-out (see step 3).
 
-Auto-trigger (no flags): treat the spec the user pointed at as the positional arg; flags are empty.
+Auto-trigger (no flags): treat the spec the user pointed at as the positional arg; flags are empty —
+but still honour any MCP/skill the user named in prose (Core Principle 4).
 
 ### 2. Classify (skim only — do NOT validate)
 
@@ -130,7 +150,8 @@ Sizing rule (overridable by flags):
 
 Build the required-tooling set for each instance:
 
-1. Start with the user's `--mcp` / `--skill` (always included, on every instance unless lens-irrelevant).
+1. Start with user-named tooling — the `--mcp` / `--skill` flags **or** anything the user asked for in
+   prose (always included, on every instance unless lens-irrelevant).
 2. Scan spec content against `references/detection-map.md` and add matches.
 3. Assign each skill/MCP to the instance(s) whose lens needs it (the map says which lens).
 
@@ -163,22 +184,22 @@ the controller writes the single human-facing 10-section report in step 6).
 
 ## Quick Reference
 
-| Situation                                      | Action                                                                             |
-| ---------------------------------------------- | ---------------------------------------------------------------------------------- |
-| Small doc / task card                          | 1 instance, lens `all`                                                             |
-| Execution / implementation plan (`*-plan.md`)  | split: `execution` + `scope` + `architecture` (+ `security`/`domain` if triggered) |
-| Design doc (`*-design.md`)                     | split: `architecture` + `domain` (+ `scope` if requirements present)               |
-| Spec / PRD                                     | split: `scope` + `domain` (+ `architecture`)                                       |
-| User passed `--skill your-db-skill`            | that skill required on the domain instance, even if auto-detect missed it          |
-| Spec mentions a library/version                | add `context7` MCP to the relevant instance                                        |
-| Spec touches signing/secrets/webhooks/auth     | add a `security` instance                                                          |
-| Instance needs an MCP tool                     | prompt MUST tell it to `ToolSearch` the schema first                               |
+| Situation                                     | Action                                                                             |
+| --------------------------------------------- | ---------------------------------------------------------------------------------- |
+| Small doc / task card                         | 1 instance, lens `all`                                                             |
+| Execution / implementation plan (`*-plan.md`) | split: `execution` + `scope` + `architecture` (+ `security`/`domain` if triggered) |
+| Design doc (`*-design.md`)                    | split: `architecture` + `domain` (+ `scope` if requirements present)               |
+| Spec / PRD                                    | split: `scope` + `domain` (+ `architecture`)                                       |
+| User passed `--skill your-db-skill`           | that skill required on the domain instance, even if auto-detect missed it          |
+| Spec mentions a library/version               | add `context7` MCP to the relevant instance                                        |
+| Spec touches signing/secrets/webhooks/auth    | add a `security` instance                                                          |
+| Instance needs an MCP tool                    | prompt MUST tell it to `ToolSearch` the schema first                               |
 
 ## Common Mistakes
 
 - **Doing the validation yourself.** You are the controller — classify, dispatch, synthesize. Deep digging is the instances' job.
 - **Naming an MCP tool without the ToolSearch step.** The subagent can't call `mcp__…` until it loads the schema. Always include the ToolSearch instruction.
-- **Letting auto-detect override user flags.** User `--mcp`/`--skill` are always included; auto-detect only adds.
+- **Letting auto-detect override user-named tooling.** Anything the user names — `--mcp`/`--skill` flag or prose — is always included; auto-detect only adds. Echo unrecognised `--tokens`; surface unresolvable names.
 - **Overlapping instance scopes.** Tell each instance to stay in its lane; reconcile overlaps in synthesis, not by having two instances re-litigate the same finding.
 - **Folding sequencing/rollback into `scope`.** Dependency ordering, critical path, rollback, and review/test gates are the **`execution`** lens now — `scope` is requirements/acceptance-criteria only. Routing them to `scope` both under-weights them and risks a double-report.
 - **Classifying doc-type by directory.** `docs/plans/` holds both plans and designs — use the `*-plan`/`*-design`/`*-spec` suffix or content headings, never the folder.
