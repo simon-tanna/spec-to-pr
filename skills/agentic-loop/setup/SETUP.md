@@ -7,6 +7,10 @@ workflow, and one sibling skill). This guide installs that substrate. The loop r
   it asks design questions via `AskUserQuestion`. Skip the CI/workflow buckets entirely.
 - **CI (GitHub Actions)** — unattended runs triggered by labelled issues. Needs all six buckets.
 
+> For a concise overview of every hook and the two-layer model, see the plugin
+> README's [Hooks section](../../../README.md#hooks). This guide stays the
+> authoritative source for the exact install commands.
+
 > **Local triggering (automatic).** The plugin ships an always-active
 > `UserPromptSubmit` hook (`hooks/inject-agentic-loop-nudge.sh`) that detects
 > spec-shaped prompts and nudges Claude to invoke `Skill(spec-to-pr:agentic-loop)`

@@ -34,6 +34,35 @@ agentic-loop  ──dispatches──►  code-reviewer          (spec/plan/code 
 and on `code-reviewer` for its structured review passes. Installing this plugin
 provides all three together.
 
+## Quick start: from spec to PR
+
+1. **Install** the plugin (see [Installation](#installation)) and restart Claude Code.
+2. **Point `agentic-loop` at a spec** — a GitHub issue, task card, or written feature
+   description:
+
+   ```text
+   /spec-to-pr:agentic-loop implement issue #42
+   ```
+
+   or hand it off in prose ("take this from spec to PR"). The `UserPromptSubmit` nudge
+   helps the loop trigger on spec-shaped prompts.
+3. **Answer the design questions.** Interactively, the loop asks them via
+   `AskUserQuestion` at the spec and plan gates; it will not start coding until the spec
+   and plan pass validation.
+4. **Let it run.** The loop plans, validates the spec and plan (dispatching
+   `validating-specs`, which ships in this same plugin), executes the tasks test-first,
+   runs its review passes, and opens one PR.
+
+Registering the gate hooks (see [Hooks](#hooks)) is optional but makes those gates
+deterministic rather than model-enforced.
+
+Invoke the other two skills the same way:
+
+```text
+/spec-to-pr:validating-specs docs/checkout-spec.md
+/spec-to-pr:writing-documentation add a how-to for the payments webhook
+```
+
 ## Steering a run
 
 Pin the skills, MCP servers, and implementation subagents a single run uses by
@@ -76,15 +105,53 @@ From a clone of this repo:
 /plugin install spec-to-pr@spec-to-pr-marketplace
 ```
 
-## Hooks (optional, per-repo opt-in)
+## Hooks
 
-This plugin does **not** auto-register hooks globally. The `agentic-loop` skill
-ships a set of hooks under `skills/agentic-loop/setup/` that you opt into **per
-repository** by following that skill's `setup/SETUP.md`. This keeps the loop's
-guardrail hooks scoped to repos where you actually run the loop, rather than
-firing in every project. The set includes the loop's state-machine gate hooks
-plus general defensive-security guardrails (block destructive git, block
-env/secret reads, block secret exfiltration, block TypeScript violations).
+The plugin ships hooks in **two layers**.
+
+**Plugin-level (always active).** Installing the plugin registers one
+`UserPromptSubmit` hook, `inject-agentic-loop-nudge.sh`. It detects spec-shaped
+prompts and nudges Claude to invoke `agentic-loop` before falling into plain plan
+mode. It only nudges — it never blocks — and no-ops in CI, when a loop is already
+running, and after firing once per session. Opt out with `AGENTIC_LOOP_NO_NUDGE=1`.
+
+**Per-repo (opt-in).** The `agentic-loop` skill ships gate, context, and security
+hooks under `skills/agentic-loop/setup/`. The plugin does **not** auto-register
+these — you enable them per repository, so they fire only where you run the loop.
+Registered, the gate hooks make the stage gates *deterministic* (the harness blocks
+the offending tool call); unregistered, the loop's controller still self-enforces
+them.
+
+### Hook reference
+
+| Hook | Layer | Event (matcher) | What it does | In snippet |
+|------|-------|-----------------|--------------|:-:|
+| `inject-agentic-loop-nudge.sh` | plugin | `UserPromptSubmit` | Nudges Claude to invoke `agentic-loop` on spec-shaped prompts | auto |
+| `agentic-loop-check-state-transition.sh` | gate | `PreToolUse` (`Write\|Bash`) | Blocks a `.state` transition that skips the spec/plan preconditions | ✅ |
+| `agentic-loop-check-tasks-json.sh` | gate | `PreToolUse` (`Write\|Edit`) | Blocks marking a task `done` without both review SHAs | ✅ |
+| `agentic-loop-check-tdd-trace.sh` | gate | `PreToolUse` (`Write\|Edit`) | Blocks a `done` task whose commit lacks a test file and a `TDD:` line | ✅ |
+| `agentic-loop-check-pr-ready.sh` | gate | `PreToolUse` (`Bash`) | Blocks `gh pr create` while any task or review is incomplete | ✅ |
+| `postooluse-context-check.sh` | context | `PostToolUse` (`*`) | Drops an eject-flag when token use crosses the model threshold (headless) | ✅ |
+| `precompact-flush.sh` | context | `PreCompact` | Flushes loop state to git before any compaction | ✅ |
+| `block-destructive-git.sh` | opt-in | `PreToolUse` (you assign) | Blocks force-push, history rewrite, and branch/ref deletion | — |
+| `block-env-reads.sh` | opt-in | `PreToolUse` (you assign) | Blocks reads of `.env`, secrets, and credential files | — |
+| `block-secret-exfil.sh` | opt-in | `PreToolUse` (you assign) | Blocks env-dumps, token echoes, and network exfiltration | — |
+| `block-ts-violations.sh` | opt-in | `PreToolUse` (you assign) | Blocks TypeScript edits that break the strict baseline (TS repos) | — |
+| `force-agentic-loop.sh` | opt-in | `PreToolUse` (you assign) | CI-only: forces the first tool call to be the skill on a pinned branch | — |
+
+The **snippet** is `skills/agentic-loop/setup/settings.snippet.json`; it registers the
+six gate and context hooks. The five opt-in hooks are absent from it by design — copy
+in each one you want and assign its matcher yourself.
+
+### Enable the gate hooks in a repo
+
+Ask Claude Code to run the setup for you — it resolves the plugin path
+(`${CLAUDE_PLUGIN_ROOT}`, which a plain shell does not export) — following
+[`setup/SETUP.md`](skills/agentic-loop/setup/SETUP.md) §3: copy the gate and context
+hook scripts into the repo's `.claude/hooks/`, merge the snippet into
+`.claude/settings.json`, then run `check-substrate.sh` to confirm the gate hooks are
+registered. SETUP.md holds the exact commands and the full CI substrate (env contract,
+workflow, repo variables).
 
 ## Requirements / platform support
 
