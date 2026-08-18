@@ -4,7 +4,7 @@ All notable changes to the `spec-to-pr` plugin are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/), and the
 project adheres to [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [0.2.0] - 2026-08-18
 
 ### Changed
 
@@ -90,6 +90,8 @@ project adheres to [Semantic Versioning](https://semver.org/).
   (block destructive git, block env/secret reads, block secret exfil,
   block TypeScript violations) and a CI skill-forcing hook.
 
+[0.2.0]: https://github.com/simon-tanna/spec-to-pr/releases/tag/v0.2.0
+[0.1.3]: https://github.com/simon-tanna/spec-to-pr/releases/tag/v0.1.3
 [0.1.2]: https://github.com/simon-tanna/spec-to-pr/releases/tag/v0.1.2
 [0.1.1]: https://github.com/simon-tanna/spec-to-pr/releases/tag/v0.1.1
 [0.1.0]: https://github.com/simon-tanna/spec-to-pr/releases/tag/v0.1.0

@@ -9,7 +9,7 @@
     {
       "name": "spec-to-pr",
       "source": "./",
-      "version": "0.1.3",
+      "version": "0.2.0",
       "description": "An agentic development toolkit: an autonomous spec-to-PR loop plus supporting skills and agents for spec validation, code review, and documentation.",
       "category": "development",
       "author": {
