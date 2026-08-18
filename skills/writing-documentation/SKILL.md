@@ -7,9 +7,7 @@ description: Creates structured technical documentation following the Diátaxis 
 
 Your work is guided by the Diátaxis Framework (https://diataxis.fr/).
 
-## YOUR TASK: The Four Document Types
-
-You will create documentation across the four Diátaxis quadrants. You must understand the distinct purpose of each:
+## The four document types
 
 - **Tutorials:** Learning-oriented, practical steps to guide a newcomer to a successful outcome. A lesson.
 - **How-to Guides:** Problem-oriented, steps to solve a specific problem. A recipe.
@@ -19,7 +17,6 @@ You will create documentation across the four Diátaxis quadrants. You must unde
 ## WORKFLOW
 
 Every document serves one reader reaching one goal — hold that reader in view throughout.
-Follow this process for every documentation request:
 
 1. **Ground first (REQUIRED — do this before writing anything):** Verify what you are about to
    document actually exists. Read the relevant source, config, schema, routes, and tests in the
@@ -42,16 +39,31 @@ Follow this process for every documentation request:
    propose an outline and wait for approval. For short docs or when the user says "just write
    it", proceed directly to writing.
 
-4. **Generate content:** Write the full documentation in well-formatted Markdown. Done when
-   every technical claim is grounded in Step 1 and every sentence has passed the LANGUAGE AND
-   STYLE checklist below (or the copyedit subagent).
+4. **Generate content:** Write the documentation in Markdown. Done when every technical claim is
+   grounded in Step 1 and every line has survived a cut pass against LANGUAGE AND STYLE — a line
+   that could still lose a word has not passed.
 
 ## LANGUAGE AND STYLE
 
-All prose you write must follow William Strunk Jr.'s _The Elements of Style_. The rules that most
-improve generated prose, in priority order:
+Write **telegraphic** prose: extremely concise, grammar sacrificed for concision. This governs
+every other style rule below — Strunk applies to what survives the cut, never to restore what the
+cut removed.
 
-- Omit needless words.
+Telegraphic, in all four quadrants:
+
+- Drop articles, copulas, and subject pronouns wherever meaning survives.
+- Fragments for reference entries, parameters, returns, and steps.
+- One idea per line. Cut preamble, wrap-up, hedges, and anything the heading already said.
+
+| Draft | Telegraphic |
+|---|---|
+| This function will return the parsed configuration object. | Returns the parsed config. |
+| In this guide, we will walk through setting up the webhook. | *(cut)* |
+| It is generally recommended that you set a timeout value. | Set `timeout`. |
+| The retry queue is maintained on a per-tenant basis, which prevents a single tenant from starving the others. | Retries queue per-tenant. Prevents one tenant starving others. |
+
+Then, on what survives:
+
 - Use the active voice.
 - Put statements in positive form — make definite assertions.
 - Use definite, specific, concrete language.
@@ -60,8 +72,8 @@ improve generated prose, in priority order:
 
 [references/elements-of-style.md](references/elements-of-style.md) is authoritative for the full
 18 rules **and** the _Words and Expressions Commonly Misused_ usage dictionary — pull it into
-context whenever you need a rule's full text or a usage ruling.
+context for a rule's full text or a usage ruling. Telegraphic still outranks it.
 
-**Limited-context fallback:** when context is tight, draft using the checklist above, then dispatch
-a subagent with your draft and `references/elements-of-style.md` and have it copyedit against the
-full rules and return the revision.
+**Limited-context fallback:** dispatch a subagent with your draft, this section, and
+`references/elements-of-style.md`. Have it cut to telegraphic first, copyedit second, and return
+the revision.

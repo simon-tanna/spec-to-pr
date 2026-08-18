@@ -4,6 +4,17 @@ All notable changes to the `spec-to-pr` plugin are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/), and the
 project adheres to [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Changed
+
+- **`writing-documentation` register** — the skill now writes **telegraphic**
+  prose: extremely concise, grammar sacrificed for concision, uniformly across
+  all four Diátaxis quadrants. The rule outranks
+  `references/elements-of-style.md`, which now applies only to what survives the
+  cut, and the copyedit subagent cuts before it copyedits. Step 4 gained a
+  matching completion bound: a line that could still lose a word has not passed.
+
 ## [0.1.2] - 2026-07-03
 
 ### Fixed
