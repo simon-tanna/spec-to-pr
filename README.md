@@ -12,7 +12,7 @@ validation, code review, and documentation.
 |-------|--------------|
 | **`agentic-loop`** | The flagship pipeline. Takes a spec, task card, or GitHub issue and drives it end-to-end: planning → spec/plan validation gates → TDD execution loop → review loops → PR. Invoke it with "run the agentic loop", "implement this issue", or "take this from spec to PR". |
 | **`validating-specs`** | Pressure-tests a spec, design doc, or implementation plan before engineering starts, dispatching the `spec-design-validator` agent. Returns a `GO` / `REVISE` / `NO-GO` verdict. |
-| **`writing-documentation`** | Produces structured technical documentation using the [Diátaxis](https://diataxis.fr/) framework (tutorials, how-to guides, reference, explanation). |
+| **`writing-documentation`** | Produces structured technical documentation using the [Diátaxis](https://diataxis.fr/) framework. Places each document in one quadrant (tutorial, how-to, reference, explanation) via the compass, grounds every claim against source, and also audits an existing doc set for quadrant purity and accuracy. |
 
 ### Agents
 

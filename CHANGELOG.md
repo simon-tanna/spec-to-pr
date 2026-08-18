@@ -4,6 +4,40 @@ All notable changes to the `spec-to-pr` plugin are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/), and the
 project adheres to [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Changed
+
+- **`writing-documentation` now follows Diátaxis structurally, not just in name.**
+  The four quadrants were a four-line taxonomy with no way to choose between them
+  and no rule against mixing them; the skill's weight sat almost entirely on prose
+  register. Added:
+  - **The compass** — the two-axis test (action/cognition, acquisition/application)
+    that places a document in exactly one quadrant. Choosing the quadrant is now a
+    workflow step the skill performs, not a clarification it asks the user for.
+  - **Purity** — one quadrant per document, enforced by a completion criterion and
+    an explicit re-read pass over each finished draft.
+  - **Document sets** — one request may yield several documents (a how-to *and* a
+    reference). The set, its quadrants, titles, and paths are proposed at a single
+    approval gate before any prose is written.
+  - **Per-quadrant craft files** — one per quadrant under `references/`, each
+    carrying that quadrant's craft rules, register, title shape, and completion
+    bound. Loaded per document written.
+  - **An improve branch** — the description always promised it; now the workflow has
+    it. Audits an existing doc set exhaustively (quadrant per document, every mixed
+    section named, technical claims grounded), proposes an ordered move list, then
+    applies the moves one at a time.
+  - **Document placement** — the skill now owns the title convention and file path,
+    mirroring wherever the repo already keeps docs. It does not scaffold empty
+    quadrant directories.
+
+- **Register is now per-quadrant, partly reversing 0.1.3.** Telegraphic prose
+  remains the register for **Reference** and **How-to**; **Tutorial** and
+  **Explanation** are written in plain, economical prose, because telegraphic
+  strips the connective tissue a lesson and a discussion depend on. `SKILL.md`
+  keeps only the register-neutral shared rules and the `elements-of-style.md`
+  pointer; the quadrant file is the single authority on register.
+
 ## [0.1.3] - 2026-08-18
 
 ### Changed
