@@ -13,8 +13,9 @@
 # Adapter resolution (mirrors SKILL.md §Operating Modes, Axis B):
 #   $AGENTIC_IO_ADAPTER → config .io.adapter → github (gh authed / $GITHUB_ACTIONS) → file
 #
-# Output: exit 0 on success. The github branch preserves today's behaviour
-# exactly (delegates to gh-comment.sh, keeping the @author tag).
+# GitHub notifications use the real issue from run metadata, falling back to
+# the file backend for issue-less runs. This does not change PR adapter selection.
+# Legacy numeric IDs without metadata still delegate to gh-comment.sh.
 
 set -euo pipefail
 
@@ -30,6 +31,7 @@ else
 fi
 
 DIR="$(cd "$(dirname "$0")" && pwd)"
+ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 
 ADAPTER="${AGENTIC_IO_ADAPTER:-$(jq -r '.io.adapter // empty' .agentic-loop.config.json 2>/dev/null || true)}"
 if [ -z "$ADAPTER" ]; then
@@ -37,13 +39,29 @@ if [ -z "$ADAPTER" ]; then
     && ADAPTER=github || ADAPTER=file
 fi
 
+ISSUE="$ID"
+if [ "$ADAPTER" = github ]; then
+  METADATA="$ROOT/.agentic-loop/$ID/run-context.json"
+  if [ -e "$METADATA" ]; then
+    ISSUE=$(jq -er '
+      if type != "object" then error("expected run metadata object")
+      elif (has("issue") | not) then error("missing issue field")
+      elif .issue == null then ""
+      elif ((.issue | type) == "string" or (.issue | type) == "number")
+        and (.issue | tostring | test("^[1-9][0-9]*$")) then .issue | tostring
+      else error("issue must be a positive integer or null") end
+    ' "$METADATA") || { echo 'notify: invalid run issue metadata' >&2; exit 1; }
+  elif [[ ! "$ID" =~ ^[1-9][0-9]*$ ]]; then
+    ISSUE=''
+  fi
+  [ -n "$ISSUE" ] || ADAPTER=file
+fi
+
 case "$ADAPTER" in
   github)
-    # Unchanged behaviour: delegate to gh-comment.sh (keeps @author tagging).
-    bash "$DIR/gh-comment.sh" "$ID" - <<<"$BODY"
+    bash "$DIR/gh-comment.sh" "$ISSUE" - <<<"$BODY"
     ;;
   file)
-    ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
     LOG="$ROOT/.agentic-loop/${ID}/notifications.md"
     mkdir -p "$(dirname "$LOG")"
     { printf '\n---\n## [%s] %s\n\n' "$KIND" "$(date -u +%FT%TZ)"; printf '%s\n' "$BODY"; } >> "$LOG"

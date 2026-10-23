@@ -336,6 +336,10 @@ from recorded tool results and review artifacts before stage advancement.
    controller persists them with run requirements in the ingest commit. In existing
    Claude CI, read supplied `AGENTIC_*` context and verify HEAD is on its branch.
    Do not run the interactive helper to reset a CI-prepared branch.
+   `notify.sh` uses metadata's real issue for GitHub comments, falling back to
+   file notifications for issue-less runs without changing PR adapter selection.
+   For their blocking questions, preserve `open-questions.md` and `NEEDS_INPUT`
+   before checkpointing; ask interactively and wait or yield for the answer.
    **Read `.agentic-loop.config.json` if present** (repo-specific base ref, quality gates, agent roster, risk categories — see `references/config.md`; absent ⇒ auto-detect defaults). **Resolve run tooling (fresh start only).** The invocation may carry flags — the raw string is delivered at the canonical parse site (the fenced token immediately below this list):
 
 ```

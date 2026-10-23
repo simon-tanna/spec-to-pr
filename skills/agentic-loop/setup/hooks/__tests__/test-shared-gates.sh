@@ -78,4 +78,4 @@ jq -n '{tool_name:"Bash",tool_input:{command:"gh pr create"}}' > payload
 expect 0 bash .claude/hooks/agentic-loop-check-pr-ready.sh < payload
 jq -n --arg sha "$BAD_SHA" '{tool_name:"Write",tool_input:{file_path:".agentic-loop/99/tasks.json",content:({tasks:[{id:"a",status:"done",commit_sha:$sha}]}|tojson)}}' > payload
 expect 2 bash .claude/hooks/agentic-loop-check-tdd-trace.sh < payload
-echo 'shared gates: policy, CLI contract, installed wrappers, helper upgrade and harness probes passed' 
+echo 'shared gates: policy, CLI contract, installed wrappers, helper upgrade and harness probes passed'
