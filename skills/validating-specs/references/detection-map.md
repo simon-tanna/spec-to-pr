@@ -62,12 +62,10 @@ estimate/timeline, rollback, migration, rollout, cutover, feature flag, review g
 
 ## CRITICAL: making a subagent actually use an MCP
 
-A subagent cannot call `mcp__…` tools until it loads their schemas via `ToolSearch`. When an
-instance prompt requires an MCP, it MUST instruct the subagent to first run, e.g.:
-
-```
-ToolSearch with query "select:mcp__plugin_context7_context7__resolve-library-id,mcp__plugin_context7_context7__query-docs"
-```
-
-(or a keyword query like `ToolSearch "context7 docs"`), THEN call the tool. Naming the tool
-without this step results in an InputValidationError and the subagent silently skips the check.
+Tool availability differs by harness and child configuration. Follow
+`references/dispatch.md`: require the child to verify access with actual use
+before depending on the result. Discover deferred schemas using the exposed tool
+interface; in Claude this may be `ToolSearch`, while other harnesses expose a
+different discovery API or immediately callable schemas. Do not hardcode a
+plugin-qualified tool name on a harness that does not expose it. Parent access
+does not prove child access. Return a setup failure if a required tool is absent.

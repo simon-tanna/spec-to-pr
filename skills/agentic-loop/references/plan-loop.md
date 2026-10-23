@@ -6,7 +6,7 @@
 
 ## Domain Decomposition
 
-The planner reads `spec.md` and identifies which configured specialists own which components. The roster is the repo's `agents.specialists` config (default: a single `general-purpose` agent owning all code). An example roster for a repo that defines specialists — substitute your own `agents.specialists`:
+The planner reads `spec.md` and identifies which configured specialists own which components. The roster is the immutable `run-requirements.json.specialists` resolved at ingest, including any `--subagent` replacement. Do not reread config on resume. An example roster — substitute the resolved run roster:
 
 | Specialist          | Owns                                                |
 | ------------------- | --------------------------------------------------- |
@@ -20,17 +20,17 @@ The planner reads `spec.md` and identifies which configured specialists own whic
 
 **The planner does NOT dispatch specialists directly** — Claude Code does not support subagent nesting. The flow is:
 
-1. **Controller → Agent(planner, impl-planner.md Mode A)** — the planner reads `spec.md` and returns a `<dispatch_plan>` JSON block listing which specialists to dispatch and their component scope. The planner stops here.
+1. **Controller → fresh planner child (impl-planner.md Mode A)** — the planner reads `spec.md` and returns a `<dispatch_plan>` JSON block listing which specialists to dispatch and their component scope. The planner stops here.
 
-2. **Controller dispatches specialists in parallel** — the controller reads `<dispatch_plan>` and makes one Agent call per specialist in a single message. Each specialist receives:
+2. **Controller dispatches specialists in parallel** — the controller reads `<dispatch_plan>` and spawns one fresh child per specialist using `references/dispatch.md`, queuing work within available capacity. Each specialist receives:
    - Full `spec.md`
    - Scoped subset: the components in their domain (from `<dispatch_plan>`)
    - Plan format from `plan-format.md`
    - Instruction to return a domain-scoped TDD plan file (not a full `plan.md`)
 
-3. **Controller → Agent(planner, impl-planner.md Mode B)** — the controller collects the domain plans and passes them to the planner for synthesis into `plan.md` + `tasks.json`.
+3. **Controller → fresh planner child (impl-planner.md Mode B)** — the controller collects the domain plans and passes them to the planner for synthesis into `plan.md` + `tasks.json`.
 
-Do not dispatch specialists serially — parallelism is the point (step 2 is a single message, multiple Agent calls from the controller).
+Dispatch independent specialists concurrently within available capacity; queue remaining work and collect every required result before synthesis. All dispatch remains controller-owned.
 
 ## Synthesis
 
@@ -77,11 +77,11 @@ Dispatch in parallel:
 
 - `code-reviewer` with `prompts/plan-reviewer.md` on the full plan.
 - Each domain specialist with a sanity-check prompt on their slice (not a re-plan).
-- **For plans that touch any load-bearing decision category — the configured `risk_categories` plus the generic set (auth/access, data ownership/custody, irreversible/destructive operations, money/billing/fees, data retention & privacy/PII, security trust boundaries, external-service trust, breaking changes to public contracts) — ALSO dispatch the configured reviewer (`agents.reviewer`) in adversarial mode** — prompt: "audit this plan for attack-surface and product-risk regressions versus `source.md`. Assume the planner's resolved decisions in `spec.md §8` may be wrong. Flag any change to a load-bearing decision category that is not literally authorised by `source.md`." Run in parallel with the standard reviewers. (`agents.reviewer` should be a real review agent here, not `general-purpose`, wherever the repo has a genuine trust surface.)
+- **For plans that touch any load-bearing decision category — the configured `risk_categories` plus the generic set (auth/access, data ownership/custody, irreversible/destructive operations, money/billing/fees, data retention & privacy/PII, security trust boundaries, external-service trust, breaking changes to public contracts) — ALSO dispatch the configured reviewer (`agents.reviewer`) in adversarial mode** — prompt: "audit this plan for attack-surface and product-risk regressions versus `source.md`. Assume the planner's resolved decisions in `spec.md §8` may be wrong. Flag any change to a load-bearing decision category that is not literally authorised by `source.md`." Run in parallel with the standard reviewers. (Always supply the complete bundled reviewer role and adversarial stage instructions, including when a generic native child is used.)
 
 Critical findings from the adversarial pass carry the same weight as critical findings from the standard review. Aggregate all verdicts into `plan-review.md` using the same JSON shape as `spec-review.md`. This is the gate that catches load-bearing decisions silently resolved against `source.md` (e.g. an irreversible operation shipped with no confirmation, an access-control or trust-boundary change, a data-retention reversal) — at plan-lock, not after the PR is open.
 
-**Then run the validation pass.** Invoke the `spec-to-pr:validating-specs` skill via the Skill tool from the controller (inline in the main session — never as a subagent; see SKILL.md `## Spec & Plan Validation`). Pass the explicit `plan.md` path as the document under review plus `spec.md` for context, and direct its merged report to `plan-validation.md`. It returns one `GO | REVISE | NO-GO` verdict; a `REVISE`/`NO-GO` feeds back into the next plan cycle like a `critical`/`important` finding. Commit `plan-validation.md` via `scripts/git-sync.sh commit`.
+**Then run the validation pass.** Read and execute the bundled `references/validation/workflow.md` inline in the controller, resolving its resources under `references/validation/` (see SKILL.md `## Spec & Plan Validation`). Pass the explicit `plan.md` path as the document under review plus `spec.md` for context, and direct its merged report to `plan-validation.md`. It returns one `GO | REVISE | NO-GO` verdict; a `REVISE`/`NO-GO` feeds back into the next plan cycle like a `critical`/`important` finding. Commit `plan-validation.md` via `scripts/git-sync.sh commit`.
 
 ## Recurring-issue Escalation
 

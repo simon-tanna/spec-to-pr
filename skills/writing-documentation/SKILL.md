@@ -143,6 +143,10 @@ authoritative for the full 18 rules **and** the _Words and Expressions Commonly
 Misused_ usage dictionary — pull it into context for a rule's full text or a
 usage ruling.
 
-**Limited-context fallback:** dispatch a subagent with your draft, this section,
-and the draft's quadrant file. Have it check quadrant conformance first, cut to
-the quadrant's register second, copyedit third, and return the revision.
+**Limited-context fallback:** read `references/dispatch.md` and dispatch a fresh
+child with the draft, this section, and the quadrant file resolved from this
+installed skill directory. Ask it to check quadrant conformance, cut to the
+quadrant's register, copyedit, and return the revision without writing files or
+spawning children. Native agent registration is unnecessary. If delegation is
+unavailable, perform the normal author cut pass when context permits; otherwise
+report the limitation. Never label an author pass as independent child review.

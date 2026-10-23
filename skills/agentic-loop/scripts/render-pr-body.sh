@@ -3,19 +3,34 @@
 # Reads spec.md + plan.md + tasks.json from .agentic-loop/<issue>/ and prints
 # the body on stdout. Stage 4 step 3 pipes this into `gh pr create --body-file -`.
 #
-# Usage: render-pr-body.sh <issue-id>
+# Usage: render-pr-body.sh <run-id>
 #
 # Required: jq, the .agentic-loop/<issue>/ directory populated by the loop.
 
 set -euo pipefail
 
-ISSUE="${1:?usage: render-pr-body.sh <issue-id>}"
+ISSUE="${1:?usage: render-pr-body.sh <run-id>}"
+[[ "$ISSUE" =~ ^[a-zA-Z0-9][a-zA-Z0-9_-]*$ ]] || { echo 'render-pr-body: invalid run ID' >&2; exit 1; }
 
 REPO_ROOT="$(git rev-parse --show-toplevel)"
 STATE_DIR="$REPO_ROOT/.agentic-loop/$ISSUE"
 
 [ -d "$STATE_DIR" ] || { printf 'render-pr-body: %s does not exist\n' "$STATE_DIR" >&2; exit 1; }
 command -v jq >/dev/null 2>&1 || { printf 'render-pr-body: jq required\n' >&2; exit 1; }
+
+# Interactive file/inline runs have an identity but no GitHub issue. Legacy CI
+# uses numeric directories without metadata and retains its closing reference.
+REAL_ISSUE=''
+if [ -f "$STATE_DIR/run-context.json" ]; then
+  REAL_ISSUE=$(jq -r '.issue // empty' "$STATE_DIR/run-context.json")
+elif [[ "$ISSUE" =~ ^[1-9][0-9]*$ ]]; then
+  REAL_ISSUE=$ISSUE
+fi
+ISSUE_LINE=''
+if [ -n "$REAL_ISSUE" ]; then
+  [[ "$REAL_ISSUE" =~ ^[1-9][0-9]*$ ]] || { echo 'render-pr-body: invalid issue metadata' >&2; exit 1; }
+  ISSUE_LINE="Closes #$REAL_ISSUE."
+fi
 
 SPEC="$STATE_DIR/spec.md"
 PLAN="$STATE_DIR/plan.md"
@@ -71,7 +86,7 @@ cat <<EOF
 
 $SUMMARY
 
-Closes #$ISSUE.
+$ISSUE_LINE
 
 ## Spec & Plan
 
@@ -96,7 +111,5 @@ See spec §Risks (\`.agentic-loop/$ISSUE/spec.md\`) and any concern entries in \
 - Domains engaged: $SPECIALISTS
 - State files: \`.agentic-loop/$ISSUE/\`
 
-🤖 Generated with [Claude Code](https://claude.com/claude-code) via the agentic-loop skill
-
-Co-Authored-By: Claude <noreply@anthropic.com>
+Generated via the agentic-loop skill.
 EOF

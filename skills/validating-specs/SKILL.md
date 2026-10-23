@@ -8,12 +8,8 @@ description: >-
   doc lands that warrants a verdict before engineering starts. Also use when the
   review should be augmented with named MCP servers or project skills passed as flags.
 
-# Tooling: this skill is a top-level controller that DISPATCHES the
-# spec-design-validator subagent. Claude Code does not allow nested subagent
-# dispatch, so this skill MUST run in the main session — never invoke it from
-# within a subagent. It intentionally inherits the full tool surface (Agent,
-# Read, Glob, Grep, ToolSearch, AskUserQuestion, Write). No allowed-tools list
-# is declared on purpose; an incomplete list would silently break dispatch.
+# Runs as the main-session controller; child validators return findings only.
+# No restricted tool list: use the capabilities exposed by the current harness.
 ---
 
 # Validating Specs
@@ -22,8 +18,15 @@ You are the **controller** for validating any pre-implementation artifact — a 
 design doc, or execution/implementation plan. You classify the artifact (type + lenses),
 dispatch one or more `spec-design-validator` subagent instances (in parallel, scoped by
 domain), thread in the right MCP servers and project skills, then **synthesize** their
-reports into one verdict. The `spec-design-validator` agent owns the validation rubric and
+reports into one verdict. The bundled `references/validator-role.md` owns the validation rubric and
 anti-sycophancy protocols — you own routing, configuration, and synthesis.
+
+Read `references/dispatch.md` before dispatch. Resolve all references from this
+installed skill directory and pass absolute paths (or their complete content) to
+children. Native agent registration is optional. Each validator receives the
+bundled role plus its filled instance prompt; a native name alone is insufficient.
+If fresh child dispatch or a required capability is unavailable, stop with setup
+guidance; never replace the independent validation with controller self-review.
 
 **Announce at start:** "Validating this spec via the validating-specs skill."
 
@@ -41,7 +44,7 @@ anti-sycophancy protocols — you own routing, configuration, and synthesis.
 
 ## Core Principles
 
-1. **The controller is the main session.** You dispatch subagents; subagents cannot.
+1. **The controller is the main session.** You dispatch subagents; children must not delegate further.
    Never run this skill from inside a subagent.
 2. **You route and synthesize; you do NOT validate.** Do not perform your own deep
    flaw-hunt or pre-seed findings — that pollutes your context and duplicates the
@@ -73,13 +76,11 @@ The raw invocation string is delivered right here, at the parse step:
 $ARGUMENTS
 ```
 
-Parse the spec path(s) and flags out of that line. That placeholder is the **sole flag-delivery sink**:
-because the token appears in this body, Claude Code does **not** append its usual `ARGUMENTS:` trailer
-(the two are mutually exclusive), so read flags from the fenced line above and nowhere else. When it is
-**empty or appears unsubstituted** — the normal case when the skill is auto-triggered by the model
-rather than invoked with typed flags — treat it as **no flags**. This "sole sink" is scoped to the flag
-_mechanism_ only; it does **not** override Core Principle 4 — tooling the user names in prose is still
-required even when no flag is typed.
+In Claude Code, read a substituted fenced argument string above. In other harnesses,
+read the actual skill invocation and user request. An empty or literal placeholder
+is not input: it does not erase flags supplied in the user's request. Parse once;
+honor tooling named in prose as well as flags. Never interpret the placeholder as
+an executable command or a path.
 
 - **spec-path** — one or more files. If omitted, search `docs/`, `.agentic-loop/*/spec.md`,
   `*.md` for the candidate and confirm with the user before proceeding.
@@ -158,17 +159,23 @@ Build the required-tooling set for each instance:
 `context7` is the verification MCP for **version-specific, migration, or unfamiliar-library** claims.
 Skip it for ubiquitous, stable libraries the validator already knows (React, Zod, Drizzle basics) unless a
 specific version/API claim is actually in doubt — and query the narrowest topic, not a broad overview.
+User/project instructions requiring Context7 more broadly take precedence. Required
+MCP access must be verified inside the fresh child; parent access is not proof.
 
-### 5. Dispatch — all instances in parallel
+### 5. Dispatch — fresh instances within available capacity
 
-Send all `Agent` calls (`subagent_type: spec-design-validator`) **in a single message**.
-They share an immutable spec and read-only codebase, write nothing conflicting → parallel is safe and faster.
+Follow `references/dispatch.md`. Load `references/validator-role.md` and fill
+`prompts/validator-instance.md` for each lens. Supply both to each fresh child,
+with absolute spec/resource paths, required tooling, and the findings-ledger
+contract. Claude may use its registered validator or a generic child with the
+bundled role; Codex uses the exposed spawn interface with the role in its task.
 
-Fill `prompts/validator-instance.md` per instance: spec path(s), assigned lens + "stay in lane",
-required skills (each with the reason it's needed), required MCPs **with the ToolSearch instruction**
-(subagents must `ToolSearch` the MCP tool schema before they can call it — naming the tool is not enough),
-and the lens-scoped **findings-ledger** output contract (instances return findings only;
-the controller writes the single human-facing 10-section report in step 6).
+Dispatch independent read-only lenses concurrently within available slots; queue
+remaining lenses. Collect every required lens before synthesis. Children return
+findings without writing files or memory. Read-only instructions are a behavior
+contract, not a claim of sandbox enforcement. Ask each child to verify required
+tools by actual use before dependent analysis; use the available discovery API
+for deferred tools. If access fails, report the missing capability and stop.
 
 ### 6. Synthesize (controller, main session)
 
@@ -179,8 +186,12 @@ the controller writes the single human-facing 10-section report in step 6).
    - any (fixable) Blocker → **REVISE**
    - no Blockers but ≥1 **Major** → **REVISE** if any Major must be resolved before coding can safely start; otherwise **GO**, listing the open Majors as conditions
    - only Minor / Nit findings, or clean → **GO**
-4. Before writing, `Read` the agent definition at the repo-relative path `.claude/agents/spec-design-validator.md`; its **"Final deliverable structure"** section (the 10 sections) _is_ the report format — the agent file stays the single source of truth, so never inline a copy here. Emit **one** unified report in that structure, leading with the highest-impact items, tagging each finding by lens, ending in a single verdict line + rough rework estimate.
-5. Offer to write it to `<spec-dir>/spec-review.md` (the repo's existing convention) — don't force.
+4. Read the bundled `references/report-format.md` and emit one unified report in
+   its structure, leading with the highest-impact items, tagging findings by lens,
+   and ending in one verdict plus a rough rework estimate where justified. No
+   repository `.claude/agents/` path or native registration is required.
+5. If an output path was supplied, write the merged report there. Otherwise offer
+   `<spec-dir>/spec-review.md`; do not write an unrequested report automatically.
 
 ## Quick Reference
 
@@ -193,20 +204,24 @@ the controller writes the single human-facing 10-section report in step 6).
 | User passed `--skill your-db-skill`           | that skill required on the domain instance, even if auto-detect missed it          |
 | Spec mentions a library/version               | add `context7` MCP to the relevant instance                                        |
 | Spec touches signing/secrets/webhooks/auth    | add a `security` instance                                                          |
-| Instance needs an MCP tool                    | prompt MUST tell it to `ToolSearch` the schema first                               |
+| Instance needs an MCP tool                    | verify actual child access; discover deferred schemas through the exposed interface                               |
 
 ## Common Mistakes
 
 - **Doing the validation yourself.** You are the controller — classify, dispatch, synthesize. Deep digging is the instances' job.
-- **Naming an MCP tool without the ToolSearch step.** The subagent can't call `mcp__…` until it loads the schema. Always include the ToolSearch instruction.
+- **Assuming parent tools imply child access.** Verify access in the child and discover deferred schemas with the interface actually exposed; Claude ToolSearch names are not portable.
 - **Letting auto-detect override user-named tooling.** Anything the user names — `--mcp`/`--skill` flag or prose — is always included; auto-detect only adds. Echo unrecognised `--tokens`; surface unresolvable names.
 - **Overlapping instance scopes.** Tell each instance to stay in its lane; reconcile overlaps in synthesis, not by having two instances re-litigate the same finding.
 - **Folding sequencing/rollback into `scope`.** Dependency ordering, critical path, rollback, and review/test gates are the **`execution`** lens now — `scope` is requirements/acceptance-criteria only. Routing them to `scope` both under-weights them and risks a double-report.
 - **Classifying doc-type by directory.** `docs/plans/` holds both plans and designs — use the `*-plan`/`*-design`/`*-spec` suffix or content headings, never the folder.
-- **Running this inside a subagent.** Nesting isn't allowed — the controller is the main session.
+- **Running this inside a subagent.** This workflow keeps all dispatch in the main-session controller on every harness.
 - **Emitting N reports.** The user gets one merged report and one verdict.
 
 ## Files
 
 - `references/detection-map.md` — spec-content → skill/MCP mapping, and which lens each serves
 - `prompts/validator-instance.md` — the templated prompt sent to each `spec-design-validator` instance
+
+- `references/dispatch.md` — harness capability and fresh-child contract
+- `references/validator-role.md` — complete portable validation rubric
+- `references/report-format.md` — controller report structure

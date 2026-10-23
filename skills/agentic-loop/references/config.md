@@ -27,16 +27,16 @@ override the defaults. Read it once at loop start (Stage 1 ingest).
   // Agent roster. All optional; defaults shown.
   "agents": {
     // The planner/synthesizer. Returns tagged artifacts the controller writes — it never
-    // makes Agent calls itself. Default: "general-purpose" (a real, model-tierable dispatch).
+    // spawns children itself. Default: "general-purpose" (a fresh generic child).
     // A bespoke orchestrator agent (e.g. "team-lead") is one valid value.
     "planner": "general-purpose",
 
     // The review agent for spec/plan/compliance/quality/final passes and the adversarial
-    // attack-surface pass. Default: "code-reviewer"; falls back to "general-purpose" with a
-    // documented loss of review tuning (see SKILL.md "Model Tiering" / plan-loop adversarial pass).
+    // attack-surface pass. Bundled names resolve portably via references/dispatch.md;
+    // a generic child receives the complete bundled reviewer instructions.
     // Installed via the spec-to-pr plugin, the bundled reviewer is "spec-to-pr:code-reviewer";
     // set that as the value (or dispatch by that plugin-qualified name) so the tuned agent is used
-    // rather than the general-purpose fallback.
+    // or use the bare bundled alias; both retain the complete role instructions.
     "reviewer": "spec-to-pr:code-reviewer",
 
     // Domain specialists the planner may route tasks to. The controller validates every
@@ -50,7 +50,7 @@ override the defaults. Read it once at loop start (Stage 1 ingest).
   // invocation flags (a GitHub Action run has no typed flags). Resolved set = args ∪ these,
   // deduped; forwarded to the validating-specs passes too. Absent ⇒ empty. See
   // references/invocation-args.md. NOTE: an "mcps" entry is only satisfiable on the
-  // implementation hop when the specialist is a wildcard-tool agent (see that reference).
+  // implementation hop when the fresh child can actually access it (see that reference).
   "required": {
     "skills": [],
     "mcps":   []
@@ -82,8 +82,17 @@ override the defaults. Read it once at loop start (Stage 1 ingest).
 | `base_ref`     | `main`                                                                                   |
 | quality gates  | `scripts/quality-gates.sh` detects the package manager from the lockfile and runs only the `package.json` scripts that exist among `test`/`lint`/`typecheck`/`build`; for non-JS repos it falls back to `cargo test` / `go test ./...` / `pytest`. See that script for the exact precedence and the no-gate-detected safety behaviour. |
 | `agents.planner`   | `general-purpose`                                                                    |
-| `agents.reviewer`  | `spec-to-pr:code-reviewer` (the bundled agent) if available, else `general-purpose` (degraded) |
+| `agents.reviewer`  | `spec-to-pr:code-reviewer` (the bundled agent) mapped to native registration or a generic fresh child carrying the bundled role |
 | `agents.specialists` | `[{ "type": "general-purpose", "owns": "all code" }]`                              |
 | `required.skills` / `required.mcps` | empty — no forced tooling unless args or config supply it            |
 | `risk_categories`  | the generic set only                                                                |
 | `io.adapter`       | `github` if the gh CLI is authenticated or `$GITHUB_ACTIONS=true`, else `file`      |
+
+## Harness mapping
+
+These configuration keys and precedence are unchanged. Resolve `general-purpose`
+and bundled role aliases through `references/dispatch.md`; explicit external
+agents must be available in the current harness. The default generic specialist
+is code-capable; review-only roles are not implementation specialists. Codex model
+defaults are inherited without passing Claude tier aliases. Required skill/MCP
+access is verified in each fresh child before dependent work.

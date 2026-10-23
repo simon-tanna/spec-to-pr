@@ -1,8 +1,19 @@
+# Harness model selection
+
+Codex: omit per-child model overrides. Use the configured inherited child default,
+which may be affected by harness subagent defaults; do not promise that its model
+always equals the parent. Record the effective model when observable. Never pass
+Claude model aliases or mutate native configurations during the run.
+
+The remaining tiering guidance applies only to Claude Code. Required review is
+always a fresh child carrying the complete bundled role, even when native role
+registration is absent. There is no controller-inline fallback for required work.
+
 # Model Tiering
 
 Subagent model resolves in this precedence: per-call `model:` argument on the Agent tool > agent definition frontmatter (`.claude/agents/<name>.md`) > parent's model (set by `--model` in the workflow's `claude_args`). The controller is pinned to Opus by the workflow; subagents follow their frontmatter unless this skill overrides per call.
 
-Pass `model:` explicitly on every Agent dispatch listed below. Do not edit agent frontmatter to tune for this loop — other callers depend on those defaults. The roles below (planner, reviewer) are the configured agents (`agents.planner`, default `general-purpose`; `agents.reviewer`, default `code-reviewer`); the model assignment is keyed to the *role and its workload*, not to any specific agent. Per-call `model:` tiering only applies when the role is a real dispatch — the controller-inline planner fallback (no roster/tiering repos) forfeits it.
+Pass `model:` explicitly on every Agent dispatch listed below. Do not edit agent frontmatter to tune for this loop — other callers depend on those defaults. The roles below (planner, reviewer) are the configured agents (`agents.planner`, default `general-purpose`; `agents.reviewer`, default `code-reviewer`); the model assignment is keyed to the *role and its workload*, not to any specific agent. Per-call tiering applies to these fresh Claude child dispatches.
 
 | Stage / call                          | Model               | Rationale                                                                                                 |
 | ------------------------------------- | ------------------- | --------------------------------------------------------------------------------------------------------- |

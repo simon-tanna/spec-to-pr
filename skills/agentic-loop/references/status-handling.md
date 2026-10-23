@@ -23,10 +23,10 @@ Protocol:
 
 1. Mark the task `blocked` in `tasks.json` with `blocker_reason: "needs product decision: <one-sentence summary>"`.
 2. Append the question to `.agentic-loop/<id>/open-questions.md` prefixed `[PRODUCT][<task-id>]`.
-3. Add label `state:needs-decision` via `scripts/gh-label.sh`.
-4. Emit a single message via `scripts/notify.sh blocked "$ID" -` using the Open-Questions template.
-5. In interactive mode, also raise via `AskUserQuestion`.
-6. `scripts/git-sync.sh commit "chore(loop): pause for product decision on #<issue>"`. Then adapter-aware exit: `github` → `exit 0`; other adapters → drop `.agentic-loop/<id>/NEEDS_INPUT` and `exit 78`.
+3. Only for a real GitHub issue under the GitHub adapter, add label `state:needs-decision` via `scripts/gh-label.sh` using the real issue number. Skip labels for file/inline runs.
+4. Emit a single message via `scripts/notify.sh blocked "$ID" -` using the Open-Questions template. The helper resolves the real issue from run metadata; issue-less GitHub notifications go to the run's `notifications.md` instead. This does not change the adapter used to open a PR.
+5. In interactive mode, also raise via the available interactive question interface.
+6. For an issue-less run or a non-GitHub adapter, write `.agentic-loop/<id>/NEEDS_INPUT` before committing the question and pause artifacts with `scripts/git-sync.sh commit "chore(loop): pause for product decision on <id>"`. Interactively, wait for the answer or yield the turn; never continue dependent work. Headlessly, a real GitHub issue under the GitHub adapter exits `0` for issue-comment resumption; all other runs exit `78` for host resumption, including issue-less runs whose PR adapter remains GitHub.
 
 This is the ONE Stage-3 question type that IS allowed to escalate to the human — because by definition the spec/plan was wrong to resolve it, and the cost of guessing is high. All other Stage-3 ambiguities still go through the spec/plan revision path, not the human inbox.
 
@@ -70,8 +70,10 @@ Protocol:
    grant and how (workflow `--allowed-tools`, settings.json permission, or
    `additional_permissions:` input).
 4. `scripts/git-sync.sh commit "chore(loop): pause for permission grant on #<issue>"`
-5. Adapter-aware exit: `github` → `exit 0`; other adapters → drop
-   `.agentic-loop/<id>/NEEDS_INPUT` and `exit 78`. Do NOT retry the denied tool.
+5. A real issue under `github` uses issue-comment resumption. Issue-less runs
+   and other adapters use `.agentic-loop/<id>/NEEDS_INPUT` (write it before the
+   checkpoint above). Interactively ask and yield; headlessly exit `0` for the
+   issue-comment path or `78` for host resumption. Do NOT retry the denied tool.
    Do NOT silently fall back to a different tool unless the alternative is
    explicitly equivalent.
 

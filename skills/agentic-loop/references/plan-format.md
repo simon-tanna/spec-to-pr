@@ -58,7 +58,7 @@ Each task is 2–5 minute steps. Use checkbox syntax so progress is visible.
 ```markdown
 ### Task N: <Component Name>
 
-**Domain:** matches a configured `agents.specialists[].type` (e.g. `api`, `ui`, `data`), or `general-purpose`
+**Domain:** matches a resolved `run-requirements.json.specialists[].type` (e.g. `api`, `ui`, `data`), or `general-purpose`
 **Files:**
 
 - Create: `exact/path.ts`
@@ -87,7 +87,7 @@ Each task is 2–5 minute steps. Use checkbox syntax so progress is visible.
 - [ ] **Step 2: Run test, confirm expected failure mode.**
 - [ ] **Step 3: Write the minimal implementation that satisfies the assertions.**
 - [ ] **Step 4: Run test, confirm green.**
-- [ ] **Step 5: Run full gate** — `${CLAUDE_PLUGIN_ROOT}/skills/agentic-loop/scripts/quality-gates.sh`.
+- [ ] **Step 5: Run full gate** — `${AGENTIC_SKILL_DIR}/scripts/quality-gates.sh`.
 - [ ] **Step 6: Commit.** Message: `feat(foo): add bar [#<issue>]`. Body MUST include a `TDD:` line referencing the test (e.g. `TDD: __tests__/bar.test.ts:12-30 written before implementation`).
 ```
 
@@ -100,7 +100,7 @@ The `<dispatch_plan>` block the planner returns in Mode A of `impl-planner.md` M
   // REQUIRED. One entry per specialist the controller should dispatch in parallel.
   "specialists": [
     {
-      "agent_type": "api-developer", // string, MUST be a type in agents.specialists (surfaced in impl-planner.md Mode A); "general-purpose" when no roster is configured
+      "agent_type": "api-developer", // string, MUST be a type in run-requirements.json.specialists (surfaced in impl-planner.md Mode A); "general-purpose" when no roster is configured
       "scope": "user-profile REST endpoints", // string, one sentence — what this specialist owns in this spec
       "components": [
         // string[] of File Structure entries from spec/plan
@@ -127,7 +127,7 @@ The `<dispatch_plan>` block the planner returns in Mode A of `impl-planner.md` M
 **Controller validation rules:**
 
 1. `specialists` is a non-empty array.
-2. Every `agent_type` is in the configured roster (`agents.specialists`, default `[general-purpose]`), which the controller surfaces to the planner in `impl-planner.md` Mode A.
+2. Every `agent_type` is in the immutable resolved roster (`run-requirements.json.specialists`), which the controller surfaces to the planner in `impl-planner.md` Mode A.
 3. `components` is non-empty for every specialist.
 4. No cycle in `depends_on`.
 5. Every `research_needed[*].feeds_into` references an `agent_type` present in `specialists`.

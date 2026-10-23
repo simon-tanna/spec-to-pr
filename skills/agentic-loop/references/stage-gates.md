@@ -44,3 +44,15 @@ Four PreToolUse hooks block the most common shortcut paths deterministically —
 If a hook blocks you, do not retry the same call — it will fail again. Read the stderr message, address the underlying gap (run the missing review pass, run the plan loop, close the open questions), then proceed.
 
 **Hook-enforced vs model-enforced gates.** The hooks above enforce the _structured_ gates only — `spec-review.md` verdict + `force_interview`, `tasks.json` shape, `plan-review.md` verdict, `open-questions.md` emptiness, per-task review shas. The `validating-specs` verdict (`spec-validation.md` / `plan-validation.md` must be `GO`) is a **model-enforced** gate, not hook-enforced: `*-validation.md` is `validating-specs`' free-form report, which cannot be statically validated the way the structured JSON can, so no hook greps it. The controller is responsible for honouring the `GO`-only exit in the spec/plan loop. Do not read the "Hard gates" table as a mechanical backstop for the validation verdict — there isn't one; it is on you to check it.
+
+## Portable controller checks
+
+Every harness invokes `scripts/check-gates.sh` before the corresponding state or
+task mutation and before PR readiness, using the explicit absolute run directory.
+See SKILL.md's shared-check section for CLI examples and proposed-content staging.
+The existing Claude wrappers preserve Write versus Edit fragment policies.
+Codex uses direct checks and has no lifecycle interception in this release.
+A helper result cannot substitute for the behavioral gates above: verify actual
+review results, GO verdicts, red-before-green evidence, and successful quality
+commands independently. A tool-access failure or missing fresh review stops
+progression even if all four machine checks would allow it.

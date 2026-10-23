@@ -134,7 +134,7 @@ Process decisions (codebase conventions, obvious best practice, library selectio
 
 ## Delegation
 
-If research is needed (domain specifics, library behaviour, external API), include a `## Research Needed` section at the end of your output listing what's needed and which configured specialist (`agents.specialists`, or `general-purpose` by default) should handle it. The calling controller will dispatch the specialist and pass findings back in a follow-up iteration. Do **not** make Agent calls yourself. Once findings are available, name the consulted specialists in §1 Context.
+If research is needed (domain specifics, library behaviour, external API), include a `## Research Needed` section at the end of your output listing what's needed and which configured specialist (from immutable `run-requirements.json.specialists`) should handle it. The calling controller will dispatch the specialist and pass findings back in a follow-up iteration. Do **not** make Agent calls yourself. Once findings are available, name the consulted specialists in §1 Context.
 
 If this run mandates specific project skills or MCP servers (the controller resolves these into `run-requirements.json` from `--skill`/`--mcp` args or config), prefer them for the relevant research and name them in the matching `## Research Needed` item — the controller prepends the REQUIRED TOOLING block (`references/invocation-args.md`) to each research dispatch so the specialist actually loads and uses them, rather than reasoning from memory.
 

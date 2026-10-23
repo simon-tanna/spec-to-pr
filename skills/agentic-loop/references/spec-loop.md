@@ -50,11 +50,11 @@ Both passes run every iteration. The structured pass drives the interview gate; 
 }
 ```
 
-**Pass 2 — validation.** Invoke the `spec-to-pr:validating-specs` skill via the Skill tool from the controller (inline in the main session — never as a subagent; see SKILL.md `## Spec & Plan Validation` for the full dispatch contract). Pass the explicit `spec.md` path and direct its merged report to `spec-validation.md` (NOT `spec-review.md`, which Pass 1 owns). It returns one `GO | REVISE | NO-GO` verdict. A `REVISE`/`NO-GO` verdict feeds back into the next draft cycle exactly like a `critical`/`important` structured finding. Commit `spec-validation.md` via `scripts/git-sync.sh commit`.
+**Pass 2 — validation.** Read and execute the bundled `references/validation/workflow.md` inline in the controller, resolving its resources under `references/validation/` (see SKILL.md `## Spec & Plan Validation`). Pass the explicit `spec.md` path and direct its merged report to `spec-validation.md` (NOT `spec-review.md`, which Pass 1 owns). It returns one `GO | REVISE | NO-GO` verdict. A `REVISE`/`NO-GO` verdict feeds back into the next draft cycle exactly like a `critical`/`important` structured finding. Commit `spec-validation.md` via `scripts/git-sync.sh commit`.
 
 ## Interview
 
-If the review surfaces `open_questions` that the spec cannot resolve without human input, go to the CI-aware interview handshake (see `ci-mode.md`). In interactive mode, ask via `AskUserQuestion` immediately — do not wait for the review to accumulate questions if they are obvious during the draft.
+If the review surfaces `open_questions` that the spec cannot resolve without human input, go to the CI-aware interview handshake (see `ci-mode.md`). In interactive mode, ask through the available question interface immediately — do not wait for the review to accumulate questions if they are obvious during the draft.
 
 ## Loop Exit
 
