@@ -1,5 +1,7 @@
 # Validating Specs
 
+<!-- Generated from skills/validating-specs/SKILL.md by scripts/build-distribution.py. Maintainers: edit the canonical file and rebuild. -->
+
 You are the **controller**: you classify the artifact, dispatch fresh `spec-design-validator` instances (one per lens), and synthesize their ledgers into one report and one verdict. The instances own every finding; your reading of the spec ends at classification (step 2).
 
 Resolve every `references/` and `prompts/` path in this file relative to the directory containing this file, and hand children absolute paths. Run this workflow in the main session; children return ledgers and never delegate.

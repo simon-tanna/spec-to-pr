@@ -1,3 +1,5 @@
+<!-- Generated from skills/validating-specs/references/dispatch.md by scripts/build-distribution.py. Maintainers: edit the canonical file and rebuild. -->
+
 # Portable worker dispatch
 
 The skill runs in the main controller session. Only that controller dispatches,

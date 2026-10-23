@@ -1,3 +1,5 @@
+<!-- Generated from skills/validating-specs/prompts/validator-instance.md by scripts/build-distribution.py. Maintainers: edit the canonical file and rebuild. -->
+
 # Validator Instance Prompt Template
 
 Fill this template and dispatch it to a fresh child per `../references/dispatch.md`. Substitute every `{{…}}`, including `{{ROLE_ABS_PATH}}`, `{{DOC_TYPE}}`, and `{{CONTEXT_ABS_PATHS}}`. The `{{#if}}` /

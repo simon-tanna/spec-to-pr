@@ -1,3 +1,5 @@
+<!-- Generated from skills/validating-specs/references/report-format.md by scripts/build-distribution.py. Maintainers: edit the canonical file and rebuild. -->
+
 ## Validation report format
 
 Severities are defined in the validator role's `## Severity` section. Every section appears, in order; write `None.` under an empty one.

@@ -4,6 +4,17 @@ All notable changes to the `spec-to-pr` skills suite and plugin are documented h
 The format follows [Keep a Changelog](https://keepachangelog.com/), and the
 project adheres to [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Changed
+
+- The native `team-lead` agent is planning-only: `disallowedTools: Agent,
+  NotebookEdit` removes its ability to dispatch subagents, also when it runs as
+  the main thread with `claude --agent team-lead`. It returns delegation
+  requests for the caller to dispatch.
+- The native `code-reviewer` and `spec-design-validator` agents are read-only
+  through `disallowedTools`, and now inherit MCP and Skill tools.
+
 ## [0.3.0] - 2026-10-23
 
 ### Added

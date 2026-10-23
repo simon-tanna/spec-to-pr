@@ -1,3 +1,5 @@
+<!-- Generated from skills/validating-specs/references/detection-map.md by scripts/build-distribution.py. Maintainers: edit the canonical file and rebuild. -->
+
 # Detection Map: spec content → tooling
 
 The validation workflow's step 4 (Resolve tooling) matches spec content against these rows. A match the user didn't name is **optional** tooling for the listed lens's instance; pass its Reason. A row applies only when its skill or MCP exists in this environment — skip a row whose skill or server is absent from the skill listing or tool discovery.
