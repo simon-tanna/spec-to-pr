@@ -17,11 +17,12 @@ normalize_base() {
 }
 resolve_base_start() {
   local value="$1" remote_match
+  remote_match=$(git ls-remote --heads origin "refs/heads/$value") || fail 'Cannot inspect remote base branch'
+  [[ -n "$remote_match" ]] || fail "Base branch does not exist on origin: $value"
+  git show-ref --verify --quiet "refs/remotes/origin/$value" || fail "Missing origin/$value tracking ref; fetch origin first"
   if git show-ref --verify --quiet "refs/heads/$value"; then
     printf 'refs/heads/%s\n' "$value"
   elif git show-ref --verify --quiet "refs/remotes/origin/$value"; then
-    remote_match=$(git ls-remote --heads origin "refs/heads/$value") || fail 'Cannot inspect remote base branch'
-    [[ -n "$remote_match" ]] || fail 'Base remote-tracking reference has no branch on origin'
     printf 'refs/remotes/origin/%s\n' "$value"
   else
     fail "Base branch unavailable locally: $value (fetch origin first)"

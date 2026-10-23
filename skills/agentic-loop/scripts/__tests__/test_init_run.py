@@ -54,6 +54,7 @@ class InitRun(unittest.TestCase):
     def test_base_precedence(self):
         for branch in ['configured', 'body', 'label', 'explicit']:
             self.git('branch', branch)
+            self.git('push', 'origin', branch)
         (self.repo / '.agentic-loop.config.json').write_text('{"base_ref":"configured"}')
         self.git('add', '.agentic-loop.config.json')
         self.git('commit', '-m', 'config')
@@ -61,6 +62,7 @@ class InitRun(unittest.TestCase):
         self.assertEqual(result['base_ref'], 'explicit')
     def test_config_beats_body_and_label(self):
         self.git('branch', 'configured')
+        self.git('push', 'origin', 'configured')
         (self.repo / '.agentic-loop.config.json').write_text('{"base_ref":"configured"}')
         self.git('add', '.')
         self.git('commit', '-m', 'config')
@@ -89,9 +91,11 @@ class InitRun(unittest.TestCase):
         self.run_init('--run-id', result['run_id'], ok=False)
     def test_body_beats_label_without_config(self):
         self.git('branch', 'body')
+        self.git('push', 'origin', 'body')
         self.assertEqual(self.run_init('--issue-base', 'body', '--label-base', 'missing')['base_ref'], 'body')
     def test_label_without_body_or_config(self):
         self.git('branch', 'label')
+        self.git('push', 'origin', 'label')
         self.assertEqual(self.run_init('--label-base', 'label')['base_ref'], 'label')
     def test_remote_branch_collision(self):
         self.git('push', 'origin', 'main:refs/heads/feat/existing')
@@ -99,6 +103,7 @@ class InitRun(unittest.TestCase):
         self.assertEqual(self.git('branch', '--show-current'), 'main')
     def test_tracked_source_snapshot_survives_branch_change(self):
         self.git('branch', 'base')
+        self.git('push', 'origin', 'base')
         original = self.source.read_bytes()
         self.git('add', self.source.name)
         self.git('commit', '-m', 'source')
@@ -112,6 +117,7 @@ class InitRun(unittest.TestCase):
         self.git('add', '.agentic-loop')
         self.git('commit', '-m', 'base storage symlink')
         self.git('branch', 'unsafe-base')
+        self.git('push', 'origin', 'unsafe-base')
         storage.unlink()
         self.git('add', '.agentic-loop')
         self.git('commit', '-m', 'remove storage symlink')
@@ -126,6 +132,7 @@ class InitRun(unittest.TestCase):
         self.git('add', '.agentic-loop')
         self.git('commit', '-m', 'base run storage')
         self.git('branch', 'occupied-base')
+        self.git('push', 'origin', 'occupied-base')
         self.git('rm', '-r', '.agentic-loop')
         self.git('commit', '-m', 'remove run storage')
         self.run_init('--issue', '42', '--base-ref', 'occupied-base', ok=False)
@@ -160,6 +167,32 @@ class InitRun(unittest.TestCase):
         self.run_init('--issue', '../escape', ok=False)
         self.run_init('--run-id', '../escape', ok=False)
         self.assertFalse((self.repo / '.agentic-loop').exists())
+
+    def test_local_only_base_rejected_before_mutation(self):
+        self.git('branch', 'local-only')
+        self.run_init('--base-ref', 'local-only', ok=False)
+        self.assertEqual(self.git('branch', '--show-current'), 'main')
+        self.assertFalse((self.repo / '.agentic-loop').exists())
+        self.assertEqual(self.git('branch', '--list', 'feat/*'), '')
+
+    def test_missing_origin_tracking_ref_requires_fetch(self):
+        self.git('update-ref', '-d', 'refs/remotes/origin/main')
+        error = self.run_init(ok=False)
+        self.assertIn('fetch', error.lower())
+        self.assertEqual(self.git('branch', '--show-current'), 'main')
+        self.assertFalse((self.repo / '.agentic-loop').exists())
+
+    def test_deleted_remote_base_refuses_resume_without_changes(self):
+        self.git('branch', 'release')
+        self.git('push', 'origin', 'release')
+        result = self.run_init('--base-ref', 'release')
+        run = self.repo / result['run_dir']
+        (run / 'run-requirements.json').write_text('{"skills":["required"]}')
+        before = {p.name: p.read_bytes() for p in run.iterdir()}
+        self.git('push', 'origin', '--delete', 'release')
+        self.run_init('--run-id', result['run_id'], ok=False)
+        self.assertEqual(self.git('branch', '--show-current'), result['branch'])
+        self.assertEqual(before, {p.name: p.read_bytes() for p in run.iterdir()})
 
 if __name__ == '__main__':
     unittest.main()

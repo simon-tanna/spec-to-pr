@@ -39,9 +39,10 @@ label, then `main`. Accept a branch name such as `main`, `origin/main`,
 `base_ref`, suitable for PR base selection and `origin/<base_ref>` comparisons.
 Branch names containing slashes, such as `release/next`, remain supported.
 Commit IDs, revision expressions, tags, and other ref namespaces are not base
-branches. Require an exact local branch ref, or an existing local `origin`
-remote-tracking ref whose branch still exists on origin. Prefer the local branch
-when both exist. Fetch separately if the needed ref is missing or stale; the
+branches. Require the branch to exist on origin and its `origin/<base_ref>`
+remote-tracking ref to exist locally, even when a local branch is available.
+This ensures final review and PR creation can use the selected base. Prefer the
+local branch for checkout when both exist. Fetch separately if the needed ref is missing or stale; the
 initializer never fetches implicitly. Checkout uses the qualified local ref while
 metadata always stores the normalized branch name. The legacy CI resolver is
 unchanged by this interactive helper.
@@ -72,7 +73,8 @@ workflow; do not interpret successful initialization as persisted remote state.
 State and immutable invocation requirements remain controller-owned.
 
 Resume requires the matching feature branch already checked out, unchanged source
-bytes, a matching saved snapshot, and reachable origin/base. Pass the saved
+bytes, a matching saved snapshot, and the same origin/base checks as a fresh run.
+A deleted remote base or missing tracking ref stops resume without changing run files. Pass the saved
 `source.md` as input when the original is no longer available, together with
 `--run-id`. Explicit branch/base/issue values must match metadata; equivalent base
 prefixes are normalized before comparison. Initialization
