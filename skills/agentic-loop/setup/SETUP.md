@@ -64,22 +64,25 @@ See `references/auto-resume-config.md` (the single source of truth).
 
 Also set the `ANTHROPIC_API_KEY` **secret**.
 
-## 3. Hooks + registration + probe — both modes (recommended)
+## 3. Claude hooks + registration + probe (optional lifecycle enforcement)
 
-The four gate hooks make the stage gates *deterministic* (the harness blocks the bad tool call).
-Without registration the gates still hold, but only because the controller self-enforces them.
+The four Claude gate hooks intercept matching tool calls. Skills-only installations use
+controller-invoked checks through `scripts/check-gates.sh`; Codex does not gain lifecycle
+interception from Claude settings. These checks retain the existing policies: malformed
+proposed task JSON and unresolvable commit traces pass; traces establish presence, not TDD ordering.
 
 1. Copy the hook scripts into the target repo's `.claude/hooks/` and `chmod +x` them:
-   - the 4 gate hooks + any opt-in hooks from `${CLAUDE_PLUGIN_ROOT}/skills/agentic-loop/setup/hooks/`
+   - the 4 gate wrappers, `lib-gates.sh`, and any opt-in hooks from the installed skill's `setup/hooks/`
    - the 2 context hooks (`postooluse-context-check.sh`, `precompact-flush.sh`) from
-     `${CLAUDE_PLUGIN_ROOT}/skills/agentic-loop/scripts/`
+     the installed skill's `scripts/`
    - if you enable `precompact-flush.sh`, also copy `git-sync.sh` from that `scripts/` dir into
      `.claude/hooks/` (the flush hook calls it; it no-ops safely if absent).
 
    ```bash
    mkdir -p .claude/hooks
-   SKILL="${CLAUDE_PLUGIN_ROOT}/skills/agentic-loop"
-   cp "$SKILL"/setup/hooks/agentic-loop-check-*.sh .claude/hooks/
+   # Set this to the installed agentic-loop skill directory.
+   SKILL="/absolute/path/to/installed/agentic-loop"
+   cp "$SKILL"/setup/hooks/agentic-loop-check-*.sh "$SKILL"/setup/hooks/lib-gates.sh .claude/hooks/
    cp "$SKILL"/scripts/postooluse-context-check.sh "$SKILL"/scripts/precompact-flush.sh "$SKILL"/scripts/git-sync.sh .claude/hooks/
    # lib-mode.sh: the shared interactivity resolver the two context hooks call.
    # Copy it alongside them; without it they fall back to the legacy GITHUB_ACTIONS check.
@@ -90,7 +93,24 @@ Without registration the gates still hold, but only because the controller self-
    the `hooks` arrays if it exists). All hook commands reference `$CLAUDE_PROJECT_DIR/.claude/hooks/…`.
    This registers: the 4 gate hooks (PreToolUse), the context-check (PostToolUse), and the precompact
    flush (PreCompact).
-3. Run `scripts/check-substrate.sh` — it must report all four gate hooks registered.
+3. Run `scripts/check-substrate.sh --harness claude` — it must report all four hooks
+   registered and installed helpers present. Verify actual interception in the active session.
+   On upgrades, repeat the copy for all four wrappers **and** `lib-gates.sh` together;
+   installed hooks resolve helpers alongside themselves and do not need the source checkout.
+   Codex uses `scripts/check-substrate.sh --harness codex` to report direct-check availability.
+
+Direct check interface (exit `0` pass, `2` policy rejection, `1` invocation/runtime error):
+
+```bash
+bash "$SKILL/scripts/check-gates.sh" state --run-dir .agentic-loop/99 --target-state plan
+bash "$SKILL/scripts/check-gates.sh" tasks --run-dir .agentic-loop/99 --input-mode document --input-file /tmp/proposed-tasks.json
+bash "$SKILL/scripts/check-gates.sh" tdd --run-dir .agentic-loop/99 --input-mode document --input-file /tmp/proposed-tasks.json
+bash "$SKILL/scripts/check-gates.sh" pr-ready --run-dir .agentic-loop/99
+```
+
+Use `fragment` for an Edit replacement rather than a complete document. The task
+fragment policy requires both review hashes beside a newly introduced `done` status;
+absence of a blocker count preserves the legacy partial-edit behavior.
 
 **Opt-in / repo-policy hooks (NOT in the snippet):** `block-ts-violations.sh` (TypeScript-only —
 register only on TS repos), `force-agentic-loop.sh` (CI-only; forces the skill on a pinned branch),

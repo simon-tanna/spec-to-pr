@@ -17,7 +17,7 @@ The workflow's "Pin agentic-loop branch" step (in `.github/workflows/claude.yml`
 Interactivity is resolved by `scripts/lib-mode.sh` (the single source of truth) into `interactive` | `headless`. GitHub Actions is one headless harness; `AGENTIC_HEADLESS=1` / `AGENTIC_MODE=headless` opt any other harness in. See SKILL.md §Operating Modes for the two-axis model (interactivity + `IO_ADAPTER`).
 
 ```bash
-MODE="$(bash "${CLAUDE_PLUGIN_ROOT}/skills/agentic-loop/scripts/lib-mode.sh")"  # interactive | headless
+MODE="$(bash "${AGENTIC_SKILL_DIR}/scripts/lib-mode.sh")"  # interactive | headless
 # GitHub Actions resolves to MODE=headless, IO_ADAPTER=github — the pair this
 # document historically called "CI mode". Its behaviour is unchanged.
 ```
@@ -41,7 +41,7 @@ If no issue number is available, the workflow was misconfigured — exit non-zer
 
 ## Interview Handshake
 
-In interactive mode, `AskUserQuestion` blocks. In headless mode that is not possible (no human in the loop) — GitHub Actions is one such harness; a Cloudflare Sandbox/Container or self-hosted runner is another. Protocol below covers Stage 1 spec questions; for ANY stage producing an open question, see SKILL.md §Mid-Stage Question Protocol — same shape, stage-agnostic. For permission denials see `references/permissions-handshake.md`.
+In interactive mode, the available interactive question interface blocks. In headless mode that is not possible (no human in the loop) — GitHub Actions is one such harness; a Cloudflare Sandbox/Container or self-hosted runner is another. Protocol below covers Stage 1 spec questions; for ANY stage producing an open question, see SKILL.md §Mid-Stage Question Protocol — same shape, stage-agnostic. For permission denials see `references/permissions-handshake.md`.
 
 **The interview gate fires when ANY of the following is true on the latest `spec-review.md`:**
 

@@ -24,7 +24,7 @@ chore(loop): start <task-id> <task-title> [#<issue>]
 
 ### 2. Dispatch implementer
 
-Fresh subagent. Use `prompts/task-implementer.md`. Pick the `subagent_type` by matching `task.domain` to the `type` of the `agents.specialists` entry that owns that domain; if no entry matches (or `agents.specialists` is unset), use `general-purpose`. Because the planner set `task.domain` in Mode A from the same configured roster, the mapping is 1:1 by construction — Stage 3 routes on the same roster Stage 2 planned with.
+Create a fresh child through `dispatch.md` with `prompts/task-implementer.md`. Match `task.domain` to the immutable `run-requirements.json.specialists` roster used by Stage 2. Do not reread config or substitute a generic worker when an explicit roster entry is unavailable. Missing ownership is a plan error: return to the planner. The default generic roster is resolved only at ingest. Include the REQUIRED TOOLING block and verify required child capabilities before dependent work.
 
 Pass to the implementer:
 
@@ -86,9 +86,9 @@ If any of these fail, re-dispatch the implementer with the gap as context. Do NO
 
 ### 8. Update state
 
-- Mark task `done` in `tasks.json`, set `commit_sha`. **The `agentic-loop-check-tasks-json.sh` PreToolUse hook will reject this write unless both `spec_review_sha` and `quality_review_sha` are populated on the same task.** A block here means a review pass is missing — go run it, do not retry.
+- Mark task `done` in `tasks.json`, set `commit_sha`. Run both shared `tasks` and `tdd` checks on the proposed document before writing. Registered Claude hooks additionally intercept supported writes; Codex requires these explicit controller calls. Both `spec_review_sha` and `quality_review_sha` must be populated on the same task. A block here means a review pass is missing — go run it, do not retry.
 - Append to `progress.log` per `progress-journal.md`.
-- If a reusable pattern emerged, update the relevant `CLAUDE.md`.
+- If a reusable pattern emerged, update the applicable repository instructions (`AGENTS.md` or `CLAUDE.md`).
 - Run `scripts/git-sync.sh commit "chore(loop): finish <task-id> [#<issue>]"`.
 
 ### 9. Post progress (CI)

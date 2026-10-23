@@ -28,6 +28,7 @@ git checkout -q -b "$BRANCH"; git push -q -u origin "$BRANCH"
 # context-hygiene PostToolUse hook — which needs lib-mode.sh to resolve
 # AGENTIC_MODE=headless instead of falling back to GITHUB_ACTIONS).
 mkdir -p .claude/hooks
+cp "$HOOKS_SRC/setup/hooks/lib-gates.sh" .claude/hooks/
 cp "$HOOKS_SRC/setup/hooks/agentic-loop-check-state-transition.sh" .claude/hooks/
 cp "$HOOKS_SRC/setup/hooks/agentic-loop-check-tasks-json.sh"       .claude/hooks/
 cp "$HOOKS_SRC/setup/hooks/agentic-loop-check-pr-ready.sh"         .claude/hooks/

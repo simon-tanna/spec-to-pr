@@ -34,57 +34,6 @@ else
   DIR=$(find .agentic-loop -mindepth 1 -maxdepth 1 -type d | head -n1)
 fi
 
-REASONS=()
-
-if [ -s "$DIR/tasks.json" ]; then
-  JQ_ERR=$(mktemp)
-  JQ_STATUS=0
-  OFFENDERS=$(jq -r '
-    .tasks // []
-    | map(select(.status != "done"
-        or (.spec_review_sha // "") == ""
-        or (.quality_review_sha // "") == ""
-        or (.blocker_count // 0) >= 2))
-    | .[].id
-  ' "$DIR/tasks.json" 2>"$JQ_ERR") || JQ_STATUS=$?
-
-  if [ "$JQ_STATUS" -ne 0 ]; then
-    REASONS+=("$DIR/tasks.json failed to parse (jq exit $JQ_STATUS):")
-    while IFS= read -r line; do
-      [ -z "$line" ] && continue
-      REASONS+=("    $line")
-    done < "$JQ_ERR"
-  elif [ -n "$OFFENDERS" ]; then
-    REASONS+=("incomplete tasks in $DIR/tasks.json:")
-    while IFS= read -r id; do
-      [ -z "$id" ] && continue
-      REASONS+=("    • $id")
-    done <<< "$OFFENDERS"
-  fi
-
-  rm -f "$JQ_ERR"
-else
-  REASONS+=("$DIR/tasks.json missing or empty")
-fi
-
-if [ -f "$DIR/open-questions.md" ] && [ -s "$DIR/open-questions.md" ]; then
-  REASONS+=("$DIR/open-questions.md is non-empty — interview not closed")
-fi
-
-[ ${#REASONS[@]} -eq 0 ] && exit 0
-
-{
-  echo "Blocked by agentic-loop PR-ready gate."
-  echo ""
-  echo "Cannot \`gh pr create\` for $DIR. Reasons:"
-  for r in "${REASONS[@]}"; do
-    echo "  • $r"
-  done
-  echo ""
-  echo "Finish all tasks (status:done, both review shas populated, and"
-  echo "blocker_count < 2 — reset by plan-loop revision if it ever hit 2),"
-  echo "and resolve any open questions before opening the PR."
-  echo "See the agentic-loop skill's SKILL.md §Stage 4 and"
-  echo "the agentic-loop skill's references/status-handling.md."
-} >&2
-exit 2
+# Policies are shipped alongside wrappers for standalone hook installations.
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/lib-gates.sh"
+gate_pr_ready "$DIR"

@@ -13,3 +13,5 @@
 
 # Local test artifacts
 *.log
+__pycache__/
+*.pyc

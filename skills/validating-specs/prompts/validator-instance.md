@@ -1,7 +1,7 @@
 # Validator Instance Prompt Template
 
-Fill this template and send it as the `prompt` to each `Agent` call with
-`subagent_type: "spec-design-validator"`. Substitute every `{{…}}`. The `{{#if}}` /
+Fill this template and supply it together with `references/validator-role.md`
+to a fresh child using `references/dispatch.md`. Substitute every `{{…}}`. The `{{#if}}` /
 `{{#each}}` blocks are authoring guidance — there is **no** template engine. Expand them by
 hand: keep the branch that applies, drop the other, and inline one bullet per skill/MCP.
 
@@ -21,18 +21,20 @@ Do NOT evaluate other surfaces — sibling validator instances own {{OTHER_LENSE
 Stay strictly in your lane so we get deep, non-overlapping coverage.
 {{/if}}
 
-Ground every finding in the actual repo: verify claims with Read/Grep/Glob and cite
+Ground every finding in the actual repo: verify claims using the available source-reading/search tools and cite
 `file:line`. Do not trust the spec's prose. Apply your standard fatal-flaw hypothesis and
-anti-sycophancy protocols. Consult and update your project agent memory as usual.
+anti-sycophancy protocols. Do not write files or memory and do not dispatch further agents. Return findings to the controller.
 
 REQUIRED TOOLING — you MUST use each of these before delivering your verdict:
 {{#each REQUIRED_SKILLS}}
-- Skill tool: invoke `{{name}}` — {{reason}}. Do not reason about this from memory.
+- Read/apply skill `{{name}}` through the exposed skill interface or its supplied
+  absolute SKILL.md path — {{reason}}. Do not reason about this from memory.
 {{/each}}
 {{#each REQUIRED_MCPS}}
-- {{name}} MCP: FIRST load its schema with
-  `ToolSearch` query "{{toolsearch_query}}"
-  (you cannot call an mcp__ tool until its schema is loaded), THEN use it to {{reason}}.
+- {{name}} MCP: discover its callable schema through the current harness when
+  deferred (Claude ToolSearch query "{{toolsearch_query}}" where applicable),
+  then actually use it to {{reason}}. Verify access before dependent analysis;
+  if unavailable, return a capability failure rather than a completed review.
   Query the narrowest topic that settles the specific claim in doubt — do not pull broad
   overviews. Cite the doc/result.
 {{/each}}
@@ -65,7 +67,8 @@ consumed by a controller that merges it with sibling instances — do not addres
 - `{{OTHER_LENSES}}` — the lenses the _other_ dispatched instances own (for disjointness).
 - `{{REQUIRED_SKILLS}}` / `{{REQUIRED_MCPS}}` — resolved in SKILL.md step 4 (user flags +
   detection-map auto-detect). Each carries the _reason_ it's needed.
-- `{{toolsearch_query}}` — the exact `ToolSearch` selector, e.g.
+- `{{toolsearch_query}}` — a discovery query for the exposed tool interface;
+  on Claude, this can be a `ToolSearch` selector, e.g.
   `select:mcp__plugin_context7_context7__resolve-library-id,mcp__plugin_context7_context7__query-docs`
   or a keyword form like `context7 library docs`.
 - `{{FOCUS_PROMPTS}}` — OPTIONAL. Only include concrete checkpoints you derived from a

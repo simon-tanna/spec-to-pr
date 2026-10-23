@@ -25,7 +25,7 @@ Protocol:
 2. Append the question to `.agentic-loop/<id>/open-questions.md` prefixed `[PRODUCT][<task-id>]`.
 3. Add label `state:needs-decision` via `scripts/gh-label.sh`.
 4. Emit a single message via `scripts/notify.sh blocked "$ID" -` using the Open-Questions template.
-5. In interactive mode, also raise via `AskUserQuestion`.
+5. In interactive mode, also raise via the available interactive question interface.
 6. `scripts/git-sync.sh commit "chore(loop): pause for product decision on #<issue>"`. Then adapter-aware exit: `github` → `exit 0`; other adapters → drop `.agentic-loop/<id>/NEEDS_INPUT` and `exit 78`.
 
 This is the ONE Stage-3 question type that IS allowed to escalate to the human — because by definition the spec/plan was wrong to resolve it, and the cost of guessing is high. All other Stage-3 ambiguities still go through the spec/plan revision path, not the human inbox.

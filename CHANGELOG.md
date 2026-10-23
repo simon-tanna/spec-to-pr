@@ -1,8 +1,32 @@
 # Changelog
 
-All notable changes to the `spec-to-pr` plugin are documented here.
+All notable changes to the `spec-to-pr` skills suite and plugin are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/), and the
 project adheres to [Semantic Versioning](https://semver.org/).
+
+## [0.3.0] - 2026-10-23
+
+### Added
+
+- Independently installable skills for interactive Codex and Claude Code through
+  `pnpm dlx skills add`, including individual installation and bundled resources.
+- Portable fresh-child role dispatch, with optional native Claude agents and
+  explicit failure when required delegation or child tooling is unavailable.
+- Interactive run initialization with deterministic source identity, Git
+  preflight, exact source snapshots, collision protection, and validated resume.
+- Directly callable gate checks, preserving Claude wrapper policy and supporting
+  controller-invoked checks in other harnesses.
+- Packaging, initialization, and gate tests, plus explicit live-harness
+  acceptance requirements. Automated tests alone do not establish full
+  interactive compatibility.
+
+### Changed
+
+- Shared roles and validation resources have canonical sources and generated
+  distribution copies; the loop no longer requires a sibling validator install.
+- Installed Claude hook dependencies travel together with their wrappers.
+- Codex uses effective harness model defaults and accurately reports the absence
+  of lifecycle interception. Existing headless CI remains Claude-only.
 
 ## [0.2.0] - 2026-08-18
 
