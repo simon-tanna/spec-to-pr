@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Renders the PR body for the agentic-loop ship stage.
 # Reads spec.md + plan.md + tasks.json from .agentic-loop/<issue>/ and prints
-# the body on stdout. Stage 4 step 3 pipes this into `gh pr create --body-file -`.
+# the body on stdout. references/ship.md step 3 pipes this into `gh pr create --body-file -`.
 #
 # Usage: render-pr-body.sh <run-id>
 #

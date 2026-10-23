@@ -16,7 +16,7 @@ check() {
     haystack=$(echo "$haystack" | sed -E "s/\.env\.(example|sample|template|dist)//g")
   fi
   if echo "$haystack" | grep -Eq "$SENSITIVE_REGEX"; then
-    echo "Blocked: tool call references sensitive file (.env / secrets / credentials / key material). Policy: bulletproof-env-block." >&2
+    echo "Blocked: .env, secrets, credentials and key material reads are denied. Read .env.example, or ask for the variable name via notify.sh." >&2
     exit 2
   fi
 }

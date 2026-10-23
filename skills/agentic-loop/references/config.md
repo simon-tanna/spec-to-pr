@@ -62,7 +62,7 @@ override the defaults. Read it once at loop start (Stage 1 ingest).
   "risk_categories": [],
 
   // I/O adapter for all human-facing messages (banners, open questions, progress,
-  // escalations) and PR creation — see SKILL.md §Operating Modes, Axis B. Absent ⇒
+  // escalations) and PR creation — see SKILL.md §Operating Modes (I/O adapter). Absent ⇒
   // "github" when the gh CLI is authenticated (or $GITHUB_ACTIONS=true), else "file"
   // (a gh-free sandbox writes to .agentic-loop/<id>/notifications.md and pauses).
   // Overridable at runtime via $AGENTIC_IO_ADAPTER.

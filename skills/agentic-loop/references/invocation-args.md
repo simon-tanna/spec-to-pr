@@ -1,7 +1,7 @@
 # Invocation Arguments — full reference
 
 How the loop turns run-time flags into the resolved tooling every stage honours. Parsing happens once,
-at **Stage 1 Ingest** (the single `$ARGUMENTS` site in `SKILL.md`); this file is the detailed contract.
+at **Stage 1 Ingest** (`spec-loop.md` step 1.2, which reads the single `$ARGUMENTS` site in `SKILL.md`); this file is the detailed contract.
 
 ## Grammar
 

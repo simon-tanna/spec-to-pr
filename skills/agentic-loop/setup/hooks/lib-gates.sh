@@ -42,7 +42,7 @@ case "$NEW_STATE" in
       echo "saved verbatim as JSON to spec-review.md with verdict \"approved\" and"
       echo "force_interview false, and open-questions.md must be empty or absent."
       echo "A load-bearing decision surfaced during spec must be answered by the"
-      echo "human before advancing — see the agentic-loop skill's Interview Discipline."
+      echo "human before advancing — see the agentic-loop skill's references/interview-protocol.md."
     } >&2
     exit 2
     ;;
@@ -77,7 +77,7 @@ case "$NEW_STATE" in
         echo "  • $m"
       done
       echo ""
-      echo "Run Stage 2 (plan loop) per the agentic-loop skill's SKILL.md."
+      echo "Run Stage 2 per the agentic-loop skill's references/plan-loop.md."
       echo "The plan is the contract the implementer satisfies; without it"
       echo "there is no TDD baseline and review has nothing to check against."
     } >&2
@@ -171,7 +171,7 @@ if [[ "$INPUT_MODE" == "document" ]]; then
       echo "    round-trip through plan-loop revision (which resets"
       echo "    blocker_count to 0) before reaching done."
       echo ""
-      echo "See the agentic-loop skill's SKILL.md §Stage 3 and"
+      echo "See the agentic-loop skill's references/execution-loop.md and"
       echo "the agentic-loop skill's references/status-handling.md."
     } >&2
     exit 2
@@ -203,7 +203,7 @@ if [ "$HAS_SPEC" -eq 0 ] || [ "$HAS_QUAL" -eq 0 ]; then
     echo "  2. Use Write to overwrite the full tasks.json with the complete"
     echo "     task object including both shas."
     echo ""
-    echo "See the agentic-loop skill's SKILL.md §Stage 3."
+    echo "See the agentic-loop skill's references/execution-loop.md."
   } >&2
   exit 2
 fi
@@ -288,7 +288,7 @@ if [[ "$INPUT_MODE" == "document" ]]; then
       echo "(e.g. 'TDD: __tests__/foo.test.ts:12-30 written before implementation')."
       echo "Re-commit the task with the test included and the TDD: trace, then retry."
       echo ""
-      echo "See the agentic-loop skill's references/tdd.md and SKILL.md §Stage 3."
+      echo "See the agentic-loop skill's references/tdd.md and references/execution-loop.md."
     } >&2
     exit 2
   fi
@@ -378,7 +378,7 @@ fi
   echo "Finish all tasks (status:done, both review shas populated, and"
   echo "blocker_count < 2 — reset by plan-loop revision if it ever hit 2),"
   echo "and resolve any open questions before opening the PR."
-  echo "See the agentic-loop skill's SKILL.md §Stage 4 and"
+  echo "See the agentic-loop skill's references/ship.md and"
   echo "the agentic-loop skill's references/status-handling.md."
 } >&2
 exit 2

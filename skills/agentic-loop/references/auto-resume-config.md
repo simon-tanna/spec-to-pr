@@ -1,6 +1,6 @@
 # Auto-Resume Configuration
 
-Single source of truth for the CI auto-resume mechanism. Both the agentic-loop skill (`SKILL.md §Context Hygiene`) and the GitHub Actions workflow read these values. **Do not duplicate them anywhere else.**
+Single source of truth for the CI auto-resume mechanism. Both the agentic-loop skill (`SKILL.md §Context hygiene`) and the GitHub Actions workflow read these values. **Do not duplicate them anywhere else.**
 
 ## Source of truth
 
@@ -41,7 +41,7 @@ The workflow's auto-resume trigger fires only when ALL of:
 
 ## Reset
 
-The counter is reset to zero when the loop reaches Stage 4 and `gh pr create` succeeds (`SKILL.md §Stage 4` step 5, "Reset auto-resume counter"). If the counter is at `RESUME_CAP` and the human types `@claude continue`, the workflow's separate `issue_comment` handler fires and clears the counter as part of resumption.
+The counter is reset to zero when the loop reaches Stage 4 and `gh pr create` succeeds (`ship.md` step 5, "Reset auto-resume counter"). If the counter is at `RESUME_CAP` and the human types `@claude continue`, the workflow's separate `issue_comment` handler fires and clears the counter as part of resumption.
 
 ## Changing values
 

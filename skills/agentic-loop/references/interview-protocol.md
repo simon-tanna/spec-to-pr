@@ -4,9 +4,23 @@ Open-questions to the human are allowed **only** when `.state` is `spec` or `pla
 
 ## Stage 1 / Stage 2 (`.state ∈ {spec, plan}`)
 
-The operative bar for what counts as an open question is the two-alternatives test defined in `prompts/decision-rules.md` and audited in `prompts/spec-reviewer.md` check 13 — not the planner's confidence that it knows the answer. If the planner or reviewer can name a second defensible option and `source.md` does not literally authorise the chosen one, it is an open question, regardless of category (product, architectural, library, or threshold).
+The operative bar for what counts as an open question is the two-alternatives test defined in `prompts/decision-rules.md` and audited in `prompts/spec-reviewer.md` check 13 — not the planner's confidence that it knows the answer. If the planner or reviewer can name a second defensible option and `source.md` does not literally authorise the chosen one, it is an open question, regardless of category (product, architectural, library, or threshold). "I am confident in my answer" does not settle it; the test asks whether an alternative exists.
 
-**Surfacing a question is a full stop, not a checkpoint you pass through.** In headless mode the absence of a human means the run *pauses and exits* — it does NOT mean you are now authorised to pick the answer. Adopting a "conservative default", a "documented assumption", or a "safe" choice and then continuing to plan/implement/ship is the exact silent-invention failure this protocol prevents; "a human will confirm before merge" does not license proceeding without the answer. This binds hardest for a *load-bearing decision* (see `prompts/decision-rules.md`): once one is surfaced, `.state` stays `spec`/`plan` and the run exits — it never reaches `implement` or opens a PR under the unanswered decision.
+Raise a question whenever any of these holds:
+
+- The two-alternatives test above fires for any decision the spec resolves.
+- The source leaves a product decision unmade (auth model, data shape, UX flow, error semantics, retention, threshold values).
+- A non-goal is implied but not stated, and getting it wrong would mean rework.
+- A stated goal has no acceptance criterion.
+- A dependency, contract, schema, or external API is referenced without a concrete version or path.
+- The planner's draft has a non-empty Open Questions section: every line there is an interview question.
+- A specialist returns "I assumed X because the spec did not say": promote the assumption to a question.
+- `source.md` matches any source signal in `prompts/decision-rules.md` (a prose-context phrase or a line-anchored `Default:` line). The loop then surfaces at least one interview round before the spec's Open Questions section can be empty; an empty Open Questions section beside a non-empty §0 Interview Trace is a process violation.
+- The latest review fires the interview gate (below).
+
+**One round, batched.** Collect every open question for the current stage, post them together, then pause. One question per turn wastes runs in CI and human attention everywhere.
+
+**Surfacing a question is a full stop, not a checkpoint you pass through.** In headless mode the absence of a human means the run *pauses and exits* — it does NOT mean you are now authorised to pick the answer. Adopting a "conservative default", a "documented assumption", or a "safe" choice and then continuing to plan/implement/ship is the exact *silent-invention* failure this protocol prevents; "a human will confirm before merge" does not license proceeding without the answer. This binds hardest for a *load-bearing decision* (see `prompts/decision-rules.md`): once one is surfaced, `.state` stays `spec`/`plan` and the run exits — it never reaches `implement` or opens a PR under the unanswered decision.
 
 **The interview fires** when any of these holds on the latest `spec-review.md` (or `plan-review.md`):
 

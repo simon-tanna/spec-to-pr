@@ -20,6 +20,7 @@ The most common failure mode of past runs has been skipping a stage to "save tur
   - structured review verdict `approved`
   - `critical=[]`, `important=[]`
   - `plan-validation.md` ends on the line `Verdict: GO`
+  - `open-questions.md` empty or absent
   - `tasks.json` non-empty
   - every task has at least one test target
 
@@ -28,6 +29,7 @@ The most common failure mode of past runs has been skipping a stage to "save tur
 - **Artefacts:** all tasks `done`; per-task `spec_review_sha` AND `quality_review_sha` populated
 - **Gate:**
   - resolved quality gates green on full branch
+  - `open-questions.md` empty or absent
   - final-review verdict `approved`; a `needs-changes` verdict sends every critical and important finding back to Stage 3 as a fix task
 - **End state:** `.state` stays `implement` after `gh pr create` succeeds; the merge pipeline owns `state:done`.
 

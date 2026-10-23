@@ -14,7 +14,7 @@
 # closes a bypass that allowed `echo done > .../.state` to set state
 # without going through Write.
 #
-# Pairs with the agentic-loop skill's SKILL.md §Stage Transition Gates.
+# Pairs with the agentic-loop skill's references/stage-gates.md.
 
 set -euo pipefail
 

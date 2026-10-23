@@ -7,7 +7,7 @@
 # compliance + code-quality). The model has skipped this in past CI runs
 # to conserve turns. Hook makes the skip impossible.
 #
-# Pairs with the agentic-loop skill's SKILL.md §Stage 3.
+# Pairs with the agentic-loop skill's references/execution-loop.md.
 
 set -euo pipefail
 

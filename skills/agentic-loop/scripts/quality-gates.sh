@@ -124,8 +124,8 @@ fi
 if [ "$ran_any" -eq 0 ]; then
   fail "No quality gate could be resolved for this repo. Refusing to ship with zero verification.
 Add test/lint/typecheck commands to .agentic-loop.config.json, or set \"quality_gates\": {} to opt
-out explicitly. (In interactive mode the controller confirms this via AskUserQuestion; in CI it
-posts a blocking comment and exits — see SKILL.md 'Quality gates'.)"
+out explicitly. See quality_gates in references/config.md; confirm an opt-out with the human via
+references/interview-protocol.md."
 fi
 
 log "all resolved gates green"
