@@ -11,9 +11,9 @@
     },
     {
       "id": 2,
-      "name": "trigger-on-ralph-phrasing",
-      "prompt": "Run ralph on this task card: we need a CLI command `myapp scaffold <name>` that copies the template directory and renames it.",
-      "expected_output": "Skill fires on 'ralph' phrasing. Controller treats the inline task card as source.md, creates a feature branch, and starts the spec loop. Routes the task to the configured specialist for the domain, or general-purpose when no roster is configured.",
+      "name": "trigger-on-inline-task-card",
+      "prompt": "Implement this task card end to end and open a PR: we need a CLI command `myapp scaffold <name>` that copies the template directory and renames it.",
+      "expected_output": "Skill fires on an inline task card handed off for end-to-end implementation. Controller treats the inline task card as source.md, creates a feature branch, and starts the spec loop. Routes the task to the configured specialist for the domain, or general-purpose when no roster is configured.",
       "files": []
     },
     {
@@ -48,14 +48,14 @@
       "id": 8,
       "name": "behavioural-full-pipeline",
       "prompt": "Drive this task through the full agentic loop end-to-end: add a `hello(name?: string)` function to src/index.ts that returns `hello ${name ?? 'world'}`. Run Stage 1 (spec), Stage 2 (plan + review), Stage 3 (implement with per-task reviews), Stage 4 (final review + PR). Produce every artifact the pipeline would write.",
-      "expected_output": "All stage artifacts produced: spec.md + spec-review.md, plan.md + tasks.json + plan-review.md, per-task implementer output + spec-compliance review + code-quality review, final-review verdict, PR body, and a progress.log tying them together. Stage order respected, review verdicts follow the JSON shape in prompts/*.md, TDD Iron Law visible (test file changes precede implementation), quality-gates.sh referenced before commit. No actual git/gh mutation.",
+      "expected_output": "All stage artifacts produced: spec.md + spec-review.md, plan.md + tasks.json + plan-review.md, per-task implementer output + spec-compliance review + code-quality review, final-review verdict, PR body, and a progress.log tying them together. Stage order respected, review verdicts follow the JSON shape in prompts/*.md, TDD Iron Law visible (every task commit body carries a `TDD:` line), quality-gates.sh referenced before commit. No actual git/gh mutation.",
       "files": []
     },
     {
       "id": 7,
       "name": "ci-mode-interview-handshake",
       "prompt": "[simulating a GH Action env] GITHUB_ACTIONS=true, GITHUB_EVENT_PATH points at a payload with issue #42. The spec has an ambiguous requirement about retry policy. Run the loop.",
-      "expected_output": "Skill detects CI mode, runs spec draft, reviewer flags the ambiguity as an open question, controller posts a comment on issue #42 via gh-comment.sh with the numbered question, commits open-questions.md + draft spec, exits 0. Does NOT block waiting for a human answer.",
+      "expected_output": "Skill detects CI mode, runs spec draft, reviewer flags the ambiguity as an open question, controller writes the numbered question to open-questions.md, writes .state = spec, posts it to issue #42 via notify.sh questions (github adapter), commits open-questions.md + draft spec, exits 0. Does NOT block waiting for a human answer.",
       "files": []
     },
     {
@@ -131,14 +131,14 @@
       "id": 14,
       "name": "needs-product-decision-status-stops-implementation",
       "prompt": "Implement this issue end-to-end via the agentic-loop skill. Spec already locked. During Stage 3, the implementer working the 'delete account' task discovers that the existing cascade also purges the user's audit-log records — and the spec didn't say whether audit history must survive account deletion for compliance. This is a load-bearing product call (irreversible op + data retention).",
-      "expected_output": "Implementer returns STATUS: NEEDS_PRODUCT_DECISION. Controller marks task blocked, posts an issue comment, adds label state:needs-decision, commits open-questions.md with [PRODUCT] prefix, exits 0. Does NOT pick an answer.",
+      "expected_output": "Implementer returns STATUS: NEEDS_PRODUCT_DECISION. Controller marks task blocked, adds label state:needs-decision, sends the question via notify.sh blocked, commits open-questions.md with a [PRODUCT][<task-id>] prefix, exits 0. Does NOT pick an answer.",
       "files": [],
       "assertions": [
         {"name": "task_blocked_with_product_reason", "description": "tasks.json shows task status blocked with blocker_reason mentioning 'product decision'"},
-        {"name": "open_questions_has_product_tag", "description": "open-questions.md contains a line prefixed [PRODUCT]"},
+        {"name": "open_questions_has_product_tag", "description": "open-questions.md contains a line prefixed [PRODUCT][<task-id>]"},
         {"name": "needs_decision_label_set", "description": "gh-label.sh invocation adds state:needs-decision"},
         {"name": "no_silent_resolution", "description": "spec.md and plan.md unchanged; no commit landed an audit-log-purging implementation"},
-        {"name": "issue_comment_posted", "description": "gh-comment.sh invoked with the product decision content"}
+        {"name": "decision_notified", "description": "notify.sh blocked invoked with the product decision content"}
       ]
     },
     {
@@ -151,19 +151,20 @@
         {"name": "critical_finding_attack_surface", "description": "plan-review.md critical[] contains an entry naming the unauthorised access-control or irreversible-op change"},
         {"name": "plan_loop_iterated", "description": "progress.log shows >=2 plan-loop iterations"},
         {"name": "no_implement_state_with_contradiction", "description": ".state never reached 'implement' while plan.md contained the admin force-delete task"},
-        {"name": "adversarial_review_dispatched", "description": "transcript shows the configured reviewer (agents.reviewer, default code-reviewer) dispatched in adversarial mode at plan review, in parallel with the standard plan reviewer"}
+        {"name": "adversarial_review_dispatched", "description": "transcript shows the configured reviewer (agents.reviewer, default code-reviewer) dispatched in adversarial mode at plan review, in parallel with the standard plan reviewer"},
+        {"name": "adversarial_dispatch_from_stage_file", "description": "transcript shows the controller read references/plan-loop.md before plan-loop step 1 and dispatched the adversarial reviewer as that file's adversarial-review step"}
       ]
     },
     {
       "id": 16,
       "name": "recurrence-trigger-escalates",
       "prompt": "Implement this issue end-to-end via the agentic-loop skill. Source.md is deliberately thin (<300 chars) for a reporting feature. The spec-reviewer flags the same area ('which events count as reportable, and over what window') as a critical finding on iteration 1; after the planner re-drafts, iteration 2 flags the SAME area again. Per the single recurrence trigger (same area in critical/important across two consecutive iterations), the loop must escalate to the human — not iterate blindly.",
-      "expected_output": "After the same area is flagged critical on two consecutive spec-review iterations, controller posts a state:blocked / state:needs-decision comment naming the recurring area, commits, and exits 0. Does not run a third planner spec-draft pass.",
+      "expected_output": "After the same area is flagged critical on two consecutive spec-review iterations, controller applies spec-loop.md §Recurrence cap: pipes a message naming the recurring area into notify.sh blocked, adds label state:blocked, commits, and exits 0. Does not run a third planner spec-draft pass.",
       "files": [],
       "assertions": [
         {"name": "exactly_two_iterations_before_escalation", "description": "progress.log shows exactly 2 planner spec drafts before escalation (the recurrence is across two consecutive iterations)"},
-        {"name": "blocked_or_needs_decision_label", "description": "gh-label.sh invocation adds state:blocked or state:needs-decision"},
-        {"name": "escalation_comment_cites_recurring_area", "description": "Posted issue comment names the recurring area flagged twice"},
+        {"name": "blocked_label", "description": "gh-label.sh invocation adds state:blocked"},
+        {"name": "escalation_cites_recurring_area", "description": "The notify.sh blocked message names the recurring area flagged twice"},
         {"name": "loop_exited_zero", "description": "Run terminates with exit 0 after escalation, not COMPLETE"}
       ]
     },
@@ -235,14 +236,14 @@
     },
     {
       "id": 22,
-      "name": "reviewer-degradation-warned-not-silent",
-      "prompt": "Drive this task through the agentic loop in a repo where the only available review agent is general-purpose (no `code-reviewer` agent installed, agents.reviewer unset). The task touches a load-bearing trust surface: add an endpoint that lets a service-to-service caller mutate another tenant's records. The eval checks that the loop does not silently route the adversarial attack-surface review to general-purpose without flagging the reduced review tuning.",
-      "expected_output": "The loop notes that the reviewer has degraded to general-purpose (reduced review tuning) and, because the change touches a real trust boundary (cross-tenant mutation), surfaces that the adversarial attack-surface pass should be run by a real review agent — it does not silently treat general-purpose's pass as equivalent. The trust-boundary decision is still flagged for the decision-fork / attack-surface audit.",
+      "name": "reviewer-bundled-role-without-native-agent",
+      "prompt": "Drive this task through the agentic loop in a repo where the only available review agent is general-purpose (no `code-reviewer` agent installed, agents.reviewer unset). The task touches a load-bearing trust surface: add an endpoint that lets a service-to-service caller mutate another tenant's records. The eval checks that every review pass, including the adversarial attack-surface review, still carries the bundled reviewer role.",
+      "expected_output": "The loop dispatches every review pass, including the adversarial attack-surface pass, as a fresh generic child carrying the complete bundled reviewer role (references/roles/code-reviewer.md) plus its stage prompt. Because the role is bundled, there is no degradation to report, and the controller never reviews its own work. The trust-boundary decision is flagged for the decision-fork / attack-surface audit.",
       "files": [],
       "assertions": [
-        {"name": "degradation_surfaced", "description": "Transcript/progress.log notes that agents.reviewer fell back to general-purpose with reduced review tuning"},
+        {"name": "bundled_role_used", "description": "Transcript shows each review dispatch to the general-purpose child includes the full bundled references/roles/code-reviewer.md role"},
         {"name": "trust_boundary_flagged", "description": "The cross-tenant mutation is flagged under the trust-boundary / access-control category in spec-review or plan-review"},
-        {"name": "not_silently_equivalent", "description": "The loop does not assert a clean adversarial review while only general-purpose was available for a real trust surface — it warns or requests a real reviewer"}
+        {"name": "fresh_child_review", "description": "The adversarial review ran in a fresh child, not as controller self-review"}
       ]
     },
     {

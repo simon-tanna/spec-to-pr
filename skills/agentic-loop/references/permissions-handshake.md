@@ -1,8 +1,10 @@
 # Permission-Grant Handshake
 
-Used when a CI run is blocked by a missing tool permission. Same shape as
-`Interview Handshake` (ci-mode.md §38) but for tool grants instead of spec
-ambiguities.
+Used when a headless run is blocked by a missing tool permission. Same shape as
+the interview in `interview-protocol.md`, but for tool grants instead of spec
+ambiguities. The template below is the GitHub transport; under other adapters,
+send the same text through `notify.sh blocked` and read the reply from
+`.agentic-loop/<id>/answers.md`, as `interview-protocol.md` describes.
 
 ## Issue-comment template
 

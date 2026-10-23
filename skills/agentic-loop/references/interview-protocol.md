@@ -4,23 +4,62 @@ Open-questions to the human are allowed **only** when `.state` is `spec` or `pla
 
 ## Stage 1 / Stage 2 (`.state ∈ {spec, plan}`)
 
-The operative bar for what counts as an open question is the "two reasonable alternatives" rule defined in `prompts/spec-planner.md` §Step 0.5 and audited in `prompts/spec-reviewer.md` check 13 — not the planner's confidence that it knows the answer. If the planner or reviewer can name a second defensible option and `source.md` does not literally authorise the chosen one, it is an open question, regardless of category (product, architectural, library, or threshold).
+The operative bar for what counts as an open question is the two-alternatives test defined in `prompts/decision-rules.md` and audited in `prompts/spec-reviewer.md` check 13 — not the planner's confidence that it knows the answer. If the planner or reviewer can name a second defensible option and `source.md` does not literally authorise the chosen one, it is an open question, regardless of category (product, architectural, library, or threshold). "I am confident in my answer" does not settle it; the test asks whether an alternative exists.
 
-**Surfacing a question is a full stop, not a checkpoint you pass through.** In headless mode the absence of a human means the run *pauses and exits* — it does NOT mean you are now authorised to pick the answer. Adopting a "conservative default", a "documented assumption", or a "safe" choice and then continuing to plan/implement/ship is the exact silent-invention failure this protocol prevents; "a human will confirm before merge" does not license proceeding without the answer. This binds hardest for load-bearing product decisions (data custody, access control, irreversible/destructive ops, retention/privacy, billing, trust boundaries, breaking public contracts): once one is surfaced, `.state` stays `spec`/`plan` and the run exits — it never reaches `implement` or opens a PR under the unanswered decision.
+Raise a question whenever any of these holds:
 
-When a subagent or you encounter a question that requires human input (product decision, ambiguous spec line, missing acceptance criterion, any decision-fork hit), do not guess and do not block on the available interactive question interface (unavailable in headless mode). Instead:
+- The two-alternatives test above fires for any decision the spec resolves.
+- The source leaves a product decision unmade (auth model, data shape, UX flow, error semantics, retention, threshold values).
+- A non-goal is implied but not stated, and getting it wrong would mean rework.
+- A stated goal has no acceptance criterion.
+- A dependency, contract, schema, or external API is referenced without a concrete version or path.
+- The planner's draft has a non-empty Open Questions section: every line there is an interview question.
+- A specialist returns "I assumed X because the spec did not say": promote the assumption to a question.
+- `source.md` matches any source signal in `prompts/decision-rules.md` (a prose-context phrase or a line-anchored `Default:` line). The loop then surfaces at least one interview round before the spec's Open Questions section can be empty; an empty Open Questions section beside a non-empty §0 Interview Trace is a process violation.
+- The latest review fires the interview gate (below).
 
-1. Append the question to `.agentic-loop/<id>/open-questions.md`, prefixed with the originating stage and (if any) task id.
-2. Emit them via `scripts/notify.sh questions "$ID" .agentic-loop/<id>/open-questions.md` using the Open-Questions template in `ci-mode.md` (the adapter picks the transport — issue comment, file, webhook, or command).
-3. `scripts/git-sync.sh commit "chore(loop): pause for open questions on #<issue>"`
-4. Adapter-aware exit: `github` → `exit 0`; other adapters → drop `.agentic-loop/<id>/NEEDS_INPUT` and `exit 78` (see `ci-mode.md §Interview Handshake`).
+**One round, batched.** Collect every open question for the current stage, post them together, then pause. One question per turn wastes runs in CI and human attention everywhere.
 
-On resume (an `issue_comment` trigger under `github`, or a harness re-invocation with `.agentic-loop/<id>/answers.md` under other adapters), parse the reply against `open-questions.md`, fold answers into wherever they belong (`spec.md` / `plan.md` / a specific task's context), and **clear the questions file mechanically** (also clear `answers.md` if present):
+**Surfacing a question is a full stop, not a checkpoint you pass through.** In headless mode the absence of a human means the run *pauses and exits* — it does NOT mean you are now authorised to pick the answer. Adopting a "conservative default", a "documented assumption", or a "safe" choice and then continuing to plan/implement/ship is the exact *silent-invention* failure this protocol prevents; "a human will confirm before merge" does not license proceeding without the answer. This binds hardest for a *load-bearing decision* (see `prompts/decision-rules.md`): once one is surfaced, `.state` stays `spec`/`plan` and the run exits — it never reaches `implement` or opens a PR under the unanswered decision.
 
-- Either truncate it to zero bytes (`: > .agentic-loop/<id>/open-questions.md`) or `rm` it.
-- **Never** write a placeholder, header, or "All questions resolved" summary into the file. The PR-ready hook (`agentic-loop-check-pr-ready.sh`) treats any byte as an open interview and will block `gh pr create` — past runs lost ~3 minutes of token budget at Stage 4 because of placeholder text.
+**The interview fires** when any of these holds on the latest `spec-review.md` (or `plan-review.md`):
 
-Then continue the stage.
+- `force_interview === true`;
+- `open_questions[]` is non-empty;
+- any `product_decisions_flagged[]` entry has `authorised_by_source: false`.
+
+An empty `open_questions[]` alone does not clear the gate; all three must be clear.
+
+When the interview fires, or a subagent or you hit any other question that needs human input (ambiguous spec line, missing acceptance criterion, any decision-fork hit):
+
+1. Write every question to `.agentic-loop/<id>/open-questions.md` in the shape of §Open-questions file: each `open_questions[]` entry, plus each unauthorised `product_decisions_flagged[]` entry as a Confirm question.
+2. Write the current stage (`spec` or `plan`) to `.agentic-loop/<id>/.state`, also on a fresh-start run where `.state` did not exist: the next trigger resumes from this file, and a missing `.state` reads as an un-ingested issue.
+3. Interactive: ask through the available question interface, batching independent questions, and hold dependent work until the human answers. Headless: emit the file via `"${AGENTIC_SKILL_DIR}/scripts/notify.sh" questions "$ID" .agentic-loop/<id>/open-questions.md`; the adapter picks the transport (issue comment, file, webhook, or command).
+4. `"${AGENTIC_SKILL_DIR}/scripts/git-sync.sh" commit "chore(loop): pause for open questions on #<issue>"`.
+5. Headless adapter-aware exit: `github` → `exit 0`; other adapters → write `.agentic-loop/<id>/NEEDS_INPUT` (containing the reason) and `exit 78`, the needs-input code a non-GitHub harness detects without parsing logs.
+
+On resume, read the answers: under `github`, from the next `issue_comment` by a human (not the bot) on the same issue; under other adapters, from `.agentic-loop/<id>/answers.md` or answers written inline under each question in `open-questions.md`. Fold each answer into where it belongs (`spec.md`, `plan.md`, or a task's context), close the file per §Open-questions file, and continue the stage. If the answers do not parse against the numbered questions, re-notify with the expected reply format and pause again.
+
+## Open-questions file
+
+`.agentic-loop/<id>/open-questions.md` is the interview's only record. The gate hooks (`lib-gates.sh`) read it as **open** when it has any byte and **closed** when it is empty or absent, so it blocks both the `plan`/`implement` transitions and `gh pr create` while open.
+
+Shape, one numbered line per question:
+
+```markdown
+1. [spec] <question>
+2. [plan][T3] <question>
+3. [spec] Confirm: <decision>? Suggested default (if any): <X>
+4. [PRODUCT][T5] <question>
+
+Reply with one answer per number, e.g. `1. <answer>`.
+```
+
+- The tag names the originating stage (`spec` or `plan`), plus `[<task-id>]` when a task raised it. A Stage-3 product decision uses `[PRODUCT][<task-id>]` (see `status-handling.md` §NEEDS_PRODUCT_DECISION).
+- An unauthorised product decision becomes a `Confirm:` question.
+- The last line is the reply instruction.
+
+Close it once every answer is folded in: truncate it to zero bytes (`: > .agentic-loop/<id>/open-questions.md`) or `rm` it, and clear `answers.md` the same way. A closed file holds zero bytes; a header or "all resolved" note counts as an open interview and blocks `gh pr create`.
 
 ## Stage 3 (`.state == implement`) — NO interviews, ONE exception
 
@@ -33,7 +72,7 @@ If a subagent surfaces an ambiguity during implementation, the spec/plan is inco
 
 This rule keeps long-running implementation runs from pinging the human every few minutes with questions that should have been resolved in spec/plan.
 
-**The one exception: `STATUS: NEEDS_PRODUCT_DECISION`.** If the implementer surfaces a load-bearing product call (data custody/ownership, access control, an irreversible/destructive operation, billing/fees, data retention/privacy, a security trust boundary, external-service trust, or a breaking public-contract change), the loop IS allowed to interview the human directly during Stage 3 — because by definition the spec/plan was wrong to resolve it, and re-running the spec loop just to re-ask is wasteful. Follow `status-handling.md §NEEDS_PRODUCT_DECISION`: persist the `[PRODUCT]` question, notify, and pause; only real GitHub issues receive labels/comments. Issue-less runs retain local notification and pause artifacts. All other ambiguities still go through spec/plan revision, not the human inbox.
+**The one exception: `STATUS: NEEDS_PRODUCT_DECISION`.** If the implementer surfaces a *load-bearing decision* (see `prompts/decision-rules.md`), the loop IS allowed to interview the human directly during Stage 3 — because by definition the spec/plan was wrong to resolve it, and re-running the spec loop just to re-ask is wasteful. Follow `status-handling.md §NEEDS_PRODUCT_DECISION`: persist the `[PRODUCT]` question, notify, and pause; only real GitHub issues receive labels/comments. Issue-less runs retain local notification and pause artifacts. All other ambiguities still go through spec/plan revision, not the human inbox.
 
 ## Permission denials
 

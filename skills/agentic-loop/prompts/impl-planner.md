@@ -1,6 +1,6 @@
 # Implementation Planner Prompt — the planner
 
-Use when dispatching the configured planner (`agents.planner`, default `general-purpose`) to produce `plan.md` in Stage 2. This prompt is two-mode — read the inputs to determine which applies. Pass the whole `## MODE A …` or `## MODE B …` block as the prompt body; the outer `~~~` fences below are documentation framing and are not part of the prompt itself.
+Use when dispatching the configured planner (`agents.planner`, default `general-purpose`) to produce `plan.md` in Stage 2. This prompt is two-mode — read the inputs to determine which applies. Pass the whole `## MODE A …` or `## MODE B …` block as the prompt body; the outer four-backtick fences below are documentation framing and are not part of the prompt itself.
 
 ---
 

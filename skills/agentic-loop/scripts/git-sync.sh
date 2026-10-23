@@ -25,7 +25,10 @@ fail() { printf '\n\033[1;31m[git-sync FAIL]\033[0m %s\n' "$*" >&2; exit 1; }
 
 BRANCH="$(git rev-parse --abbrev-ref HEAD)"
 [ "$BRANCH" = "HEAD" ] && fail "detached HEAD; refusing to push"
-[ "$BRANCH" = "main" ] && fail "refusing to commit on main"
+BASE_BRANCH="${AGENTIC_BASE_REF:-main}"
+BASE_BRANCH="${BASE_BRANCH#origin/}"
+{ [ "$BRANCH" = "main" ] || [ "$BRANCH" = "$BASE_BRANCH" ]; } \
+  && fail "refusing to commit on base branch $BRANCH; check out the run's feature branch"
 
 # Stage state-files plus anything the caller already staged.
 # Exclude runtime control files — counter is per-session and eject-flag/reason
@@ -64,7 +67,7 @@ log "push origin $BRANCH"
 if ! git push origin "$BRANCH"; then
   log "push rejected; fetch + rebase + retry once"
   git fetch origin "$BRANCH" || fail "fetch failed"
-  git rebase "origin/$BRANCH" || fail "rebase conflict — manual intervention required"
+  git rebase "origin/$BRANCH" || fail "rebase conflict on $BRANCH. Run notify.sh blocked, checkpoint, and exit non-zero."
   git push origin "$BRANCH" || fail "push failed after rebase"
 fi
 

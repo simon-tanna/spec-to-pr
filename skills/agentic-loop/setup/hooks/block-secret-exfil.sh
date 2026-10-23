@@ -25,7 +25,7 @@ block() {
   echo "Blocked: secret exfil pattern. Policy: block-secret-exfil." >&2
   echo "Reason: $1" >&2
   echo "Command: $CMD" >&2
-  echo "Allowed alternatives: 'gh-comment.sh' for status updates, 'WebFetch' for doc lookups, plain 'curl <URL>' GET." >&2
+  echo "Allowed alternatives: 'notify.sh' for status updates, 'WebFetch' for doc lookups, plain 'curl <URL>' GET." >&2
   exit 2
 }
 

@@ -8,8 +8,8 @@ The agentic loop is designed to survive across GitHub Action invocations. A sing
 
 The workflow's "Pin agentic-loop branch" step (in `.github/workflows/claude.yml`) runs **before** the action and pins HEAD to `feat/<issue>-<slug>`. When the action then starts, that is its "branch where invoked", so its commit/push tooling targets the resumable branch. The skill must:
 
-- Read `$AGENTIC_BRANCH`, `$AGENTIC_ISSUE`, `$AGENTIC_SLUG` from env at start.
-- Never run `git checkout -b` itself.
+- Read `$AGENTIC_BRANCH`, `$AGENTIC_ISSUE`, `$AGENTIC_SLUG` from env at start, and verify HEAD is `$AGENTIC_BRANCH` before the first commit.
+- Leave branch creation to the workflow: work on the pinned branch as checked out.
 - Use `scripts/git-sync.sh commit "..."` for every state mutation. The script asserts HEAD is not `main` and not detached, commits, then pushes to origin.
 
 ## Detection
@@ -41,35 +41,7 @@ If no issue number is available, the workflow was misconfigured — exit non-zer
 
 ## Interview Handshake
 
-In interactive mode, the available interactive question interface blocks. In headless mode that is not possible (no human in the loop) — GitHub Actions is one such harness; a Cloudflare Sandbox/Container or self-hosted runner is another. Protocol below covers Stage 1 spec questions; for ANY stage producing an open question, see SKILL.md §Mid-Stage Question Protocol — same shape, stage-agnostic. For permission denials see `references/permissions-handshake.md`.
-
-**The interview gate fires when ANY of the following is true on the latest `spec-review.md`:**
-
-- `force_interview === true`
-- `open_questions[]` is non-empty
-- `product_decisions_flagged[]` contains any item with `authorised_by_source: false`
-
-An empty `open_questions[]` does NOT mean the spec is locked. The gate checks all three signals. Only when `force_interview === false` AND `open_questions[]` is empty AND every `product_decisions_flagged[]` entry has `authorised_by_source: true` is the spec cleared to advance.
-
-**When the gate fires:**
-
-1. Collect questions from BOTH `open_questions[]` AND from `product_decisions_flagged[where !authorised_by_source]`. Frame each unauthorised product decision as a Confirm question: "Confirm: <decision>? Suggested default (if any): <X>".
-2. Write them to `.agentic-loop/<id>/open-questions.md` as a numbered list.
-3. Emit them via `scripts/notify.sh questions "$ID" .agentic-loop/<id>/open-questions.md` with a reply format (one answer per numbered line, or inline under each heading). The adapter decides the transport: `github` posts an issue comment; `file`/`webhook`/`command` write/POST the same content for the harness to surface.
-4. **Write `.state` = `spec` to `.agentic-loop/<id>/.state`.** This is mandatory even on a fresh-start run where `.state` did not previously exist — the file must be on disk so the next trigger knows to resume at the spec stage rather than re-ingest from scratch.
-5. Run `scripts/git-sync.sh commit "chore(loop): pause for open questions on #<issue>"`. This commits (and, where a remote exists, pushes) `spec.md` draft + `open-questions.md` + `.state`.
-6. **Adapter-aware exit:**
-   - `github` → `exit 0`. The workflow resumes on the next human issue-comment.
-   - `file`/`webhook`/`command` → drop `.agentic-loop/<id>/NEEDS_INPUT` (containing the reason) and `exit 78` (the "needs input" convention) so a non-GitHub harness can detect the pause deterministically without parsing logs.
-
-**Resume** — the transport of the answer differs, the parsing does not:
-
-- `github`: on the next `issue_comment` trigger, check the comment is from a human (not the bot) on the same issue, then parse.
-- `file`/`webhook`/`command`: the harness re-invokes the skill after writing answers to `.agentic-loop/<id>/answers.md` (or inline under each question in `open-questions.md`).
-
-Then, in both cases: parse answers against the stored `open-questions.md`, fold them into the next `spec.md`/`plan.md`/task draft, and **mechanically clear both `open-questions.md` and `answers.md`** (`: >` or `rm` — never leave placeholder bytes; the PR-ready hook treats any byte as an unresolved interview).
-
-If answers cannot be parsed cleanly, re-notify asking for the expected format and pause again.
+The interview protocol (gate signals, the open-questions file, adapter-aware exit, resume parsing) is `interview-protocol.md`; permission denials follow `permissions-handshake.md`. The GitHub transport: `notify.sh questions` posts the questions as an issue comment, the run exits `0`, and the next `issue_comment` from a human on the same issue resumes it.
 
 ## Label Management
 
@@ -104,45 +76,7 @@ After the resolved quality gates pass on the full branch, use `gh pr create --ba
 
 ## Context Hygiene
 
-The `PostToolUse` context-check hook fires on every tool call and performs a token-estimate check every 15 invocations. When the estimated usage exceeds the threshold it drops `.agentic-loop/eject-flag`. The skill polls this flag at per-task checkpoints and at the top of each review-loop iteration, then exits cleanly. A fresh CI run picks up from the committed branch state.
-
-**Thresholds (model-specific):**
-
-| Model                            | Threshold   | Rationale                                       |
-| -------------------------------- | ----------- | ----------------------------------------------- |
-| `claude-opus-4-7` (and any opus) | 400k tokens | Near full window; coherence degrades above this |
-| `claude-sonnet-*`                | 160k tokens | 80% of ~200k sonnet window                      |
-
-**Feature flag:** `AGENTIC_LOOP_CONTEXT_HYGIENE=0` in workflow `env:` disables the eject check in the hook script. Remove or set to `1` to enable (default: enabled in CI).
-
-**`CLAUDE_MODEL` env var** is stamped by the workflow's "Run Claude Code" step so the hook can read it. If absent the hook defaults to opus thresholds.
-
-**`PreCompact` safety net:** `scripts/precompact-flush.sh` runs `git-sync.sh checkpoint` before any compaction (auto or manual), independent of the 15-turn heuristic. The "state in git before reset" invariant is thus doubly enforced.
-
-**Turn counter persistence:** the counter lives at `.agentic-loop/turn-counter`. It is a plain integer file, not committed to git (it resets on each fresh CI run, which is correct — we want the 15-turn check relative to the current session, not across runs).
-
-### Auto-resume contract
-
-After a clean eject the skill posts a comment containing an HTML-comment marker. The workflow's `if:` watches for this marker and fires a fresh run automatically — no human ping required.
-
-**Marker format** (appended to the eject comment body):
-
-```
-<!-- AGENTIC-LOOP-AUTO-RESUME issue=#<n> attempt=<k>/10 -->
-```
-
-**Workflow guard** (`.github/workflows/claude.yml`): the auto-resume `if:` branch requires:
-
-- `github.event_name == 'issue_comment'`
-- `github.event.comment.user.login == 'claude[bot]'`
-- `github.event.comment.user.id == 209825114` (numeric id; forgery-proof)
-- `contains(github.event.comment.body, '<!-- AGENTIC-LOOP-AUTO-RESUME ')`
-
-Only `claude[bot]` posting from this GitHub App identity can satisfy all four. An attacker pasting the marker in their own comment fails the id check.
-
-**Cap:** `.agentic-loop/<issue>/resume-attempts` (committed to branch) tracks consecutive auto-resumes. The skill increments this before posting. At attempt > 10 the marker is suppressed, the comment instead pings `@AGENTIC_AUTHOR`, and the loop waits for a human `@claude continue`.
-
-**Human override:** any `@claude …` comment from a non-bot user fires the existing human-trigger branch and the skill picks up the instruction on the next run. `@claude stop` is the conventional halt signal.
+Eject protocol and snippet: `context-hygiene.md`. Thresholds: `scripts/postooluse-context-check.sh`. Auto-resume marker, workflow guard and cap: `auto-resume-config.md`. A human `@claude stop` comment halts auto-resume.
 
 ## Safety
 

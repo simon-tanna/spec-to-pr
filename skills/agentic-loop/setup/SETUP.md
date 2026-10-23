@@ -1,7 +1,7 @@
 # Installing the agentic-loop skill in a new repo
 
-The skill itself is repo-agnostic, but it leans on a small **substrate** (config, hooks, a CI
-workflow, and one sibling skill). This guide installs that substrate. The loop runs in two modes:
+The skill itself is repo-agnostic, but it leans on a small **substrate** (config, hooks, and a CI
+workflow). This guide installs that substrate. The loop runs in two modes:
 
 - **Interactive (local)** — needs only buckets 5 + 6 below. Drive it from a Claude Code session;
   it asks design questions via `AskUserQuestion`. Skip the CI/workflow buckets entirely.
@@ -24,9 +24,9 @@ workflow, and one sibling skill). This guide installs that substrate. The loop r
 Run `scripts/check-substrate.sh` at any time to see whether the deterministic gate hooks are
 registered (they fire only when registered; otherwise the gates are model-enforced).
 
-> **Paths.** This skill ships in the `spec-to-pr` plugin. Wherever this guide says
-> `setup/…` or `scripts/…`, the file lives under
-> `${CLAUDE_PLUGIN_ROOT}/skills/agentic-loop/`. The hooks are **per-repo opt-in**: you
+> **Paths.** Wherever this guide says `setup/…` or `scripts/…`, the file lives under the
+> installed skill directory, which SKILL.md calls `AGENTIC_SKILL_DIR` (in the `spec-to-pr`
+> plugin, `${CLAUDE_PLUGIN_ROOT}/skills/agentic-loop/`). The hooks are **per-repo opt-in**: you
 > copy them into a target repo's `.claude/`, so they fire only in repos you set up —
 > never automatically in every repo where the plugin is installed.
 >
@@ -123,14 +123,11 @@ The two "force the skill" hooks are separate: `force-agentic-loop.sh` is a CI-on
 `AGENTIC_FORCE=1`); the plugin-level `hooks/inject-agentic-loop-nudge.sh` is a local
 `UserPromptSubmit` **nudge** (ships active, opt out with `AGENTIC_LOOP_NO_NUDGE=1`).
 
-## 4. `validating-specs` skill dependency — both modes
+## 4. Spec and plan validation — both modes
 
-The loop invokes the `spec-to-pr:validating-specs` skill (via the Skill tool) at spec-lock and
-plan-lock. It is a **hard dependency** — if absent, the validation gate cannot run and the loop
-treats it as a `BLOCKED_PERMISSION`-class setup failure. It ships in the **same `spec-to-pr`
-plugin**, so installing this plugin already satisfies it — no separate install needed. A run's
-`--skill`/`--mcp` flags (or the config `required` block, §5) are forwarded to this pass, so the same
-tooling gates both the spec and the plan.
+Validation is bundled under `references/validation/`; no sibling skill is needed. A run's
+`--skill`/`--mcp` flags (or the config `required` block, §5) are forwarded to the validation pass,
+so the same tooling gates both the spec and the plan.
 
 ## 5. Optional `.agentic-loop.config.json` — both modes
 
@@ -156,7 +153,6 @@ It records the resolved set to `./.agentic-resolved-gates` (gitignored) for the 
 
 ## Minimal local-only setup
 
-For interactive runs with no CI: install `validating-specs` (bucket 4), optionally add
-`.agentic-loop.config.json` (bucket 5), ensure your quality gates resolve (bucket 6), and optionally
+For interactive runs with no CI: optionally add `.agentic-loop.config.json` (bucket 5), ensure your quality gates resolve (bucket 6), and optionally
 register the hooks (bucket 3) for deterministic gates. Then, in a Claude Code session, point the
 skill at a spec/issue/task-card and let it drive.

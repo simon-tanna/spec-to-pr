@@ -29,7 +29,7 @@ software entirely.
 Discussion depends on *because*, *whereas*, *which means that* — the connective
 words telegraphic prose strips out. Keep full sentences and paragraphs.
 
-Cut padding and hedges — the **Shared rules** in `SKILL.md` still apply. Do not cut
+Cut padding and hedges — LANGUAGE AND STYLE in `SKILL.md` still applies. Do not cut
 the reasoning that holds the argument together.
 
 ## Title
@@ -42,3 +42,5 @@ the reasoning that holds the argument together.
   from reading the source.
 - Any procedure the topic implies lives in its own how-to, linked from here.
 - The topic is bounded, and the document stays inside it.
+- Full sentences keep the argument's connectives (*because*, *whereas*);
+  padding and hedges are cut.

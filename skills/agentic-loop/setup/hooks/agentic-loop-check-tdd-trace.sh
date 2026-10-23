@@ -19,7 +19,7 @@
 # the two-stage review own that case) so the hook never blocks on git
 # flakiness — it only ever exits 0 (allow) or 2 (block).
 #
-# Pairs with the agentic-loop skill's references/tdd.md and SKILL.md §Stage 3.
+# Pairs with the agentic-loop skill's references/tdd.md and references/execution-loop.md.
 
 set -euo pipefail
 

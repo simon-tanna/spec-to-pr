@@ -65,7 +65,7 @@ echo "$CONTENT" | grep -qE 'eslint-disable(-next-line|-line)?\b' \
   done
   echo ""
   echo "These rules are non-negotiable and cannot be overridden by skills or subagents."
-  echo "Fix the type properly. If truly unavoidable, stop and ask the user for explicit approval."
+  echo "Fix the violation with a proper type, or return BLOCKED naming the rule above."
   echo ""
   echo "Prefer: specific types → generics → unknown+narrowing → discriminated unions."
 } >&2

@@ -1,18 +1,14 @@
 ---
-name: writing-documentation
+name: diataxis-docs
 description: >-
-  Diátaxis technical documentation — writes new docs, and audits existing ones
-  for quadrant purity and accuracy. Use when the user asks to write or improve
-  documentation, a README, a tutorial, a how-to guide, reference pages, or
-  explanatory content; or when a doc set mixes teaching, tasks, and reference in
-  one page. Triggers on: write docs, document this, write README, write tutorial,
-  how-to guide, reference documentation, explain concept, improve the docs,
-  restructure the docs, Diátaxis.
+  Diátaxis docs grounded in this repository's code: sorts each document into
+  one quadrant (tutorial, how-to, reference, explanation), verifies every claim
+  against source, and mirrors the repo's docs layout. Use when writing docs or a
+  README for code in the working repo, or when improving, auditing, or
+  restructuring an existing doc set that mixes teaching, tasks, and reference.
 ---
 
-# Diátaxis Documentation Expert
-
-Your work is guided by the Diátaxis Framework (https://diataxis.fr/).
+# Diátaxis docs
 
 ## The compass
 
@@ -32,6 +28,10 @@ Every document belongs to exactly one **quadrant**. Two questions place it:
 Answer both questions before writing a line. A document you cannot place is a
 document carrying more than one quadrant — split it.
 
+A README or docs index is a landing page, not a quadrant: what the project
+is, how to install it, one minimal example, and links into the set. Anything
+longer moves to its quadrant document.
+
 ## Purity
 
 **One quadrant per document.** A lesson that stops to explain, a recipe that
@@ -49,20 +49,23 @@ throughout.
 
 ### 1. Ground first (REQUIRED — do this before writing anything)
 
-Verify what you are about to document actually exists. Read the relevant source,
-config, schema, routes, and tests in the repo. Confirm every endpoint, header,
-flag, command, config field, and return shape against real code before you state
-it — do not infer an API surface from convention. For library/framework/SDK/CLI
-facts, use the Context7 MCP (not for general programming concepts). Then:
+Verify what you are about to document — or, when improving, what the existing
+docs claim — actually exists; in §4 do this per document during the audit. Read
+the relevant source, config, schema, routes, and tests in the repo. Confirm
+every endpoint, header, flag, command, config field, and return shape against
+real code before you state it — do not infer an API surface from convention.
+For library/framework/SDK/CLI facts, ground against the version pinned in the
+repo's lockfile: use the Context7 MCP when available, otherwise the installed
+package source; say which you used. Then:
 
-- If the feature exists, write only what you grounded, citing the files you
-  grounded in.
+- If the feature exists, write only what you grounded. List the files each
+  document's claims rest on in the §3 step 2 proposal (or the §4 step 2 move
+  list); put source links inside a document only where the repo's existing
+  docs already do.
 - If it is **partially built or planned**, say so explicitly and mark those
   sections "Not yet implemented" rather than describing them as working.
 - If it **does not exist**, do not invent it — tell the user and ask how they
   want to proceed.
-- When the user provides other Markdown files, use them for the project's
-  existing tone and terminology — do not copy their content unless asked.
 
 While grounding, note **where this repo already keeps documentation** and mirror
 that placement. Do not scaffold empty quadrant directories and wait for them to
@@ -87,15 +90,24 @@ fill; structure emerges as material accumulates.
    bound. Then name each document's quadrant, title, and path, with a short outline.
 2. **Propose the set and wait for approval.** This is the gate: a mis-sorted
    quadrant is cheapest to catch here, before any prose exists. Skip it only when
-   the user says "just write it".
-3. **Write each document to its agreed path**, one at a time, in Markdown.
+   the user has told you to proceed without review.
+3. **Write each document to its agreed path**, one at a time, in the format the
+   repo's existing docs use (Markdown if none).
 4. **Re-read each finished draft against its own quadrant file**, applying every
-   item in that file's "Done when". Move anything serving a different quadrant
-   into its own document in the set.
+   Craft rule and every "Done when" item in that file. Move anything serving a
+   different quadrant into its own document in the set.
+5. **Cut pass.** Re-read each draft line by line against its quadrant file's
+   Register and LANGUAGE AND STYLE; cut every word whose removal loses no
+   meaning. Run this pass in a fresh child instead when this session has
+   compacted since §1 or the user asked for independent review: spawn one
+   with your host's agent tool (Claude: a general-purpose Agent; Codex: a
+   child agent with a fresh context), paste the draft, its quadrant file, and
+   LANGUAGE AND STYLE into the prompt (children inherit none of this skill),
+   and have it return the revised text without editing files or spawning
+   children. Call the pass independent only when a child actually ran it.
 
 Done when every technical claim is grounded in §1, every document passes its
-quadrant's "Done when", and every line has survived a cut pass against LANGUAGE
-AND STYLE.
+quadrant's "Done when", and every line has survived the step 5 cut pass.
 
 ### 4. Improving
 
@@ -103,50 +115,34 @@ AND STYLE.
    you are judging against — the same four linked in §3 — so purity is assessed
    against stated criteria rather than memory. For each document: assign a
    quadrant, name every section serving a different one, and ground its technical
-   claims against source as you go — a doc set restructured while still
-   describing software that changed is tidied, not fixed. Done when every
-   document has a quadrant and every mixed section is named.
+   claims per §1 — a doc set restructured while still describing software that
+   changed is tidied, not fixed. Done when every document has a quadrant and
+   every mixed section is named.
 2. **Propose an ordered move list, and wait for approval.** This is the gate.
    Each move small and separately reviewable: split this page, move that section,
    relocate a file into the layout found in §1, retitle, correct this claim.
    Order by what unblocks the rest.
-3. **Apply the moves one at a time**, re-reading each touched document against its
-   quadrant file once its move lands. Restructure a working doc set move by move,
-   never in one sweep.
+3. **Apply the moves one at a time.** Once each move lands, re-read every
+   touched document against its quadrant file, and run §3 step 5's cut pass
+   over any text you wrote. Restructure move by move, never in one sweep.
+
+Done when every approved move is applied, every touched document passes its
+quadrant's "Done when", and every corrected claim is grounded per §1.
 
 ## LANGUAGE AND STYLE
 
-**Register is set by the quadrant** — telegraphic for Reference and How-to, plain
-and economical for Tutorial and Explanation. The quadrant file is authoritative;
-read it before drafting.
+Register belongs to the quadrant file. The rules below hold in every quadrant
+and yield to it where they meet.
 
-### Shared rules
-
-These hold in all four quadrants. Concision rules that belong to one register —
-one idea per line, cut anything the heading already said — live in the
-telegraphic quadrant files, not here.
-
-- Cut preamble, wrap-up, and hedges.
-- Use the active voice.
-- Put statements in positive form — make definite assertions.
-- Use definite, specific, concrete language.
-- Express co-ordinate ideas in parallel form.
-- Keep related words together; place emphatic words at the sentence's end.
+- Omit needless words: cut preamble, wrap-up, and hedges.
+- Active voice; definite, specific, concrete language.
+- Strike on sight: *the fact that*, *in the case of*, *of a … nature* /
+  *character*, *factor*, *feature*, *very*, *certainly*, *interesting*,
+  *as to whether*, *along these lines*, *one of the most*.
+- Take terminology from the user's other Markdown files; take register only
+  from the quadrant file.
 
 | Draft | Revised |
 |---|---|
 | In this guide, we will walk through setting up the webhook. | *(cut)* |
 | The retry queue is maintained on a per-tenant basis, which prevents a single tenant from starving the others. | Retries queue per-tenant, so one tenant cannot starve the others. |
-
-[references/elements-of-style.md](references/elements-of-style.md) is
-authoritative for the full 18 rules **and** the _Words and Expressions Commonly
-Misused_ usage dictionary — pull it into context for a rule's full text or a
-usage ruling.
-
-**Limited-context fallback:** read `references/dispatch.md` and dispatch a fresh
-child with the draft, this section, and the quadrant file resolved from this
-installed skill directory. Ask it to check quadrant conformance, cut to the
-quadrant's register, copyedit, and return the revision without writing files or
-spawning children. Native agent registration is unnecessary. If delegation is
-unavailable, perform the normal author cut pass when context permits; otherwise
-report the limitation. Never label an author pass as independent child review.

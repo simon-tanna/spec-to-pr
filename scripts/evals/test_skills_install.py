@@ -16,7 +16,7 @@ def main():
     if not args.allow_network:
         parser.error('Explicit --allow-network is required; this eval invokes pnpm dlx')
     repo = Path(__file__).resolve().parents[2]
-    names = ['agentic-loop', 'validating-specs', 'writing-documentation']
+    names = ['agentic-loop', 'validating-specs', 'diataxis-docs']
     with tempfile.TemporaryDirectory(prefix='spec-to-pr-install-') as tmp, args.evidence.open('a') as log:
         root = Path(tmp)
         source = root / 'source'

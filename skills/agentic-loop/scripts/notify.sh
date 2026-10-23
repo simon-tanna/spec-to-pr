@@ -10,7 +10,7 @@
 #   id   = issue number OR harness-neutral task id ($AGENTIC_TASK_ID)
 #   body = a file path, or "-" to read the body from stdin
 #
-# Adapter resolution (mirrors SKILL.md §Operating Modes, Axis B):
+# Adapter resolution (SKILL.md §Operating Modes points here for the precedence):
 #   $AGENTIC_IO_ADAPTER → config .io.adapter → github (gh authed / $GITHUB_ACTIONS) → file
 #
 # GitHub notifications use the real issue from run metadata, falling back to

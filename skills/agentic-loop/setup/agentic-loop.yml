@@ -94,8 +94,8 @@ jobs:
           } >> "$GITHUB_ENV"
 
       - name: Write MCP config
-        # Register any MCP servers the loop/specialists need (e.g. context7). The skill and its
-        # subagents inherit these. Adjust to your servers.
+        # Register any MCP servers the loop/specialists need; none are registered by default.
+        # List each one here and add its mcp__* tools to --allowed-tools below.
         run: |
           cat > /tmp/mcp-config.json <<'JSON'
           { "mcpServers": { } }
@@ -108,7 +108,8 @@ jobs:
           model: <claude-model-id>               # MUST equal CLAUDE_MODEL above
           mcp_config: /tmp/mcp-config.json
           # Grant the tools the loop needs (Agent dispatch, Bash for scripts, file tools, gh, the
-          # Skill tool for validating-specs, and the MCP tools you registered). Tighten as desired.
+          # Skill tool that loads agentic-loop, and the mcp__* tools of any server you register
+          # above). Tighten as desired.
           claude_args: >-
             --allowed-tools "Agent,Bash,Read,Write,Edit,Glob,Grep,Skill,WebFetch"
           prompt: |

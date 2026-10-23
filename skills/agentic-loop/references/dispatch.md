@@ -1,3 +1,5 @@
+<!-- Generated from skills/validating-specs/references/dispatch.md by scripts/build-distribution.py. Maintainers: edit the canonical file and rebuild. -->
+
 # Portable worker dispatch
 
 The skill runs in the main controller session. Only that controller dispatches,
@@ -7,19 +9,22 @@ review always use a fresh child; never replace them with the author's inline rev
 
 ## Resolve resources and roles
 
-Resolve resource paths against this installed skill directory, not the working
-repository or a plugin root. Read the role and task template and include their
-actual content in the child prompt. Include exact artifact paths and the working
-repository path. Do not assume children inherit skill instructions, conversation,
-MCP connections, or parent permissions.
+Resolve each resource path relative to the directory of the file that names it,
+not the working repository or a plugin root. Give each child its role either as
+a registered native role, or as the role file's absolute path with an instruction
+to read it first; inline the role's content only when the child cannot read
+files. Include the filled task template, exact artifact paths, and the working
+repository path. Children inherit none of the skill's instructions,
+conversation, MCP connections, or parent permissions.
 
 `spec-design-validator` and `spec-to-pr:spec-design-validator` mean the bundled
-validator role; `code-reviewer` and `spec-to-pr:code-reviewer` mean the loop's
-bundled reviewer role; `team-lead` and `spec-to-pr:team-lead` mean its bundled
-planning role. Only map roles present in the invoking skill's resources.
-`general-purpose`, including explicit `--subagent general-purpose`, means a
-generic worker with the task prompt. A custom external role must actually be
-available; report an unavailable-role error instead of silently substituting it.
+validator role. (agentic-loop) `code-reviewer` and `spec-to-pr:code-reviewer`
+mean the loop's bundled reviewer role; `team-lead` and `spec-to-pr:team-lead`
+mean its bundled planning role. Only map roles present in the invoking skill's
+resources. `general-purpose`, including explicit `--subagent general-purpose`
+(agentic-loop), means a generic worker with the task prompt. A custom external
+role must actually be available; report an unavailable-role error instead of
+silently substituting it.
 
 ## Select the host adapter
 
@@ -37,30 +42,31 @@ and parameters below describe behavior, not a fixed API to invoke blindly.
   a `.codex/agents` installation or pretend Claude agent names are native types.
 
 If a fresh child cannot be created, stop at the affected required gate and report
-the missing capability. Do not claim a review occurred. Optional copyediting
-may be omitted only when it was not requested or made a required gate.
+the missing capability. Do not claim a review occurred.
 
 ## Probe, dispatch, collect
 
-Before a tool-dependent worker assignment, have a fresh child demonstrate the
-required capability with a minimal read-only operation (for example reading the
-input file, or fetching the requested library documentation). Record the actual
-tool/result evidence. Parent tool discovery or a child's assertion of access is
-not sufficient. If a required MCP tool/skill is absent in the child, report it
-and stop dependent work; do not silently drop a requested augmentation.
+The worker's first action is the probe: before any tool-dependent analysis it
+runs one minimal read-only call per required tool (read the input file; fetch one
+doc page) and reports call and result in its output. Parent tool discovery or a
+worker's bare assertion is not evidence. A worker whose probe fails returns a
+capability failure; the invoking skill decides retry or stop.
 
-Pass role content, the task, input paths, success criteria, allowed scope, required
-tools/skills, and output format. Review workers must not edit files; this prompt
-restriction is not a filesystem sandbox. Use the host sandbox when available.
-Resolve `{{REPORT_FORMAT}}` in a validator role by including report-format.md.
+Pass the role as above, the task, input paths, success criteria, allowed scope,
+required tools/skills, and output format. Review workers must not edit files;
+this prompt restriction is not a filesystem sandbox. Use the host sandbox when
+available. When inlining a validator role, resolve `{{REPORT_FORMAT}}` by
+including the `report-format.md` beside the validator role.
 
 Create a fresh worker for each lens and each review attempt, including after
 revisions. Queue assignments when host capacity is exhausted; wait and collect
 completed workers before dispatching the rest. Never skip a lens because slots
 are full. Track assignment IDs, failures, and results. Collect every required
-result before synthesis; a missing/failed worker cannot count as GO.
+result before synthesis; the invoking skill decides retry or stop for a missing
+or failed worker.
 
 Return requests for product decisions to the controller. The controller uses the
-host's supported question UI or ordinary conversation, preserves answers in the
-run artifacts, and resumes from the recorded state. Do not assume a Claude-only
-question tool exists or interpret elapsed time as permission.
+host's supported question UI or ordinary conversation; (agentic-loop) it
+preserves answers in the run artifacts and resumes from the recorded state. Do
+not assume a Claude-only question tool exists or interpret elapsed time as
+permission.
