@@ -29,6 +29,8 @@ Structural pattern: a line whose trimmed text starts with `Default:`. A `Default
 
 For each decision, ask: *is there a second defensible option a competent engineer on this team might pick?* If yes, the decision is product-level and goes to §9 Open Questions unless `source.md` authorises the chosen answer. If you cannot name a second option, the decision is process and stays in §8 Resolved Decisions with its rationale. The bar is "a second defensible option exists", not "the optimal answer is non-obvious".
 
+A non-goal is a decision to exclude: "no X" is the choice of not-X over X. Each §3 Non-goal goes through this test like a §8 entry. An excluded X with a defensible case for including it becomes `Confirm: X is out of scope?` in §9.
+
 **Authorisation** means `source.md` literally says "use X", "X is required", or "X — confirmed", or the human answered a prior §9 question with X. "Default: X", "standard practice is X", and "we usually do X" are not authorisation.
 
 The test applies in every category:
@@ -38,7 +40,7 @@ The test applies in every category:
 - **Library**: any concrete library, version, or third-party API endpoint `source.md` does not name. Matching an existing codebase convention 1:1 (the same library analogous modules already use) is process; introducing a new dependency is product-level.
 - **Threshold**: timeouts, retry counts, batch sizes, page sizes, fee bps, deadlines, cache TTLs, rate limits, fan-out limits. A number `source.md` does not state goes to §9.
 
-Process decisions: codebase conventions matched 1:1 to existing files, formatter and linter settings, language idioms, the genuinely one-of-one choice.
+Process decisions: formatter and linter settings, language idioms, a library choice matching an existing codebase convention 1:1, the genuinely one-of-one choice. Precedent settles nothing else: in a load-bearing, architecture, or threshold category, "the existing code does it this way" is the suggested default of a §9 question, and so is any choice (a route, an event name, a payload field) that rests on an open §9 answer.
 
 Frame each decision the test moves to §9 as:
 

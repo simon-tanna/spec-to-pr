@@ -33,6 +33,7 @@ Check for:
 
     Any decision in ANY of these categories that is NOT literally authorised by source.md → `critical` finding with fix: "spec §8 entry `<decision>` has a defensible alternative `<alt>` not authorised by source.md — move to §9 Open Questions as a Confirm question, re-run spec loop." Record EVERY such decision in `product_decisions_flagged`, regardless of whether you raise it as critical, so the controller can see your classification reasoning.
     - `authorised_by_source: true` ONLY when source.md contains a literal "use X" / "X is required" / "X — confirmed", or a prior §9 answer resolved it. "Default: X" = `false`. Free-form prose suggestion = `false`. Codebase precedent in analogous modules counts as `true` ONLY for `library`-category decisions where the existing convention is 1:1 — for `architecture` / `threshold` / load-bearing categories, precedent is not authorisation.
+    - A sentence tagged `[Q<n> default]` is conditional on §9 question n, which already asks the human: audit the tag, not the choice. Raise a `critical` only when Q<n> is missing or asks about a different choice. A choice tagged `[§8 D<n>]` or `[source L<n>]`, or carrying no tag, is resolved; audit it as above.
     - Process decisions (formatter / linter, language idioms, the genuinely one-of-one choice) do NOT belong in `product_decisions_flagged`. If you cannot name a second defensible option, the decision is process — leave it in §8.
 
 ## Output format

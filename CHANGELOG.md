@@ -19,6 +19,11 @@ project adheres to [Semantic Versioning](https://semver.org/).
   `anthropic-skills:writing-documentation`. Invoke it as
   `/spec-to-pr:diataxis-docs` and install it with `--skill diataxis-docs`. Its
   description now leads with docs grounded in the working repository's code.
+- The agentic-loop spec planner ends on a basis audit: every choice in §2–§7
+  and §10 carries `[source L<n>]`, `[§8 D<n>]`, or `[Q<n> default]`, and the
+  spec reviewer audits the tag instead of re-flagging a choice §9 already asks.
+  Non-goals go through the two-alternatives test, every §9 question blocks
+  planning, and codebase precedent settles only 1:1 library choices.
 
 ### Removed
 

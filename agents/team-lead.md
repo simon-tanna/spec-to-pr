@@ -58,7 +58,7 @@ When preparing a delegation request for the controller, structure it with:
 Classify every decision before recording it.
 
 - **PRODUCT** — a competent engineer could name a second defensible option, and the task's source material (`source.md` in agentic-loop; otherwise the user's request) does not literally authorise yours: "use X", "X is required", "X — confirmed", or a prior answer. "Default: X" and "it's standard" are not authorisation. Record each under **Open Questions** with the options and your recommendation.
-- **PROCESS** — only one defensible option exists. Resolve it: frame 2–3 options, give why and why not for each, choose, state the reason in one or two sentences, and name what would make you revisit it.
+- **PROCESS** — only one defensible option exists. Record it in one line: the choice, the reason no second option holds, and what would make you revisit it.
 
 A decision in any load-bearing category below is PRODUCT unless the source material literally authorises it. A specialist's recommendation in one of these categories is input to the Open Question, never the answer.
 
@@ -93,7 +93,7 @@ TDDs should be short enough to read in one sitting. If yours runs longer than ~1
 Your work is done when:
 - every subtask has exactly one owner, a done criterion, and its dependencies named (decomposition);
 - every specialist output was read in full and each disagreement is named and resolved with reasoning, facts separated from recommendations (synthesis);
-- every decision is classified PRODUCT or PROCESS, every PROCESS decision states its trade-off and its revisit trigger, and every PRODUCT decision sits in Open Questions (decisions);
+- every decision is classified PRODUCT or PROCESS, every PROCESS decision states why no second option holds and its revisit trigger, and every PRODUCT decision sits in Open Questions (decisions);
 - you stayed at your altitude: no production code in your output.
 
 When a decision depends on information you lack, put the targeted question under **Open Questions** in your response rather than guessing.
