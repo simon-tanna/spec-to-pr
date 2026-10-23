@@ -24,7 +24,7 @@ chore(loop): start <task-id> <task-title> [#<issue>]
 
 ### 2. Dispatch implementer
 
-Create a fresh child through `dispatch.md` with `prompts/task-implementer.md`. Match `task.domain` to the immutable `run-requirements.json.specialists` roster used by Stage 2. Do not reread config or substitute a generic worker when an explicit roster entry is unavailable. Missing ownership is a plan error: return to the planner. The default generic roster is resolved only at ingest. Include the REQUIRED TOOLING block and verify required child capabilities before dependent work.
+Create a fresh child through `dispatch.md` with `prompts/decision-rules.md` prepended to `prompts/task-implementer.md`. Match `task.domain` to the immutable `run-requirements.json.specialists` roster used by Stage 2. Do not reread config or substitute a generic worker when an explicit roster entry is unavailable. Missing ownership is a plan error: return to the planner. The default generic roster is resolved only at ingest. Include the REQUIRED TOOLING block and verify required child capabilities before dependent work.
 
 Pass to the implementer:
 
@@ -33,7 +33,7 @@ Pass to the implementer:
 - Relevant spec excerpt (components this task touches)
 - Previous task summary (what just landed)
 - Working branch name
-- Status vocabulary (DONE / DONE_WITH_CONCERNS / NEEDS_CONTEXT / BLOCKED)
+- Status vocabulary: the six tokens in `status-handling.md` (the prompt already lists them)
 
 Never ask the implementer to read `plan.md` — the controller extracts and passes the exact task text. This keeps the subagent's context focused.
 
@@ -49,7 +49,7 @@ Dispatch `code-reviewer` with `prompts/spec-compliance.md`. Inputs:
 - `git diff <task-start-sha>..HEAD`
 - Files touched
 
-Verdict must confirm: all spec items implemented, no scope creep, no renames from plan, no silent skips. If `critical` or `important` non-empty, re-dispatch the implementer (same subagent type) with the review attached. Loop until both lists are empty. Then record the head sha as `spec_review_sha` on the task in `tasks.json`.
+Verdict must confirm: all spec items implemented, no scope creep, no renames from plan, no silent skips. If `verdict` is `needs-changes` (any issue with severity `critical` or `important`), re-dispatch the implementer (same subagent type) with the review attached. Loop until `verdict` is `approved`. Then record the head sha as `spec_review_sha` on the task in `tasks.json`.
 
 This pass is non-skippable. A task without `spec_review_sha` is incomplete, regardless of how green its tests look.
 
@@ -60,7 +60,7 @@ Dispatch `code-reviewer` with `prompts/quality-reviewer.md`. Inputs:
 - `git diff <task-start-sha>..HEAD`
 - Security sensitivity flags for the domain (backend → authz/injection/rate-limit; frontend → XSS/output-escaping/auth-state; data → migration safety/PII; CLI → arg escaping/EPIPE; plus any domain-specific risks the configured reviewer knows)
 
-Same fix-and-re-review loop until clean. Record `quality_review_sha`.
+Same fix-and-re-review loop until `verdict` is `approved`. Record `quality_review_sha`.
 
 If turn budget cannot fit both reviews + their fix loops, prefer to checkpoint and exit so the next CI run resumes mid-task review — never advance the task status to `done` with either review unrecorded.
 

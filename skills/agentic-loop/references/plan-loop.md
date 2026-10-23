@@ -73,11 +73,11 @@ Parse `plan.md` into `tasks.json`:
 
 ## Review
 
-Dispatch in parallel:
+Dispatch in parallel, with `prompts/decision-rules.md` prepended to each reviewer prompt:
 
 - `code-reviewer` with `prompts/plan-reviewer.md` on the full plan.
 - Each domain specialist with a sanity-check prompt on their slice (not a re-plan).
-- **For plans that touch any load-bearing decision category — the configured `risk_categories` plus the generic set (auth/access, data ownership/custody, irreversible/destructive operations, money/billing/fees, data retention & privacy/PII, security trust boundaries, external-service trust, breaking changes to public contracts) — ALSO dispatch the configured reviewer (`agents.reviewer`) in adversarial mode** — prompt: "audit this plan for attack-surface and product-risk regressions versus `source.md`. Assume the planner's resolved decisions in `spec.md §8` may be wrong. Flag any change to a load-bearing decision category that is not literally authorised by `source.md`." Run in parallel with the standard reviewers. (Always supply the complete bundled reviewer role and adversarial stage instructions, including when a generic native child is used.)
+- **For plans that touch any *load-bearing decision* (see `prompts/decision-rules.md`; the configured `risk_categories` included) — ALSO dispatch the configured reviewer (`agents.reviewer`) in adversarial mode** — prompt: "audit this plan for attack-surface and product-risk regressions versus `source.md`. Assume the planner's resolved decisions in `spec.md §8` may be wrong. Flag any change to a load-bearing decision category that is not literally authorised by `source.md`." Run in parallel with the standard reviewers. (Always supply the complete bundled reviewer role and adversarial stage instructions, including when a generic native child is used.)
 
 Critical findings from the adversarial pass carry the same weight as critical findings from the standard review. Aggregate all verdicts into `plan-review.md` using the same JSON shape as `spec-review.md`. This is the gate that catches load-bearing decisions silently resolved against `source.md` (e.g. an irreversible operation shipped with no confirmation, an access-control or trust-boundary change, a data-retention reversal) — at plan-lock, not after the PR is open.
 

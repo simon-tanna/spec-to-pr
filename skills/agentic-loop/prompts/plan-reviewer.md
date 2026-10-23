@@ -25,7 +25,7 @@ Check:
 8. **File paths** — exact, not "somewhere in packages/foo".
 9. **Commands** — verification commands are real and runnable.
 10. **Commit messages** — follow conventional format; commit body MUST include a `TDD:` line referencing the test file/lines.
-11. **Attack-surface & product-risk audit.** For every task that adds or changes any load-bearing decision category — data custody/ownership, access control or role grants, an irreversible/destructive operation, billing/fees, data retention/privacy, a security trust boundary, external-service trust, a breaking public-contract change, or any configured `risk_categories` item — name the attack-surface change in the finding, and confirm it is authorised by `spec.md §8 Resolved Decisions` AND traceable to `source.md`. If not authorised, raise critical with fix "move decision to Open Questions, re-run spec loop". This catch-all exists because past loops shipped behaviours that silently contradicted the locked spec — the regression has to surface at plan-lock, not post-PR.
+11. **Attack-surface & product-risk audit.** For every task that adds or changes a *load-bearing decision* (the categories in the prepended `decision-rules.md`) — name the attack-surface change in the finding, and confirm it is authorised by `spec.md §8 Resolved Decisions` AND traceable to `source.md`. If not authorised, raise critical with fix "move decision to Open Questions, re-run spec loop". This catch-all exists because past loops shipped behaviours that silently contradicted the locked spec — the regression has to surface at plan-lock, not post-PR.
 
 ## Output format
 

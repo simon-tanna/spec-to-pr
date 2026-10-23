@@ -52,5 +52,4 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 
 - Always `--base "$AGENTIC_BASE_REF"` (set by the workflow's pin step: config `base_ref`, then the issue's `Base branch` field, then `base:<ref>` label, then `main`). Never hardcode a base branch.
 - Always link the source issue via `Closes #`.
-- Never mark the PR as a draft unless the final review flagged `important` issues (then draft is correct).
 - Do not include full spec/plan inline — link to the committed files.

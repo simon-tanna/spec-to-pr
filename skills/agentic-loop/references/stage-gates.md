@@ -28,7 +28,7 @@ The most common failure mode of past runs has been skipping a stage to "save tur
 - **Artefacts:** all tasks `done`; per-task `spec_review_sha` AND `quality_review_sha` populated
 - **Gate:**
   - resolved quality gates green on full branch
-  - final-review verdict `approved`
+  - final-review verdict `approved`; a `needs-changes` verdict sends every critical and important finding back to Stage 3 as a fix task
 
 ## Hard gates (enforced by hooks — only when registered)
 

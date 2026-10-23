@@ -1,6 +1,6 @@
 # Handling Implementer Status
 
-Implementer subagents end with one of four status tokens. Handle each deliberately — never silently retry.
+Implementer subagents end with one of six status tokens: `DONE`, `DONE_WITH_CONCERNS`, `NEEDS_CONTEXT`, `BLOCKED`, `BLOCKED_PERMISSION`, `NEEDS_PRODUCT_DECISION`. This file is the single source of truth for that vocabulary; `prompts/task-implementer.md` lists the same six for the child. Handle each deliberately — never silently retry.
 
 ## DONE
 
@@ -17,7 +17,7 @@ Never ignore the concerns.
 
 ## NEEDS_PRODUCT_DECISION
 
-Implementer hit a load-bearing product call (data custody/ownership, access control, an irreversible/destructive operation, billing/fees, data retention/privacy, a security trust boundary, external-service trust, or a breaking public-contract change — plus any configured `risk_categories`). Treat exactly like a Stage 1/2 open question — but unlike `NEEDS_CONTEXT`, do NOT supply an answer yourself; the controller is also not authorised to decide.
+Implementer hit a *load-bearing decision* (see `prompts/decision-rules.md`; configured `risk_categories` included). Treat exactly like a Stage 1/2 open question — but unlike `NEEDS_CONTEXT`, do NOT supply an answer yourself; the controller is also not authorised to decide.
 
 Protocol:
 
@@ -38,7 +38,7 @@ Common causes:
 
 - The task referenced a type/function defined in an earlier task that the implementer could not locate — include the file path and excerpt.
 - External dependency: library docs, API schema, contract ABI — fetch and include.
-- Product decision: ambiguity in the spec — escalate to human in interactive mode; emit a question via `scripts/notify.sh` in headless mode.
+- Product decision → the implementer should have returned `NEEDS_PRODUCT_DECISION`; handle it under that section.
 
 ## BLOCKED
 

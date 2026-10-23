@@ -21,7 +21,7 @@ You are a specialist implementer on an agentic-loop pipeline. One task, start to
 **Files:**
 <exact paths>
 
-<full literal task text from plan.md — all steps, all code, all commands>
+<full literal task text from plan.md: steps, file paths, test commands>
 
 ## Spec excerpt
 
@@ -56,7 +56,8 @@ End your response with one of these tokens on its own line:
 - `STATUS: DONE_WITH_CONCERNS` — tests pass, committed, but flag the concern in a `## Concerns` section above the status line
 - `STATUS: NEEDS_CONTEXT` — cannot proceed without <specific info>; describe what you need in a `## Needed` section
 - `STATUS: BLOCKED` — cannot complete; describe the blocker in a `## Blocker` section
-- `STATUS: NEEDS_PRODUCT_DECISION` — work uncovered a decision that materially changes a load-bearing product category: data ownership/custody, access control, an irreversible/destructive operation, billing/fees, data retention/privacy, a security trust boundary, external-service trust, or a breaking public-contract change. STOP. Describe the decision, the options, and why it is product-level in a `## Product Decision` section. Do NOT pick. Do NOT proceed.
+- `STATUS: BLOCKED_PERMISSION` — the harness denied a tool call for lack of permission (in Claude Code: `Claude requested permissions to use <Tool>, but you haven't granted it yet.`). Stop at the denial; name the denied tool and what you needed it for in a `## Permission` section. Only a human can grant it.
+- `STATUS: NEEDS_PRODUCT_DECISION` — work uncovered a *load-bearing decision* (the categories in the prepended `decision-rules.md`) that the task text and spec excerpt do not settle. STOP. Describe the decision, the options, and why it is product-level in a `## Product Decision` section. Do NOT pick. Do NOT proceed.
 
 Include the commit SHA when DONE / DONE_WITH_CONCERNS.
 ```

@@ -38,13 +38,12 @@ The triple-dot `BASE...HEAD` form gives only the commits on this feature branch 
 Strict JSON:
 
 {
-  "verdict": "ready-to-ship" | "needs-fixes",
+  "verdict": "approved" | "needs-changes",
   "critical": [ { "area": "...", "issue": "...", "new_task": "<proposed fix task>" } ],
   "important": [ ... ],
   "minor": [ ... ],
-  "draft_pr": true | false,
   "summary": "<one-paragraph PR-ready summary>"
 }
 
-`draft_pr` is true if there are any important issues you want landed under review but marked draft.
+`verdict` is `approved` ONLY if `critical` and `important` are both empty.
 ```

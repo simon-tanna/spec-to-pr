@@ -54,6 +54,18 @@ class DistributionTests(unittest.TestCase):
                 found.extend(matches)
             self.assertEqual(len(set(found)), 1, pattern.pattern)
 
+    def test_load_bearing_categories_are_identical(self):
+        copies = [ROOT / "skills/agentic-loop/prompts/decision-rules.md",
+                  ROOT / "skills/agentic-loop/references/roles/team-lead.md"]
+        block = re.compile(r"(?s)<!-- load-bearing-categories:start -->\n.*?<!-- load-bearing-categories:end -->\n")
+        found = []
+        for copy in copies:
+            matches = block.findall(copy.read_text())
+            with self.subTest(copy=copy.name):
+                self.assertEqual(len(matches), 1)
+            found.extend(matches)
+        self.assertEqual(len(set(found)), 1)
+
     def test_markdown_copies_carry_generated_marker(self):
         validation = ROOT / "skills/validating-specs"
         bundle = ROOT / "skills/agentic-loop/references/validation"
