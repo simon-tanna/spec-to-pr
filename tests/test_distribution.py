@@ -70,7 +70,7 @@ class DistributionTests(unittest.TestCase):
         validation = ROOT / "skills/validating-specs"
         bundle = ROOT / "skills/agentic-loop/references/validation"
         copies = {ROOT / f"skills/{skill}/references/dispatch.md": validation / "references/dispatch.md"
-                  for skill in ("agentic-loop", "writing-documentation")}
+                  for skill in ("agentic-loop",)}
         for source in (validation / "references").glob("*.md"):
             copies[bundle / "references" / source.name] = source
         for source in (validation / "prompts").glob("*.md"):
@@ -104,7 +104,7 @@ class DistributionTests(unittest.TestCase):
         required = {
             "agentic-loop": ["references/dispatch.md", "references/roles/code-reviewer.md", "references/roles/team-lead.md", "references/validation/workflow.md", "references/validation/references/validator-role.md", "references/validation/references/report-format.md", "references/validation/prompts/validator-instance.md", "scripts/check-gates.sh", "setup/hooks/lib-gates.sh", "scripts/init-run.sh"],
             "validating-specs": ["references/dispatch.md", "references/validator-role.md", "references/report-format.md", "prompts/validator-instance.md"],
-            "writing-documentation": ["references/dispatch.md"],
+            "diataxis-docs": ["references/quadrant-tutorial.md", "references/quadrant-how-to.md", "references/quadrant-reference.md", "references/quadrant-explanation.md"],
         }
         for skill, resources in required.items():
             with self.subTest(skill=skill), tempfile.TemporaryDirectory() as tmp:

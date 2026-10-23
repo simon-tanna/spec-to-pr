@@ -14,6 +14,19 @@ project adheres to [Semantic Versioning](https://semver.org/).
   requests for the caller to dispatch.
 - The native `code-reviewer` and `spec-design-validator` agents are read-only
   through `disallowedTools`, and now inherit MCP and Skill tools.
+- **Breaking:** the `writing-documentation` skill is renamed `diataxis-docs`,
+  so it no longer collides with the installed
+  `anthropic-skills:writing-documentation`. Invoke it as
+  `/spec-to-pr:diataxis-docs` and install it with `--skill diataxis-docs`. Its
+  description now leads with docs grounded in the working repository's code.
+
+### Removed
+
+- `diataxis-docs` no longer bundles `references/elements-of-style.md`. Register
+  comes from the quadrant file; the LANGUAGE AND STYLE block in `SKILL.md` holds
+  the rules shared by every quadrant.
+- `diataxis-docs` no longer ships a generated `references/dispatch.md`. Its cut
+  pass carries its own instructions for running in a fresh child.
 
 ## [0.3.0] - 2026-10-23
 

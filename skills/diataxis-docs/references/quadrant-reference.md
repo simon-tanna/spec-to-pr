@@ -44,3 +44,6 @@ Noun phrase — *X reference* · *X configuration* · *X API*. Never a verb.
 - Structure matches the software's structure.
 - Every claim traces to source.
 - Instruction and argument live in their own documents, linked from here.
+- Every parameter, return value, error, and default in scope appears,
+  enumerated from source rather than memory.
+- No line can lose a word without losing meaning; tabular data sits in tables.

@@ -33,7 +33,7 @@ confidence, and confidence needs connective prose. Keep articles and full
 sentences. Write in the first person plural: *we'll add a handler now*. Signpost
 what is coming and what just happened.
 
-Cut padding and hedges — the **Shared rules** in `SKILL.md` still apply. Do not cut
+Cut padding and hedges — LANGUAGE AND STYLE in `SKILL.md` still applies. Do not cut
 the connective tissue that carries the learner from one step to the next, and do not
 cut deliberate repetition: repetition teaches.
 
@@ -43,6 +43,10 @@ cut deliberate repetition: repetition teaches.
 
 ## Done when
 
-- A reader who follows it exactly reaches a working result.
+- You ran every step end to end in this repo, and each output shown is the
+  output you got. A step you could not run is marked untested and named to the
+  user.
 - Every step is concrete, and every step presents exactly one path.
 - Explanation and machinery detail live in their own documents, linked from here.
+- Full sentences in first person plural, a signpost at each step; deliberate
+  repetition kept, padding cut.

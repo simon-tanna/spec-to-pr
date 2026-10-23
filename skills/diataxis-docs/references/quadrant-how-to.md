@@ -42,3 +42,5 @@ should set the timeout*. One idea per line.
 - The title names a goal a reader would actually search for.
 - Every step is an action, in order.
 - Teaching and exhaustive machinery detail live in their own documents, linked.
+- No line can lose a word without losing meaning: fragments, imperative mood,
+  one idea per line.
