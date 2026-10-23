@@ -14,7 +14,7 @@ class DistributionTests(unittest.TestCase):
         validator = (ROOT / "agents/spec-design-validator.md").read_text()
         frontmatter = validator.split("---", 2)[1]
         self.assertNotRegex(frontmatter, r"(?m)^memory:")
-        self.assertIn("Review workers must not edit project files", validator)
+        self.assertIn("Leave the working tree, index, and commit history exactly as you found them", validator)
         for instruction in ("Update your agent memory", "Use the Write and Edit tools",
                             "Persistent Agent Memory", "agent-memory/spec-design-validator"):
             with self.subTest(instruction=instruction):
