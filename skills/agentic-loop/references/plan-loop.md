@@ -18,7 +18,7 @@ The planner reads `spec.md` and identifies which configured specialists own whic
 
 ## Parallel Dispatch
 
-**The planner does NOT dispatch specialists directly** — Claude Code does not support subagent nesting. The flow is:
+**The controller dispatches every specialist; children do not dispatch children.** The flow is:
 
 1. **Controller → fresh planner child (impl-planner.md Mode A)** — the planner reads `spec.md` and returns a `<dispatch_plan>` JSON block listing which specialists to dispatch and their component scope. The planner stops here.
 
@@ -81,21 +81,19 @@ Dispatch in parallel, with `prompts/decision-rules.md` prepended to each reviewe
 
 Critical findings from the adversarial pass carry the same weight as critical findings from the standard review. Aggregate all verdicts into `plan-review.md` using the same JSON shape as `spec-review.md`. This is the gate that catches load-bearing decisions silently resolved against `source.md` (e.g. an irreversible operation shipped with no confirmation, an access-control or trust-boundary change, a data-retention reversal) — at plan-lock, not after the PR is open.
 
-**Then run the validation pass.** Read and execute the bundled `references/validation/workflow.md` inline in the controller, resolving its resources under `references/validation/` (see SKILL.md `## Spec & Plan Validation`). Pass the explicit `plan.md` path as the document under review plus `spec.md` for context, and direct its merged report to `plan-validation.md`. It returns one `GO | REVISE | NO-GO` verdict; a `REVISE`/`NO-GO` feeds back into the next plan cycle like a `critical`/`important` finding. Commit `plan-validation.md` via `scripts/git-sync.sh commit`.
+**Then run the validation pass.** Read and execute the bundled `references/validation/workflow.md` inline in the controller (see SKILL.md `## Spec & Plan Validation`), invoked as `<abs plan.md> --context <abs spec.md> --out <abs plan-validation.md>` plus the run's `--skill`/`--mcp`. The report's last line is the verdict: `Verdict: GO`, `Verdict: REVISE` or `Verdict: NO-GO`. `REVISE`/`NO-GO` feeds back into the next plan cycle like a `critical`/`important` finding. Commit `plan-validation.md` via `scripts/git-sync.sh commit`.
 
-## Recurring-issue Escalation
+## Recurrence cap
 
-Same single trigger as the spec loop: the same `task_id` (or `area` for global findings) appears in `critical` or `important` across two consecutive iterations. On the trigger, post the comment, set label `state:blocked` (or `state:needs-decision` if the recurring finding is attack-surface PRODUCT-class), and exit 0. The loop bounces back to spec, not back into plan-revision.
+Apply `spec-loop.md` §Recurrence cap, keyed on `task_id` (or `area` for plan-wide findings); `.state` stays `plan`.
 
-## Loop Exit
+## Exit
 
-Same exit criteria as the spec loop: `plan-review.md` `verdict=approved`, `critical=[]`, `important=[]`, **AND `plan-validation.md` verdict is `GO`**.
-
-On exit:
+Exit when the `plan` → `implement` gate in `stage-gates.md` holds. Then:
 
 - Advance `.state` to `implement`.
-- Label `state:implementing`.
-- Run `scripts/git-sync.sh commit "chore(loop): lock plan for #<issue>"` — commits and pushes `plan.md`, `tasks.json`, `plan-review.md`, and `.state` together.
+- Label `state:implementing` (real GitHub issues only).
+- Run `scripts/git-sync.sh commit "chore(loop): lock plan for #<issue>"` — commits and pushes `plan.md`, `tasks.json`, `plan-review.md`, `plan-validation.md`, and `.state` together.
 
 ## Replanning Mid-Execute
 

@@ -84,10 +84,4 @@ If this run mandates specific project skills or MCP servers (the controller reso
 ## Output
 
 Return ONLY the spec markdown. Do not add commentary outside the document.
-
-**If §9 Open Questions is non-empty** (or `force-interview: true`), the calling loop must write the following artifacts before exiting, in this order:
-1. `spec.md` — the draft produced here
-2. `spec-review.md` — from spec-reviewer
-3. `open-questions.md` — numbered list of the §9 questions
-4. `.agentic-loop/<id>/.state` — content: `spec` (single word). This file MUST be written even on a fresh-start run; never skip it. Its absence is not a valid encoding of "still in spec" — a missing `.state` looks identical to an un-ingested issue on the next trigger.
 ```

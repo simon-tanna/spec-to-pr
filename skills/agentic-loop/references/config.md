@@ -56,10 +56,9 @@ override the defaults. Read it once at loop start (Stage 1 ingest).
     "mcps":   []
   },
 
-  // Extra repo-specific load-bearing decision categories appended to the generic set
-  // (auth/access, data ownership, irreversible ops, money/fees, retention/PII, trust
-  // boundaries, external-service trust, breaking public-contract changes). Drives the
-  // decision-fork interview and the adversarial attack-surface review pass.
+  // Extra repo-specific load-bearing decision categories, appended to the generic set in
+  // prompts/decision-rules.md. Drives the decision-fork interview and the adversarial
+  // attack-surface review pass.
   "risk_categories": [],
 
   // I/O adapter for all human-facing messages (banners, open questions, progress,

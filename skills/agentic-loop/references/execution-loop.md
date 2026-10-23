@@ -91,9 +91,9 @@ If any of these fail, re-dispatch the implementer with the gap as context. Do NO
 - If a reusable pattern emerged, update the applicable repository instructions (`AGENTS.md` or `CLAUDE.md`).
 - Run `scripts/git-sync.sh commit "chore(loop): finish <task-id> [#<issue>]"`.
 
-### 9. Post progress (CI)
+### 9. Post progress
 
-Every N tasks (default 3, or on stage boundary), post a progress comment on the issue listing:
+Every N tasks (default 3), and at each stage boundary, pipe a progress message into `"${AGENTIC_SKILL_DIR}/scripts/notify.sh" progress "$ID" -` listing:
 
 - Completed task IDs + titles
 - Current task ID
@@ -102,7 +102,7 @@ Every N tasks (default 3, or on stage boundary), post a progress comment on the 
 
 ## Constraints
 
-- **Never parallelise implementer subagents.** File conflicts cascade and the review loop cannot distinguish which agent owns which change.
-- **Reviewers may run in parallel** after the implementer commits — they read-only.
-- **Never let the implementer skip tests.** Iron Law from `tdd.md` applies here too.
-- **Never edit `plan.md` mid-execute.** If the plan is wrong, jump back to the plan loop for that task.
+- **Run one implementer at a time.** Parallel implementers cascade file conflicts, and the review loop cannot tell which agent owns which change.
+- **Reviewers may run in parallel** after the implementer commits; they are read-only.
+- **Every task ships with its tests.** The Iron Law from `tdd.md` applies here too.
+- **`plan.md` is fixed during execution.** If the plan is wrong, jump back to the plan loop for that task.

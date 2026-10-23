@@ -24,7 +24,7 @@ Protocol:
 1. Mark the task `blocked` in `tasks.json` with `blocker_reason: "needs product decision: <one-sentence summary>"`.
 2. Append the question to `.agentic-loop/<id>/open-questions.md` prefixed `[PRODUCT][<task-id>]`.
 3. Only for a real GitHub issue under the GitHub adapter, add label `state:needs-decision` via `scripts/gh-label.sh` using the real issue number. Skip labels for file/inline runs.
-4. Emit a single message via `scripts/notify.sh blocked "$ID" -` using the Open-Questions template. The helper resolves the real issue from run metadata; issue-less GitHub notifications go to the run's `notifications.md` instead. This does not change the adapter used to open a PR.
+4. Emit a single message via `scripts/notify.sh blocked "$ID" -`, with the question shaped per `interview-protocol.md` §Open-questions file. The helper resolves the real issue from run metadata; issue-less GitHub notifications go to the run's `notifications.md` instead. This does not change the adapter used to open a PR.
 5. In interactive mode, also raise via the available interactive question interface.
 6. For an issue-less run or a non-GitHub adapter, write `.agentic-loop/<id>/NEEDS_INPUT` before committing the question and pause artifacts with `scripts/git-sync.sh commit "chore(loop): pause for product decision on <id>"`. Interactively, wait for the answer or yield the turn; never continue dependent work. Headlessly, a real GitHub issue under the GitHub adapter exits `0` for issue-comment resumption; all other runs exit `78` for host resumption, including issue-less runs whose PR adapter remains GitHub.
 

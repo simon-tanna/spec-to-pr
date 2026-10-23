@@ -41,7 +41,7 @@ The workflow's auto-resume trigger fires only when ALL of:
 
 ## Reset
 
-The counter is reset to zero when the loop reaches Stage 4 and `gh pr create` succeeds (`SKILL.md §Stage 4` step 3). If the counter is at `RESUME_CAP` and the human types `@claude continue`, the workflow's separate `issue_comment` handler fires and clears the counter as part of resumption.
+The counter is reset to zero when the loop reaches Stage 4 and `gh pr create` succeeds (`SKILL.md §Stage 4` step 5, "Reset auto-resume counter"). If the counter is at `RESUME_CAP` and the human types `@claude continue`, the workflow's separate `issue_comment` handler fires and clears the counter as part of resumption.
 
 ## Changing values
 

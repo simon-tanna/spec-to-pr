@@ -1,14 +1,16 @@
 # Issue State Machine
 
-Per `CLAUDE.md`, label transitions are:
+Labels apply only to runs attached to a real GitHub issue; set and remove them with `scripts/gh-label.sh`.
 
-| Entering stage       | Set label            | Remove label                            |
-| -------------------- | -------------------- | --------------------------------------- |
-| Spec loop start      | `state:planning`     | `state:ready`                           |
-| Plan loop start      | `state:planning`     | —                                       |
-| Execute start        | `state:implementing` | `state:planning`                        |
-| Any review loop      | `state:reviewing`    | —                                       |
-| PR raised            | `state:in-pr`        | `state:implementing`, `state:reviewing` |
-| PR merged (external) | `state:done`         | `state:in-pr`                           |
+| Event                                                                 | Set label             | Remove label          |
+| --------------------------------------------------------------------- | --------------------- | --------------------- |
+| Spec loop start                                                       | `state:planning`      | —                     |
+| Plan loop start                                                       | `state:planning`      | —                     |
+| Execute start                                                         | `state:implementing`  | `state:planning`      |
+| Recurrence cap (`spec-loop.md` §Recurrence cap)                       | `state:blocked`       | —                     |
+| `NEEDS_PRODUCT_DECISION` (`status-handling.md`)                       | `state:needs-decision` | —                    |
+| Resume after the human answers                                        | —                     | `state:blocked`, `state:needs-decision` |
+| PR raised                                                             | `state:in-pr`         | `state:implementing`  |
+| PR merged (external)                                                  | `state:done`          | `state:in-pr`         |
 
 The skill drives transitions up to `state:in-pr`. `state:done` is owned by the merge pipeline.
