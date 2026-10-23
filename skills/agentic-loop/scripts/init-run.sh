@@ -62,6 +62,7 @@ if [[ -n "$requested_id" ]]; then run_id=$requested_id; fi
 run_dir=".agentic-loop/$run_id"
 metadata="$run_dir/run-context.json"
 [[ ! -L .agentic-loop && ! -L "$run_dir" && ! -L "$metadata" ]] || fail 'Run storage must not be a symlink'
+[[ ! -e .agentic-loop || -d .agentic-loop ]] || fail 'Run storage is not a directory'
 # Preflight remains read-only: ls-remote does not update local refs or remote data.
 git remote get-url origin >/dev/null 2>&1 || fail 'Configure origin before initialization'
 git ls-remote origin >/dev/null 2>&1 || fail 'Origin is unreachable'

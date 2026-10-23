@@ -10,6 +10,16 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 
 
 class DistributionTests(unittest.TestCase):
+    def test_native_validator_is_read_only_without_persistent_memory(self):
+        validator = (ROOT / "agents/spec-design-validator.md").read_text()
+        frontmatter = validator.split("---", 2)[1]
+        self.assertNotRegex(frontmatter, r"(?m)^memory:")
+        self.assertIn("Review workers must not edit project files", validator)
+        for instruction in ("Update your agent memory", "Use the Write and Edit tools",
+                            "Persistent Agent Memory", "agent-memory/spec-design-validator"):
+            with self.subTest(instruction=instruction):
+                self.assertNotIn(instruction, validator)
+
     def test_committed_distribution_is_current(self):
         subprocess.run([sys.executable, str(ROOT / "scripts/build-distribution.py"), "--check"], check=True)
 

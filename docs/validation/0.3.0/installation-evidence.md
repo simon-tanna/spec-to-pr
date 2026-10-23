@@ -21,7 +21,7 @@ Reproduce after generating the distribution:
 
 ```bash
 python3 scripts/build-distribution.py
-python3 skills/agentic-loop-workspace/test_skills_install.py --allow-network
+python3 scripts/evals/test_skills_install.py --allow-network
 ```
 
 The eval is opt-in and has no unittest discovery cases. `--allow-network`

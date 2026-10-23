@@ -14,8 +14,8 @@ folder; inspect actual context arguments before claiming fresh-context semantics
 Reproduce:
 
 ```bash
-python3 skills/agentic-loop-workspace/run_portable_dispatch_smoke.py --harness codex --output /tmp/spec-to-pr-live-codex --timeout 45
-python3 skills/agentic-loop-workspace/run_portable_dispatch_smoke.py --harness claude --output /tmp/spec-to-pr-live-claude --timeout 45
+python3 scripts/evals/run_portable_dispatch_smoke.py --harness codex --output /tmp/spec-to-pr-live-codex --timeout 45
+python3 scripts/evals/run_portable_dispatch_smoke.py --harness claude --output /tmp/spec-to-pr-live-claude --timeout 45
 ```
 
 | Harness | Result | Observed blocker |

@@ -20,7 +20,9 @@ def main():
     with tempfile.TemporaryDirectory(prefix='spec-to-pr-install-') as tmp, args.evidence.open('a') as log:
         root = Path(tmp)
         source = root / 'source'
-        shutil.copytree(repo / 'skills', source / 'skills', ignore=shutil.ignore_patterns('__pycache__'))
+        for name in names:
+            shutil.copytree(repo / 'skills' / name, source / 'skills' / name,
+                            ignore=shutil.ignore_patterns('__pycache__'))
         # Include the optional plugin layout so discovery matches the published
         # repository; skills-only fixtures could hide manifest discovery bugs.
         for directory in ['.claude-plugin', 'agents', 'hooks']:

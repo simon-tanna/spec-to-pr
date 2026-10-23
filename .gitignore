@@ -15,3 +15,6 @@
 *.log
 __pycache__/
 *.pyc
+
+# Local skill evaluation workspace (maintained evaluators live in scripts/evals/)
+/skills/agentic-loop-workspace/

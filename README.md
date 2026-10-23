@@ -197,9 +197,9 @@ workflow, repo variables).
 
 The release adds automated packaging, initialization, and shared-gate tests.
 Run `bash scripts/test.sh` for offline checks; see the
-[validation record](skills/agentic-loop-workspace/portability-validation.md)
+[validation record](docs/validation/0.3.0/portability-validation.md)
 for test-first changes and remaining live acceptance work.
-The [installation eval](skills/agentic-loop-workspace/installation-evidence.md)
+The [installation eval](docs/validation/0.3.0/installation-evidence.md)
 passed eight isolated Skills CLI installs, including each skill alone and both
 link/copy modes. These verify installation/resource closure and deterministic checks; they do not
 establish complete live interactive execution on either harness. Record actual

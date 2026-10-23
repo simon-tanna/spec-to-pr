@@ -51,6 +51,23 @@ class InitRun(unittest.TestCase):
         self.run_init(ok=False)
         self.assertEqual(self.git('branch', '--show-current'), 'main')
         self.assertFalse((self.repo / '.agentic-loop').exists())
+    def test_storage_file_rejected_before_mutation_and_retry_succeeds(self):
+        storage = self.repo / '.agentic-loop'
+        storage.write_bytes(b'unrelated local file\n')
+        refs = self.git('show-ref')
+        status = self.git('status', '--porcelain')
+        tracked = (self.repo / 'tracked').read_bytes()
+        error = self.run_init(ok=False)
+        self.assertIn('not a directory', error)
+        self.assertEqual(self.git('branch', '--show-current'), 'main')
+        self.assertEqual(self.git('show-ref'), refs)
+        self.assertEqual(self.git('status', '--porcelain'), status)
+        self.assertEqual((self.repo / 'tracked').read_bytes(), tracked)
+        self.assertEqual(storage.read_bytes(), b'unrelated local file\n')
+        storage.unlink()
+        result = self.run_init()
+        self.assertFalse(result['resumed'])
+        self.assertTrue((self.repo / result['run_dir'] / 'run-context.json').is_file())
     def test_base_precedence(self):
         for branch in ['configured', 'body', 'label', 'explicit']:
             self.git('branch', branch)

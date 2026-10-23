@@ -3,7 +3,7 @@ import importlib.util
 from pathlib import Path
 import unittest
 
-SOURCE = Path(__file__).resolve().parents[1] / 'run_portable_dispatch_smoke.py'
+SOURCE = Path(__file__).resolve().parents[1] / 'scripts/evals/run_portable_dispatch_smoke.py'
 SPEC = importlib.util.spec_from_file_location('dispatch_smoke', SOURCE)
 SMOKE = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(SMOKE)

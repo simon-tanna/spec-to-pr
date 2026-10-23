@@ -61,6 +61,28 @@ marketplace with `source: "./"`.
    ```
 9. (Optional) Cut a GitHub Release from the tag using the CHANGELOG section.
 
+## Evaluation tools and evidence
+
+Run `bash scripts/test.sh` for offline regressions, including dispatch evidence
+parser tests. Maintained opt-in evaluators live in `scripts/evals/`:
+
+```bash
+python3 scripts/evals/test_skills_install.py --allow-network
+python3 scripts/evals/run_portable_dispatch_smoke.py --harness codex --output /tmp/spec-to-pr-live-codex
+python3 scripts/evals/run_portable_dispatch_smoke.py --harness claude --output /tmp/spec-to-pr-live-claude
+```
+
+The installation evaluator uses disposable projects and requires network access.
+The dispatch evaluator uses existing harness authentication and writes traces to
+its explicit output directory. These live evaluations are separate from the
+offline suite.
+
+Recorded 0.3.0 evidence and remaining acceptance gaps are in
+[the validation record](docs/validation/0.3.0/portability-validation.md).
+Historical local experiments belong in the ignored
+`skills/agentic-loop-workspace/` directory; keep maintained tools and release
+evidence outside that workspace.
+
 ## How users update
 
 Skills installations use the Skills CLI's update command. From the target project:
