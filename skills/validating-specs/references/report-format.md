@@ -3,7 +3,7 @@
 Severities are defined in the validator role's `## Severity` section. Every section appears, in order; write `None.` under an empty one.
 
 1. **Executive Summary** — one paragraph: the recommendation and why.
-2. **Coverage** — one line per lens: `lens · instance outcome`; one line per tool: `tool · required|optional · evidence or unavailable`.
+2. **Coverage** — one line per lens: `lens · instance outcome`; one line per tool: `tool · required|optional · evidence or unavailable`; include each missing optional capability and the fallback actually used.
 3. **What's Strong** — evidence-backed strengths, each with its citation.
 4. **Blockers** — `B<n> · lens · kind · spec line(s) · evidence · issue · fix · foundational: yes|no`
 5. **Major Concerns** — `M<n> · lens · kind · spec line(s) · evidence · issue · fix · blocks-start: yes|no`. On GO, these are the verdict's conditions.
@@ -13,4 +13,4 @@ Severities are defined in the validator role's `## Severity` section. Every sect
 9. **Final Verdict** — one rationale line, then the report's last line, exactly one of:
    `Verdict: GO` · `Verdict: REVISE` · `Verdict: NO-GO`
 
-`kind` is one of `flaw`, `assumption`, `missing`, `convention`. The report is complete when every merged finding appears exactly once in sections 4–6 every ignored-instruction record appears in section 8 (or `None.` when empty), and its last line is a verdict line.
+`kind` is one of `flaw`, `assumption`, `missing`, `convention`. The report is complete when every merged finding appears exactly once in sections 4–6, every ignored-instruction record appears in section 8 (or `None.` when empty), and its last line is a verdict line.

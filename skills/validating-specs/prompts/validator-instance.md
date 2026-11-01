@@ -25,12 +25,14 @@ Sibling instances own {{OTHER_LENSES}}; a concern in their surface is theirs —
 
 Ground every finding in the repo: verify claims with the available source-reading and search tools and cite `file:line`; the spec's prose is a claim to check, not evidence.
 
+REQUIRED CAPABILITIES — first prove read access to the target documents and read/search access to the target repository with minimal read-only calls. Follow the role’s CAPABILITY FAILURE or CLARIFICATION REQUIRED response when applicable; either response replaces the ledger.
+
 REQUIRED TOOLING — your first actions: run one minimal read-only call per tool to prove access, then use it for its reason. If any required tool is unavailable, return only `CAPABILITY FAILURE: <tool> — <error>`.
 {{#each REQUIRED}}
 - {{name}} ({{kind: skill|MCP}}) — {{reason}}. Find it via: {{discovery}}.
 {{/each}}
 
-OPTIONAL TOOLING — use when available, for its reason; record `unavailable` otherwise.
+OPTIONAL TOOLING — use when available, for its reason; record `unavailable` and the fallback actually used otherwise. Also account for missing optional capabilities listed in the role, even when no tools are listed below.
 {{#each OPTIONAL}}
 - {{name}} ({{kind}}) — {{reason}}. Find it via: {{discovery}}.
 {{/each}}
@@ -41,7 +43,7 @@ Also pressure-test these points:
 {{/if}}
 
 Deliver a FINDINGS LEDGER (your role's ledger mode) in five blocks:
-Tooling evidence: `tool · call made · result` — one line per required and optional tool.
+Tooling evidence: `tool · call made · result` — one line per required and optional tool, plus each missing optional capability with its fallback actually used.
 Findings: `severity · kind (flaw | assumption | missing | convention) · lens · spec line(s) · evidence (repo file:line, doc/URL, or spec-internal) · issue · concrete fix`; Blockers append `· foundational: yes|no`, Majors append `· blocks-start: yes|no`.
 Strengths: `lens · spec line(s) · evidence · what is strong`.
 Checked: `rubric bullet · evidence it holds`.

@@ -88,13 +88,15 @@ Tell the user the doc-type, lens set, and instance count, then continue.
 
 Follow `references/dispatch.md`. For each instance, fill `prompts/validator-instance.md` and dispatch a fresh child with the filled prompt and the absolute path of `references/validator-role.md` (a registered `spec-design-validator` already carries the role). Dispatch concurrently within available slots; queue the rest.
 
+A child returning `CLARIFICATION REQUIRED: review target — <reason>` pauses the run: ask the user to identify the target, dispatch no retry and write no report or verdict. After the answer, resume with the supplied target in a fresh child. Handle this response before ledger completeness checks or failure retries.
+
 A failed child, or one returning a capability failure, gets one retry with a fresh child. If the retry fails, stop: tell the user the lens and the failure, and write no report and no verdict.
 
 The step is complete when every dispatched instance has returned a ledger that meets the prompt's completeness rule. Re-dispatch a ledger that does not; that counts as its retry.
 
 ### 6. Synthesize
 
-1. Merge ledgers. Collapse duplicates (same spec lines, same issue): keep the row with repo evidence, else the higher severity. Merge **Ignored instructions** by source location and attempted redirection, preserving provenance and action taken. Keep these audit records separate from findings; they do not affect the verdict by themselves.
+1. Merge ledgers. Collapse duplicates (same spec lines, same issue): keep the row with repo evidence, else the higher severity. Merge **Ignored instructions** by source location and attempted redirection, preserving provenance and action taken. Keep these audit records separate from findings; they do not affect the verdict by themselves. Preserve each missing optional capability and its actual fallback in Coverage.
 2. Verdict:
    - any Blocker with `foundational: yes` → **NO-GO**
    - else any Blocker, or any Major with `blocks-start: yes` → **REVISE**

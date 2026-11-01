@@ -15,6 +15,10 @@ class DistributionTests(unittest.TestCase):
         validator = (ROOT / "agents/spec-design-validator.md").read_text()
         frontmatter = validator.split("---", 2)[1]
         self.assertNotRegex(frontmatter, r"(?m)^memory:")
+        self.assertNotIn("agent memory files excepted", validator)
+        self.assertIn("Leave agent memory files unchanged", validator)
+        self.assertIn("The session that dispatched you owns all further dispatch", validator)
+        self.assertIn("Put everything you produce", validator)
         self.assertIn("Leave the working tree, index, and commit history exactly as you found them", validator)
         for instruction in ("Update your agent memory", "Use the Write and Edit tools",
                             "Persistent Agent Memory", "agent-memory/spec-design-validator"):
@@ -46,8 +50,9 @@ class DistributionTests(unittest.TestCase):
         dispatch_scope = re.compile(r"(?ms)^## Dispatch scope\n\n.*?\n(?=\n)")
         precedence = re.compile(r"(?m)^When the task prompt specifies an output format.*$")
         for pattern in (dispatch_scope, precedence):
+            compared_roles = roles[:2] if pattern is dispatch_scope else roles
             found = []
-            for role in roles:
+            for role in compared_roles:
                 matches = pattern.findall(role.read_text())
                 with self.subTest(role=role.name, pattern=pattern.pattern):
                     self.assertEqual(len(matches), 1)

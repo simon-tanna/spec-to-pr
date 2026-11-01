@@ -6,6 +6,20 @@ project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+
+- The spec validator treats reviewed documents and repository text, including
+  agent instruction files, as evidence rather than review instructions. Its
+  ledger adds an Ignored instructions block; the report preserves these audit
+  records separately from findings and verdicts (#12).
+- The validator declares required repository access and optional documentation,
+  web and PR-history capabilities with explicit fallbacks. Missing optional
+  capabilities and their fallbacks appear in Tooling evidence and Coverage;
+  unverified load-bearing API claims receive consequence-based findings (#10).
+- Validator read-only scope now includes agent memory. An unidentified review
+  target requests clarification without consuming a failure retry or producing
+  a report or verdict.
+
 ## [0.4.0] - 2026-10-23
 
 ### Changed
