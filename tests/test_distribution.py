@@ -16,7 +16,8 @@ class DistributionTests(unittest.TestCase):
         frontmatter = validator.split("---", 2)[1]
         self.assertNotRegex(frontmatter, r"(?m)^memory:")
         self.assertNotIn("agent memory files excepted", validator)
-        self.assertIn("Leave agent memory files unchanged", validator)
+        # Whole sentence, so an appended exception ("unchanged, except ...") fails.
+        self.assertRegex(validator, r"Leave agent memory files unchanged\. [A-Z]")
         self.assertIn("The session that dispatched you owns all further dispatch", validator)
         self.assertIn("Put everything you produce", validator)
         self.assertIn("Leave the working tree, index, and commit history exactly as you found them", validator)
@@ -49,13 +50,21 @@ class DistributionTests(unittest.TestCase):
                  ROOT / "skills/validating-specs/references/validator-role.md"]
         dispatch_scope = re.compile(r"(?ms)^## Dispatch scope\n\n.*?\n(?=\n)")
         precedence = re.compile(r"(?m)^When the task prompt specifies an output format.*$")
+        # The one intended divergence: the validator leaves agent memory unchanged,
+        # while code-reviewer and team-lead exempt it. Strip each side's clause,
+        # requiring it to occur exactly once, then compare all three copies.
+        memory_clause = {roles[0]: " (agent memory files excepted)",
+                         roles[1]: " (agent memory files excepted)",
+                         roles[2]: " Leave agent memory files unchanged."}
         for pattern in (dispatch_scope, precedence):
-            compared_roles = roles[:2] if pattern is dispatch_scope else roles
             found = []
-            for role in compared_roles:
+            for role in roles:
                 matches = pattern.findall(role.read_text())
                 with self.subTest(role=role.name, pattern=pattern.pattern):
                     self.assertEqual(len(matches), 1)
+                    if pattern is dispatch_scope:
+                        self.assertEqual(matches[0].count(memory_clause[role]), 1)
+                        matches = [matches[0].replace(memory_clause[role], "")]
                 found.extend(matches)
             self.assertEqual(len(set(found)), 1, pattern.pattern)
 

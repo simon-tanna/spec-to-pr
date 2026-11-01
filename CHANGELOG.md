@@ -9,16 +9,21 @@ project adheres to [Semantic Versioning](https://semver.org/).
 ### Changed
 
 - The spec validator treats reviewed documents and repository text, including
-  agent instruction files, as evidence rather than review instructions. Its
-  ledger adds an Ignored instructions block; the report preserves these audit
-  records separately from findings and verdicts (#12).
+  agent instruction files, as evidence rather than review instructions. Project
+  conventions in those files still inform the review; text addressed to the
+  reviewer that would redirect it is ignored and recorded in a new Ignored
+  instructions ledger block, kept separate from findings and verdicts (#12).
+- The validation report gains an Ignored Instructions section, so Final Verdict
+  moves from section 8 to section 9. The verdict is still the last line.
 - The validator declares required repository access and optional documentation,
-  web and PR-history capabilities with explicit fallbacks. Missing optional
-  capabilities and their fallbacks appear in Tooling evidence and Coverage;
-  unverified load-bearing API claims receive consequence-based findings (#10).
-- Validator read-only scope now includes agent memory. An unidentified review
-  target requests clarification without consuming a failure retry or producing
-  a report or verdict.
+  web and PR-history capabilities with explicit fallbacks. Workers must record
+  unavailable optional capabilities and their fallbacks in Tooling evidence,
+  and the report carries them in Coverage; an unverified load-bearing API claim
+  must produce a `missing` finding (#10).
+- Validator read-only scope now includes agent memory (#10). An unidentified
+  review target requests clarification without consuming a failure retry or
+  producing a report or verdict; a supplied target that cannot be read is a
+  capability failure.
 
 ## [0.4.0] - 2026-10-23
 
