@@ -20,3 +20,5 @@ __pycache__/
 # Local skill evaluation workspace (maintained evaluators live in scripts/evals/)
 /skills/agentic-loop-workspace/
 skills-lock.json
+
+docs/superpowers
