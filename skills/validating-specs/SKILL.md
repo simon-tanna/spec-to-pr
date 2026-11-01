@@ -94,7 +94,7 @@ The step is complete when every dispatched instance has returned a ledger that m
 
 ### 6. Synthesize
 
-1. Merge ledgers. Collapse duplicates (same spec lines, same issue): keep the row with repo evidence, else the higher severity.
+1. Merge ledgers. Collapse duplicates (same spec lines, same issue): keep the row with repo evidence, else the higher severity. Merge **Ignored instructions** by source location and attempted redirection, preserving provenance and action taken. Keep these audit records separate from findings; they do not affect the verdict by themselves.
 2. Verdict:
    - any Blocker with `foundational: yes` → **NO-GO**
    - else any Blocker, or any Major with `blocks-start: yes` → **REVISE**
