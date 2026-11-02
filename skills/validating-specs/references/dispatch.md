@@ -16,7 +16,8 @@ repository path. Children inherit none of the skill's instructions,
 conversation, MCP connections, or parent permissions.
 
 `spec-design-validator` and `spec-to-pr:spec-design-validator` mean the bundled
-validator role. (agentic-loop) `code-reviewer` and `spec-to-pr:code-reviewer`
+validator role (the registered agent or `references/validator-role.md`), never
+the standalone skill of that name. (agentic-loop) `code-reviewer` and `spec-to-pr:code-reviewer`
 mean the loop's bundled reviewer role; `team-lead` and `spec-to-pr:team-lead`
 mean its bundled planning role. Only map roles present in the invoking skill's
 resources. `general-purpose`, including explicit `--subagent general-purpose`
@@ -40,7 +41,9 @@ and parameters below describe behavior, not a fixed API to invoke blindly.
   a `.codex/agents` installation or pretend Claude agent names are native types.
 
 If a fresh child cannot be created, stop at the affected required gate and report
-the missing capability. Do not claim a review occurred.
+the missing capability. Do not claim a review occurred. `--single` still
+dispatches one fresh child; loading the `spec-design-validator` skill inline in
+this session is not a dispatch.
 
 ## Probe, dispatch, collect
 
@@ -53,8 +56,7 @@ capability failure; the invoking skill decides retry or stop.
 Pass the role as above, the task, input paths, success criteria, allowed scope,
 required tools/skills, and output format. Review workers must not edit files;
 this prompt restriction is not a filesystem sandbox. Use the host sandbox when
-available. When inlining a validator role, resolve `{{REPORT_FORMAT}}` by
-including the `report-format.md` beside the validator role.
+available.
 
 Create a fresh worker for each lens and each review attempt, including after
 revisions. Queue assignments when host capacity is exhausted; wait and collect

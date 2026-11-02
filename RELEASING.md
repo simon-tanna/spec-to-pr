@@ -34,9 +34,9 @@ marketplace with `source: "./"`.
    - `.claude-plugin/marketplace.json` → the `spec-to-pr` entry's `"version"`
 4. Run `python3 scripts/build-distribution.py`, then
    `python3 scripts/build-distribution.py --check`. Verify the loop contains its validation workflow and
-   every skill contains its role/dispatch resources without sibling dependencies.
+   every skill contains the resources it needs without sibling dependencies.
 5. Validate isolated Skills CLI installations from the proposed release checkout:
-   list exactly three public skills; install each alone and the whole suite for
+   list exactly four public skills; install each alone and the whole suite for
    Codex and Claude in disposable directories, in default and `--copy` modes.
    Verify bundled resources after making the source checkout unavailable. Never
    use global installation for these release tests.
@@ -78,7 +78,9 @@ its explicit output directory. These live evaluations are separate from the
 offline suite.
 
 Recorded 0.3.0 evidence and remaining acceptance gaps are in
-[the validation record](docs/validation/0.3.0/portability-validation.md).
+[the validation record](docs/validation/0.3.0/portability-validation.md); proposed
+0.5.0 independent-validator checks and publishing blockers are in
+[its acceptance record](docs/validation/0.5.0/independent-validator-validation.md).
 Historical local experiments belong in the ignored
 `skills/agentic-loop-workspace/` directory; keep maintained tools and release
 evidence outside that workspace.

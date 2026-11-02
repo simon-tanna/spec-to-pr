@@ -3,6 +3,7 @@
 import argparse
 import json
 from pathlib import Path
+import re
 import shutil
 import subprocess
 import tempfile
@@ -16,7 +17,7 @@ def main():
     if not args.allow_network:
         parser.error('Explicit --allow-network is required; this eval invokes pnpm dlx')
     repo = Path(__file__).resolve().parents[2]
-    names = ['agentic-loop', 'validating-specs', 'diataxis-docs']
+    names = ['agentic-loop', 'validating-specs', 'diataxis-docs', 'spec-design-validator']
     with tempfile.TemporaryDirectory(prefix='spec-to-pr-install-') as tmp, args.evidence.open('a') as log:
         root = Path(tmp)
         source = root / 'source'
@@ -35,13 +36,14 @@ def main():
             log.write(json.dumps(command) + '\n' + result.stdout + result.stderr + '\n')
             log.flush()
             if result.returncode:
-                raise RuntimeError(f'Command failed ({result.returncode}): {command}')
+                raise RuntimeError(f'Command failed ({result.returncode}): {command}; '
+                                   f'output in {args.evidence}\n{result.stderr[-2000:]}')
             return result.stdout
 
         run(['pnpm', 'dlx', 'skills', '--version'], root)
         listing = run(['pnpm', 'dlx', 'skills', 'add', str(source), '--list'], root)
-        if 'Found 3 skills' not in listing:
-            raise AssertionError('Expected exactly three discoverable skills')
+        if not re.search(r'\bFound 4 skills\b', listing):
+            raise AssertionError(f'Expected exactly four discoverable skills; listing:\n{listing}')
         installations = []
         for mode in ['default', 'copy']:
             for selected in [['*'], *[[name] for name in names]]:
@@ -68,8 +70,8 @@ def main():
                         if not installed.is_file() or installed.read_bytes() != content:
                             raise AssertionError(f'Missing or changed installed asset: {installed}')
             log.write(f'PASS {destination.name}: both harness destinations, exact closure after source removal\n')
-        log.write('PASS 8 installs; counts ' + json.dumps({k: len(v) for k, v in snapshots.items()}) + '\n')
-        print(f'PASS: 8 isolated installations; evidence {args.evidence}')
+        log.write(f'PASS {len(installations)} installs; counts ' + json.dumps({k: len(v) for k, v in snapshots.items()}) + '\n')
+        print(f'PASS: {len(installations)} isolated installations; evidence {args.evidence}')
 
 
 if __name__ == '__main__':

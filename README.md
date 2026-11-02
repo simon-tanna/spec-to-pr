@@ -13,15 +13,44 @@ validation, code review, and documentation.
 |-------|--------------|
 | **`agentic-loop`** | The flagship pipeline. Takes a spec, task card, or GitHub issue and drives it end-to-end: planning → spec/plan validation gates → TDD execution loop → review loops → PR. Invoke it with "run the agentic loop", "implement this issue", or "take this from spec to PR". |
 | **`validating-specs`** | Pressure-tests a spec, design doc, or implementation plan before engineering starts, dispatching a fresh child with the bundled validator role. Returns a `GO` / `REVISE` / `NO-GO` verdict. |
+| **`spec-design-validator`** | The complete reviewer rubric, five-block findings ledger and nine-section verdict report as one self-contained skill, for a reviewer you start yourself in a fresh context (see [Independent review](#independent-review)). Install it alone with `--skill spec-design-validator`. |
 | **`diataxis-docs`** | Produces structured technical documentation using the [Diátaxis](https://diataxis.fr/) framework. Places each document in one quadrant (tutorial, how-to, reference, explanation) via the compass, grounds every claim against source, and also audits an existing doc set for quadrant purity and accuracy. |
+
+### Independent review
+
+To review a document without `validating-specs`, start a fresh reviewer context
+that did not author the target, load only `spec-design-validator`, and supply
+the repository and document paths. A reviewer whose context wrote or edited the
+document returns only `INDEPENDENCE FAILURE: <reason>`; to validate from the
+session that wrote a spec, use `validating-specs`, which dispatches fresh
+children. The check is best-effort: a reviewer given only a path cannot detect who
+wrote the file, so the caller must start the reviewer in a context that did not
+author it. When you request a ledger, the caller owns synthesis and any verdict.
+Controller and loop workflows continue to require fresh children.
+
+Give the reviewer only read/search/lookup capabilities. Disable file changes,
+command-driven writes, memory updates and helper creation through runtime
+permissions or a read-only sandbox where supported. Skill instructions are
+behavioral constraints; they do not enforce a sandbox or inherit native-agent
+tool restrictions. The caller records the protections actually in place and
+any remaining gaps alongside the review.
+
+Example task for the independently established reviewer:
+
+```text
+Load spec-design-validator. Review /project/docs/spec.md against /project.
+Apply all five lenses and return only the complete findings ledger, with
+source evidence for every rubric bullet. Leave files, index, history and
+agent memory unchanged. The caller will produce any report and verdict.
+```
 
 ### Roles and optional native agents
 
 Each skill bundles the role instructions it needs. Claude plugin installation also
 registers native agents; skills-only installation supplies the same instructions
-to generic fresh children. Required validation and review stop if the harness
-cannot create an independent child.
-
+to generic fresh children. Controller and loop validation and review stop if the harness
+cannot create an independent child; [independent review](#independent-review) uses the
+`spec-design-validator` skill.
 
 | Agent | Role |
 |-------|------|
@@ -33,7 +62,7 @@ cannot create an independent child.
 
 `agentic-loop` contains its validation workflow and reviewer roles, so installing
 it alone works without a sibling `validating-specs` installation. The standalone
-validator remains useful for review-only work. Generated copies keep shared
+`validating-specs` skill remains useful for review-only work. Generated copies keep shared
 instructions consistent across the suite and Claude plugin agents.
 
 ## Quick start: from spec to PR
@@ -59,12 +88,18 @@ instructions consistent across the suite and Claude plugin agents.
 Registering the gate hooks (see [Hooks](#hooks)) is optional but makes those gates
 deterministic rather than model-enforced.
 
-With the Claude plugin, invoke the other two skills the same way:
+With the Claude plugin, invoke the supporting skills the same way:
 
 ```text
 /spec-to-pr:validating-specs docs/checkout-spec.md
 /spec-to-pr:diataxis-docs add a how-to for the payments webhook
 ```
+
+The plugin registers both a `spec-design-validator` skill and a native
+`spec-design-validator` agent. To validate from your working session, use
+`validating-specs`, which dispatches the agent in a fresh context. Load the
+skill only in a reviewer context you started for
+[independent review](#independent-review).
 
 ## Steering a run
 
@@ -101,7 +136,7 @@ pnpm dlx skills add simon-tanna/spec-to-pr --skill '*' -a codex -a claude-code -
 ```
 
 For one skill, replace `--skill '*'` with `--skill agentic-loop`,
-`--skill validating-specs`, or `--skill diataxis-docs`. Add `-g` for a
+`--skill validating-specs`, `--skill spec-design-validator`, or `--skill diataxis-docs`. Add `-g` for a
 user-wide installation, or `--copy` to copy files into agent directories instead
 of the default links. No npm release of this repository is needed: the installer
 reads the GitHub repository and includes each skill's supporting resources.
@@ -185,7 +220,7 @@ workflow, repo variables).
 
 ## Requirements / platform support
 
-- **Codex or Claude Code** with fresh-child spawning for required validation/review.
+- **Codex or Claude Code** with fresh-child spawning for controller/loop validation and review; independent role-only review requires read/search capabilities.
 - **Git**, a reachable `origin`, and a locally available base branch for loop
   initialization. Fresh runs require a clean tracked worktree and index;
   untracked source documents are allowed. See [interactive initialization](skills/agentic-loop/references/interactive-init.md).
@@ -195,7 +230,9 @@ workflow, repo variables).
 
 ## Verification status
 
-The release adds automated packaging, initialization, and shared-gate tests.
+See the [proposed 0.5.0 acceptance record](docs/validation/0.5.0/independent-validator-validation.md) for independent-validator checks and publishing blockers.
+
+The 0.3.0 release adds automated packaging, initialization, and shared-gate tests.
 Run `bash scripts/test.sh` for offline checks; see the
 [validation record](docs/validation/0.3.0/portability-validation.md)
 for test-first changes and remaining live acceptance work.

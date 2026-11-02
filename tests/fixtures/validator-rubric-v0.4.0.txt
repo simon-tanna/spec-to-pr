@@ -1,0 +1,26 @@
+scope	- Problem statement clarity; stakeholders identified
+scope	- Success criteria measurable; acceptance criteria complete; requirements mapped to acceptance criteria
+scope	- Out-of-scope declarations
+scope	- Non-functional requirements (performance, availability) stated
+scope	- Test-plan coverage: unit/integration/e2e boundaries, mocking and fixture strategy, edge cases, failure modes, regression protection, performance tests
+architecture	- Alignment with existing system architecture; component boundaries and responsibilities; data flow and ownership
+architecture	- API contracts and versioning; state management and persistence; coupling and cohesion
+architecture	- Codebase fit: project rules in AGENTS.md / CLAUDE.md / lint config / rules files honoured; existing packages, shared configs and patterns reused; naming and conventions consistent
+architecture	- Technical feasibility: stack appropriateness, library and dependency vetting, performance characteristics, scalability ceiling, prior art
+architecture	- Technical, integration (third-party, cross-team), and breaking-change risk
+execution	- Phase sequencing logic; dependency ordering (no phase blocked by a later one); critical path
+execution	- Parallelizable workstreams, including false parallelism (work that claims independence but shares state)
+execution	- Milestone definitions and exit criteria per phase
+execution	- Estimate realism and buffer; schedule risk
+execution	- Rollback and migration paths (forward and reverse); data migration risk
+execution	- Rollout strategy (flags, cutover, staged exposure)
+execution	- Review and test gates between phases
+execution	- Operability: observability, runbook, failure recovery for the plan's output
+domain	- Business rules and invariants stated and consistent with existing domain code
+domain	- Workflow states and transitions complete, including failure and cancel paths
+domain	- Domain edge cases (time, money, identity, concurrency as applicable)
+domain	- Regulatory and compliance constraints
+security	- Authentication and authorization model; privilege boundaries
+security	- Signing, key management, secrets and credential handling
+security	- Webhook and input verification; injection and attack surface
+security	- Auditability
