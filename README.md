@@ -47,8 +47,12 @@ agent memory unchanged. The caller will produce any report and verdict.
 ### Roles and optional native agents
 
 Each skill bundles the role instructions it needs. Claude plugin installation also
-registers native agents; skills-only installation supplies the same instructions
-to generic fresh children. Controller and loop validation and review stop if the harness
+registers native agents. Skills-only installations can explicitly register a
+project-local validator using the self-contained
+[validator setup guide](skills/spec-design-validator/setup/SETUP.md), also included
+with `validating-specs` and `agentic-loop`. Controllers prefer a registered native
+validator only when the current spawn schema exposes a selector accepting it;
+otherwise they supply the bundled instructions to fresh generic children. Controller and loop validation and review stop if the harness
 cannot create an independent child; [independent review](#independent-review) uses the
 `spec-design-validator` skill.
 
@@ -143,9 +147,35 @@ reads the GitHub repository and includes each skill's supporting resources.
 The repository command installs published GitHub content; for unreleased changes,
 replace `simon-tanna/spec-to-pr` with the absolute path to a local checkout.
 
+Or ask your agent to install the skills:
+
+```text
+Install all skills from https://github.com/simon-tanna/spec-to-pr into this
+project for the agent harness I am using (Codex or Claude Code), using the
+repository's Skills CLI installation instructions. Tell me what was installed
+and whether I need to start a fresh session.
+```
+
 Skills installation does not register Claude plugin hooks or native agents.
-The bundled dispatch instructions supply roles to fresh generic children in both
-harnesses. Codex omits model overrides and uses the harness's effective defaults.
+For an optional project-local native validator, explicitly run the installed
+skill's [setup command](skills/spec-design-validator/setup/SETUP.md). Dispatch
+prefers the registered native validator when the exposed spawn schema supports
+selecting it; otherwise it supplies the bundled role to a fresh generic child.
+Codex omits model overrides and uses the harness's effective defaults.
+
+After installing the skills, ask your agent to register the native validator:
+
+```text
+Set up the project-local native spec-design-validator for Codex in this project.
+Locate the installed spec-design-validator, validating-specs, or agentic-loop
+skill and follow its setup/SETUP.md. Run its scripts/setup-validator.py with
+--host codex and --project-root set to this project's absolute path. Preserve
+local edits if setup reports a conflict. Report the files created or updated
+and remind me to reload the host or start a new session.
+```
+
+Replace `Codex` and `--host codex` with `Claude Code` and `--host claude`, or
+request both hosts with `--host both`.
 
 ### Optional Claude plugin
 

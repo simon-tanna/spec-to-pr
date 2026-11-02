@@ -1,0 +1,3 @@
+Implement the agreed proposal: native spec-design-validator registration for Claude Code and Codex, with native roles preferred when available and the existing bundled-role fallback retained. Keep one canonical reviewer rubric and generate host adapters. The existing Claude plugin already registers its agent; standalone Claude registration must resolve references without CLAUDE_PLUGIN_ROOT. Codex needs a native TOML adapter. Do not claim improved review quality without comparative evidence.
+User request: @spec-to-pr Let's do this
+Confirmed interview answer: Explicit setup command for the current project (Recommended).

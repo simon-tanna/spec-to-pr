@@ -249,8 +249,8 @@ class MinimumSeverity(unittest.TestCase):
             with self.subTest(relative=relative, snippet=snippet):
                 self.assertIn('--min-severity all', snippet)
         for path in loop.rglob('*.md'):
-            if 'references/validation' in str(path):
-                continue  # the bundled workflow documents the flag's full grammar
+            if path.is_relative_to(loop / 'references/validation') or path.is_relative_to(loop / 'references/native-validator'):
+                continue  # bundled workflows and reviewer roles document the flag's full grammar
             with self.subTest(path=str(path.relative_to(ROOT))):
                 self.assertNotRegex(path.read_text(), r'--min-severity (?!all\b)')
 

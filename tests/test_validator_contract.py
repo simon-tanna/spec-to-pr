@@ -153,6 +153,50 @@ class ControllerContractTests(unittest.TestCase):
         self.dispatch = skill.split('### 5. Dispatch', 1)[1].split('### 6.', 1)[0]
         self.synthesis = skill.split('### 6. Synthesize', 1)[1]
 
+    def test_native_selection_requires_exposed_selector(self):
+        dispatch = read('references/dispatch.md')
+        for requirement in ('exposed selector', 'prefer the registered native',
+                            'File presence', 'explicit `--subagent general-purpose`',
+                            'fresh generic child', 'unavailable-role error'):
+            with self.subTest(requirement=requirement):
+                self.assertIn(requirement, dispatch)
+        self.assertIn('Codex spawn schema without an agent-type selector', dispatch)
+        self.assertNotIn('Standalone Claude skills: use the generic Agent', dispatch)
+
+    def test_specialist_roster_flag_preserves_required_review_roles(self):
+        dispatch = read('references/dispatch.md')
+        roles = section(dispatch, 'Resolve resources and roles')
+        for requirement in ('implementation specialist roster only',
+                            'does not change required validator or reviewer role selection',
+                            'explicit generic worker request stays generic for that worker'):
+            with self.subTest(requirement=requirement):
+                self.assertIn(requirement, roles)
+        adapter = section(dispatch, 'Select the host adapter')
+        self.assertNotIn('--subagent', adapter)
+
+    def test_plugin_registration_precedes_project_local(self):
+        adapter = section(read('references/dispatch.md'), 'Select the host adapter')
+        self.assertRegex(adapter, r'prefer the plugin role\s+`spec-to-pr:spec-design-validator`')
+        self.assertRegex(adapter, r'project-local\s+`spec-design-validator`\s+only when no plugin role is selectable')
+
+    def test_native_spawn_rejection_and_worker_record(self):
+        adapter = section(read('references/dispatch.md'), 'Select the host adapter')
+        self.assertRegex(adapter, r'rejected native spawn\s+is a failed native attempt')
+        for token in ('validator worker · <lens> · native:<registered name>',
+                      'validator worker · <lens> · generic-fallback (<reason>)'):
+            with self.subTest(token=token):
+                self.assertIn(token, adapter)
+                self.assertIn(token, self.synthesis)
+
+    def test_native_failure_retains_review_failure_policy(self):
+        dispatch = read('references/dispatch.md')
+        for requirement in ('started native', 'retry or stop', 'silently replace',
+                            'fresh worker for each lens and each review attempt',
+                            'exact artifact paths', 'required tools/skills', 'output format'):
+            with self.subTest(requirement=requirement):
+                self.assertIn(requirement, dispatch)
+        self.assertIn('one retry with a fresh child', self.dispatch)
+
     def test_failure_sentinels_match_role_and_instance(self):
         instance = read('prompts/validator-instance.md')
         self.assertIn(CAPABILITY_FAILURE, instance)

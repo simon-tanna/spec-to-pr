@@ -7,6 +7,50 @@ import re
 import shutil
 import subprocess
 import tempfile
+import sys
+import tomllib
+
+
+def verify_native_setup(installed, projects, run):
+    """Execute the installed command and validate selected host/reference closure."""
+    for host in ('claude', 'codex', 'both'):
+        project = (projects / host).resolve()
+        project.mkdir(parents=True)
+        run([sys.executable, str(installed / 'scripts/setup-validator.py'),
+             '--host', host, '--project-root', str(project)], project)
+        references = project / '.spec-to-pr/validator/references'
+        for name in ('ledger.schema.json', 'project-checks.md'):
+            if (references / name).read_bytes() != (installed / 'references/native-validator/references' / name).read_bytes():
+                raise AssertionError(f'Changed native reference: {references / name}')
+        json.loads((references / 'ledger.schema.json').read_text())
+        claude = project / '.claude/agents/spec-design-validator.md'
+        codex = project / '.codex/agents/spec-design-validator.toml'
+        if claude.exists() != (host != 'codex') or codex.exists() != (host != 'claude'):
+            raise AssertionError(f'Unexpected host destinations: {project}')
+        bodies = []
+        if claude.exists():
+            text = claude.read_text()
+            # Generated YAML uses JSON-quoted scalars, a strict YAML subset.
+            header, body = text.removeprefix('---\n').split('\n---\n', 1)
+            fields = dict(line.split(': ', 1) for line in header.splitlines())
+            if json.loads(fields['name']) != 'spec-design-validator':
+                raise AssertionError(f'Invalid Claude agent name: {claude}')
+            for key in ('name', 'description'):
+                if not isinstance(json.loads(fields[key]), str):
+                    raise AssertionError(f'Invalid Claude scalar: {key}')
+            if fields['model'] != 'opus' or fields['disallowedTools'] != 'Write, Edit, NotebookEdit, Agent':
+                raise AssertionError(f'Changed Claude host contract: {claude}')
+            bodies.append(body)
+        if codex.exists():
+            fields = tomllib.loads(codex.read_text())
+            if set(fields) != {'name', 'description', 'developer_instructions'} or fields['name'] != 'spec-design-validator':
+                raise AssertionError(f'Invalid Codex agent schema: {codex}')
+            if not all(isinstance(value, str) for value in fields.values()):
+                raise AssertionError(f'Invalid Codex agent fields: {codex}')
+            bodies.append(fields['developer_instructions'])
+        for body in bodies:
+            if json.dumps(str(references), ensure_ascii=False) not in body or '{{PROJECT_REFERENCES}}' in body or 'CLAUDE_PLUGIN_ROOT' in body:
+                raise AssertionError(f'Unresolved native reference closure: {project}')
 
 
 def main():
@@ -69,6 +113,10 @@ def main():
                         installed = destination / prefix / name / relative
                         if not installed.is_file() or installed.read_bytes() != content:
                             raise AssertionError(f'Missing or changed installed asset: {installed}')
+                    if name in ('spec-design-validator', 'validating-specs', 'agentic-loop'):
+                        projects = destination / 'native-setup-eval' / prefix.split('/')[0] / name
+                        verify_native_setup(destination / prefix / name, projects, run)
+                        log.write(f'PASS {destination.name} {prefix}/{name}: all selected hosts, native syntax and reference closure after source removal\n')
             log.write(f'PASS {destination.name}: both harness destinations, exact closure after source removal\n')
         log.write(f'PASS {len(installations)} installs; counts ' + json.dumps({k: len(v) for k, v in snapshots.items()}) + '\n')
         print(f'PASS: {len(installations)} isolated installations; evidence {args.evidence}')
