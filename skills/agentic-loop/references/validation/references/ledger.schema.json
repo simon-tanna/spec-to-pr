@@ -10,7 +10,8 @@
     "findings",
     "strengths",
     "checked",
-    "ignored_instructions"
+    "ignored_instructions",
+    "minimum_severity"
   ],
   "properties": {
     "schema_version": {
@@ -48,6 +49,15 @@
       "items": {
         "$ref": "#/$defs/ignored_instruction"
       }
+    },
+    "minimum_severity": {
+      "enum": [
+        "all",
+        "Nit",
+        "Minor",
+        "Major"
+      ],
+      "default": "all"
     }
   },
   "$defs": {
@@ -244,7 +254,8 @@
       "additionalProperties": false,
       "required": [
         "check_id",
-        "evidence"
+        "evidence",
+        "status"
       ],
       "properties": {
         "check_id": {
@@ -253,8 +264,48 @@
         "evidence": {
           "type": "string",
           "minLength": 1
+        },
+        "status": {
+          "enum": [
+            "holds",
+            "below-threshold"
+          ]
+        },
+        "suppressed_severities": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "Minor",
+              "Nit"
+            ]
+          }
         }
-      }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "below-threshold"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "suppressed_severities"
+            ]
+          },
+          "else": {
+            "not": {
+              "required": [
+                "suppressed_severities"
+              ]
+            }
+          }
+        }
+      ]
     },
     "tooling": {
       "oneOf": [
@@ -354,5 +405,94 @@
         }
       }
     }
-  }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "minimum_severity": {
+            "const": "Major"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "findings": {
+            "items": {
+              "properties": {
+                "severity": {
+                  "enum": [
+                    "Blocker",
+                    "Major"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "minimum_severity": {
+            "const": "Minor"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "findings": {
+            "items": {
+              "properties": {
+                "severity": {
+                  "enum": [
+                    "Blocker",
+                    "Major",
+                    "Minor"
+                  ]
+                }
+              }
+            }
+          },
+          "checked": {
+            "items": {
+              "properties": {
+                "suppressed_severities": {
+                  "items": {
+                    "const": "Nit"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "minimum_severity": {
+            "enum": [
+              "all",
+              "Nit"
+            ]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "checked": {
+            "items": {
+              "properties": {
+                "status": {
+                  "const": "holds"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
 }

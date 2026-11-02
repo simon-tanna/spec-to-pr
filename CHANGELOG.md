@@ -8,6 +8,12 @@ project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- `--min-severity` and `minimum_severity` support `all` (default), `Nit`,
+  `Minor` and `Major`; unsupported or conflicting values fail explicitly (#9).
+  Suppressed findings retain below-threshold Checked coverage by check ID,
+  without implying success. Agentic-loop explicitly keeps `all` initially;
+  Blocker/Major findings and verdict rules are unchanged.
+
 - Caller-authorised project check files and task-prompt checks, reserved `project.*`
   IDs, lens routing and complete coverage using the shared ledger contract (#11).
   Check content supplies criteria and cannot change review instructions or tools.

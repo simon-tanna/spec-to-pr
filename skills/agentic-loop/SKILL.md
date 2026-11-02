@@ -182,9 +182,9 @@ The spec-lock (Stage 1) and plan-lock (Stage 2) review steps each run a **second
    workflow controller as a child. It directs this controller to dispatch fresh
    validators with the bundled rubric and prompts. No separately installed
    sibling skill or Skill tool is required.
-2. **Pass arguments as flags, with absolute paths.** Spec stage:
-   `<abs spec.md> --out <abs spec-validation.md>`. Plan stage:
-   `<abs plan.md> --context <abs spec.md> --out <abs plan-validation.md>`. Add
+2. **Pass arguments as flags, with absolute paths.** Keep all four severities initially by passing `--min-severity all` at both stages. Spec stage:
+   `<abs spec.md> --out <abs spec-validation.md> --min-severity all`. Plan stage:
+   `<abs plan.md> --context <abs spec.md> --out <abs plan-validation.md> --min-severity all`. Add
    `--skill`/`--mcp` from `run-requirements.json`; never forward the
    implementation `--subagent` roster. The structured pass keeps its separate
    `*-review.md`. Commit the report with `git-sync.sh`.

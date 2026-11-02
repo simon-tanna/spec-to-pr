@@ -10,7 +10,7 @@ Resolve every `references/` and `prompts/` path in this file relative to the dir
 
 ### 1. Parse invocation
 
-Invocation arguments (when the user supplies them): `<spec-path…> [--context path,…] [--out path] [--mcp a,b] [--skill x,y] [--instances N] [--split lensA,lensB] [--single] [--project-checks path]`
+Invocation arguments (when the user supplies them): `<spec-path…> [--context path,…] [--out path] [--mcp a,b] [--skill x,y] [--instances N] [--split lensA,lensB] [--single] [--project-checks path] [--min-severity all|Nit|Minor|Major]`
 
 When another skill loaded this file, that skill's instructions supply the arguments; skip `$ARGUMENTS`.
 
@@ -30,13 +30,14 @@ an executable command or a path.
   `*.md` for the candidate and confirm with the user before proceeding.
 - **--context** — documents the validators read for reference only; no findings target them (e.g. `spec.md` when the plan is under review).
 - **--project-checks** — repeatable caller-authorised JSON checks file; inline task field `project_checks` is also accepted. Read `references/project-checks.md`, validate and record every authorised ID, lens and criterion before classification. Invalid checks stop the run with `INVALID PROJECT CHECKS: <reason>`; dispatch nothing and emit no report or verdict.
+- **--min-severity** / task field **minimum_severity** — default `all`; accept exactly `all`, `Nit`, `Minor`, `Major`. Validate before reading review targets: unsupported values (including `Blocker`), a missing value or conflicting repeated flags/flag-field values return only `INVALID MINIMUM SEVERITY: <value or conflict>; expected all|Nit|Minor|Major`; dispatch nothing and emit no report or verdict. Identical repeats are allowed. The role's Minimum severity section defines filtering and below-threshold coverage.
 - **--out** — where to write the report.
 - **--mcp** — comma list of MCP servers to require (e.g. `context7,linear,github`). Tooling the user names in prose counts the same as a flag.
 - **--skill** — comma list of project skills to require. Tooling the user names in prose counts the same as a flag.
 - **--instances N** / **--split a,b,c** / **--single** — override fan-out (see step 3).
 
 Before moving on:
-- Echo every `--token` outside {context, out, mcp, skill, instances, split, single, project-checks} back to the user as unrecognised, and proceed without it.
+- Echo every `--token` outside {context, out, mcp, skill, instances, split, single, project-checks, min-severity} back to the user as unrecognised, and proceed without it.
 - For each user-named skill/MCP you cannot find in this session's skill listing or tool discovery, ask the user to correct or drop it; dispatch nothing until they answer.
 
 ### 2. Classify
@@ -83,6 +84,8 @@ Tell the user the doc-type, lens set, and instance count, then continue.
 
 Follow `references/dispatch.md`. For each instance, fill `prompts/validator-instance.md` and dispatch a fresh child with the filled prompt and the absolute path of `references/validator-role.md` (a registered `spec-design-validator` already carries the role). Dispatch concurrently within available slots; queue the rest.
 
+A child returning `INVALID MINIMUM SEVERITY: <value or conflict>; expected all|Nit|Minor|Major` stops the run immediately without retry, report or verdict; ask the caller to correct the threshold.
+
 A child returning `INVALID PROJECT CHECKS: <reason>` stops the run immediately without retry, report or verdict; ask the caller to correct the checks.
 
 A child returning `CLARIFICATION REQUIRED: review target — <reason>` pauses the run. It is not a failure and uses no retry. Discard every ledger returned so far, write no report or verdict, and ask the user to identify the target. When they answer, restart from step 2 (Classify) with that target. Handle this response before ledger completeness checks or failure retries.
@@ -96,7 +99,7 @@ Verify coverage against the recorded authorised IDs and lenses as well as built-
 1. Merge ledgers:
    - **Findings** — collapse duplicates (same spec lines, same issue): within each check_id keep the row with repo evidence, else the higher severity. Retain separate rows for all check IDs when one defect violates multiple checks.
    - **Ignored instructions** — one row per source location and attempted redirection, keeping its action taken. Keep these rows separate from findings; they never feed the verdict.
-   - **Coverage** — carry each `capability · unavailable · fallback used` line through unchanged.
+   - **Coverage** — carry below-threshold Checked rows by check ID, suppressed severities and evidence without turning them into passed checks or findings; state the resolved minimum_severity. Carry each `capability · unavailable · fallback used` line through unchanged.
 2. Verdict: read `references/report-format.md` and apply its verdict rules to the merged findings.
 3. Emit the report in that file's format; it is done when it meets that file's completeness rule.
 4. Write it to `--out` when given. Otherwise offer `<spec-dir>/<spec-basename>-validation.md` and write only on acceptance.

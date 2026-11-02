@@ -5,7 +5,7 @@
 Severities are defined in the validator role's ## Severity section. Every section appears, in order; write `None.` under an empty one.
 
 1. **Executive Summary** — one paragraph: the recommendation and why.
-2. **Coverage** — one line per lens: `lens · outcome`; one line per tool: `tool · required|optional · evidence or unavailable`; one line per unavailable optional capability: `capability · unavailable · fallback used`.
+2. **Coverage** — one line per below-threshold Checked row: `check_id · below-threshold · suppressed severities · evidence citation`; state the resolved minimum_severity; one line per lens: `lens · outcome`; one line per tool: `tool · required|optional · evidence or unavailable`; one line per unavailable optional capability: `capability · unavailable · fallback used`.
 3. **What's Strong** — check_id and evidence-backed strengths, each with its citation.
 4. **Blockers** — `B<n> · check_id · lens · kind · spec line(s) · evidence · issue · fix · foundational: yes|no`
 5. **Major Concerns** — `M<n> · check_id · lens · kind · spec line(s) · evidence · issue · fix · blocks-start: yes|no`. On GO, these are the verdict's conditions.

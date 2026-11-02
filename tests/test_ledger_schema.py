@@ -34,7 +34,7 @@ class StableLedger(unittest.TestCase):
         schema = json.loads(SCHEMA.read_text())
         self.assertEqual(schema['properties']['schema_version']['const'], '1.0')
         self.assertEqual(set(schema['required']), {'schema_version', 'rubric_version',
-                         'tooling_evidence', 'findings', 'strengths', 'checked', 'ignored_instructions'})
+                         'tooling_evidence', 'findings', 'strengths', 'checked', 'ignored_instructions', 'minimum_severity'})
         for row in ('finding', 'strength', 'checked'):
             self.assertIn('check_id', schema['$defs'][row]['required'])
             self.assertFalse(schema['$defs'][row]['additionalProperties'])
@@ -54,10 +54,6 @@ class StableLedger(unittest.TestCase):
         self.assertIn('ledger.schema.json', ledger)
         report = role.split('## Validation report format', 1)[1]
         self.assertIn('check_id', report)
-
-
-if __name__ == '__main__':
-    unittest.main()
 
 
 class ProjectChecks(unittest.TestCase):
@@ -90,3 +86,40 @@ class ProjectChecks(unittest.TestCase):
         self.assertIn('project check', prompt)
         ledger = ROLE.read_text().split('\n## Findings ledger\n')[1]
         self.assertIn('authorised project check', ledger)
+
+
+class MinimumSeverity(unittest.TestCase):
+    def test_schema_pins_supported_thresholds_and_suppressed_rows(self):
+        schema = json.loads(SCHEMA.read_text())
+        self.assertIn('minimum_severity', schema['required'])
+        self.assertEqual(schema['properties']['minimum_severity'],
+                         {'enum': ['all', 'Nit', 'Minor', 'Major'], 'default': 'all'})
+        checked = schema['$defs']['checked']
+        self.assertIn('below-threshold', checked['properties']['status']['enum'])
+        self.assertEqual(checked['properties']['suppressed_severities']['items']['enum'], ['Minor', 'Nit'])
+        self.assertEqual(len(schema['allOf']), 3)
+        self.assertEqual(schema['allOf'][0]['then']['properties']['findings']['items']['properties']['severity']['enum'],
+                         ['Blocker', 'Major'])
+
+    def test_bad_values_stop_before_review_and_handoff_is_explicit(self):
+        workflow = (ROOT / 'skills/validating-specs/SKILL.md').read_text()
+        parse = workflow.split('### 2. Classify')[0]
+        for token in ('--min-severity', 'minimum_severity', 'INVALID MINIMUM SEVERITY:',
+                      'conflicting', 'Blocker', 'dispatch nothing'):
+            self.assertIn(token, parse)
+        role = ROLE.read_text()
+        self.assertIn('below-threshold', role)
+        self.assertIn('does not mean the check passed', role)
+        prompt = (ROOT / 'skills/validating-specs/prompts/validator-instance.md').read_text()
+        self.assertIn('{{MINIMUM_SEVERITY}}', prompt)
+        self.assertIn('INVALID MINIMUM SEVERITY', workflow.split('### 5. Dispatch')[1])
+
+    def test_loop_keeps_all_severities_at_both_call_sites(self):
+        for relative in ('SKILL.md', 'references/spec-loop.md', 'references/plan-loop.md'):
+            text = (ROOT / 'skills/agentic-loop' / relative).read_text()
+            with self.subTest(relative=relative):
+                self.assertIn('--min-severity all', text)
+
+
+if __name__ == '__main__':
+    unittest.main()
