@@ -12,7 +12,8 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 CANONICAL_VALIDATOR = ROOT / "skills/spec-design-validator/SKILL.md"
 # Files the builder writes from CANONICAL_VALIDATOR rather than copying from disk.
 GENERATED_FROM_CANONICAL = {ROOT / "skills/validating-specs/references/validator-role.md",
-                            ROOT / "skills/validating-specs/references/report-format.md"}
+                            ROOT / "skills/validating-specs/references/report-format.md",
+                            ROOT / "skills/validating-specs/references/project-checks.md"}
 MARKER = re.compile(r"<!-- Generated from (\S+) by scripts/build-distribution.py\. "
                     r"Maintainers: edit the canonical file and rebuild\. -->")
 

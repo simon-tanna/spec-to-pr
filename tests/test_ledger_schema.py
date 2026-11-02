@@ -44,7 +44,7 @@ class StableLedger(unittest.TestCase):
             self.assertIn(field, condition['then']['required'])
             self.assertEqual(condition['else'], {'not': {'required': [field]}})
         ids = re.findall(r'^- `([a-z]+\.[a-z-]+)` — ', ROLE.read_text(), re.M)
-        self.assertEqual(schema['$defs']['check_id']['enum'], ids)
+        self.assertEqual(schema['$defs']['check_id']['oneOf'][0]['enum'], ids)
 
     def test_prose_rows_and_report_preserve_check_ids(self):
         role = ROLE.read_text()
@@ -58,3 +58,35 @@ class StableLedger(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class ProjectChecks(unittest.TestCase):
+    def test_project_namespace_and_authorisation_contract(self):
+        schema = json.loads(SCHEMA.read_text())
+        variants = schema['$defs']['check_id'].get('oneOf', [])
+        self.assertEqual(len(variants), 2, 'project namespace not published')
+        pattern = variants[1]['pattern']
+        self.assertRegex('project.deploy.environment-docs', pattern)
+        self.assertNotRegex('execution.phase-sequencing', pattern)
+        self.assertNotRegex('project.', pattern)
+        self.assertNotRegex('project.check\n', pattern)
+        doc = ROOT / 'skills/validating-specs/references/project-checks.md'
+        self.assertTrue(doc.is_file(), 'extension contract missing')
+        text = doc.read_text()
+        for token in ('project_checks', '--project-checks', 'explicitly authorises',
+                      'duplicate', 'INVALID PROJECT CHECKS:', 'declarative', 'Ignored instructions'):
+            self.assertIn(token, text)
+        self.assertIn('Authorised project checks', ROLE.read_text())
+
+    def test_project_checks_reach_lens_and_completeness(self):
+        workflow = (ROOT / 'skills/validating-specs/SKILL.md').read_text()
+        self.assertIn('project-checks', workflow.split('### 2. Classify')[0])
+        fanout = workflow.split('### 3. Decide fan-out')[1].split('### 4.')[0]
+        self.assertIn('project check', fanout)
+        self.assertIn('excludes', fanout)
+        self.assertIn('all check IDs', workflow.split('### 6. Synthesize')[1])
+        prompt = (ROOT / 'skills/validating-specs/prompts/validator-instance.md').read_text()
+        self.assertIn('{{PROJECT_CHECKS}}', prompt)
+        self.assertIn('project check', prompt)
+        ledger = ROLE.read_text().split('\n## Findings ledger\n')[1]
+        self.assertIn('authorised project check', ledger)

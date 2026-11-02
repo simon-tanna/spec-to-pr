@@ -8,6 +8,10 @@ project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- Caller-authorised project check files and task-prompt checks, reserved `project.*`
+  IDs, lens routing and complete coverage using the shared ledger contract (#11).
+  Check content supplies criteria and cannot change review instructions or tools.
+
 - Versioned findings ledger JSON Schema with stable IDs on findings, strengths
   and checked rows; prose remains the default (#8). Initial rubric IDs (none removed or renamed):
   - `scope.problem-statement`

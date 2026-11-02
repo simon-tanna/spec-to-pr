@@ -52,33 +52,41 @@
   },
   "$defs": {
     "check_id": {
-      "enum": [
-        "scope.problem-statement",
-        "scope.acceptance-criteria",
-        "scope.out-of-scope",
-        "scope.non-functional-requirements",
-        "scope.test-coverage",
-        "architecture.system-alignment",
-        "architecture.interface-contracts",
-        "architecture.codebase-fit",
-        "architecture.technical-feasibility",
-        "architecture.integration-risk",
-        "execution.phase-sequencing",
-        "execution.parallel-workstreams",
-        "execution.milestone-exits",
-        "execution.estimate-realism",
-        "execution.rollback-migration",
-        "execution.rollout-strategy",
-        "execution.review-test-gates",
-        "execution.operability",
-        "domain.business-invariants",
-        "domain.workflow-transitions",
-        "domain.edge-cases",
-        "domain.compliance",
-        "security.authorization",
-        "security.secret-handling",
-        "security.input-verification",
-        "security.auditability"
+      "oneOf": [
+        {
+          "enum": [
+            "scope.problem-statement",
+            "scope.acceptance-criteria",
+            "scope.out-of-scope",
+            "scope.non-functional-requirements",
+            "scope.test-coverage",
+            "architecture.system-alignment",
+            "architecture.interface-contracts",
+            "architecture.codebase-fit",
+            "architecture.technical-feasibility",
+            "architecture.integration-risk",
+            "execution.phase-sequencing",
+            "execution.parallel-workstreams",
+            "execution.milestone-exits",
+            "execution.estimate-realism",
+            "execution.rollback-migration",
+            "execution.rollout-strategy",
+            "execution.review-test-gates",
+            "execution.operability",
+            "domain.business-invariants",
+            "domain.workflow-transitions",
+            "domain.edge-cases",
+            "domain.compliance",
+            "security.authorization",
+            "security.secret-handling",
+            "security.input-verification",
+            "security.auditability"
+          ]
+        },
+        {
+          "type": "string",
+          "pattern": "^project\\.[a-z][a-z0-9-]*(\\.[a-z][a-z0-9-]*)*(?![\\s\\S])"
+        }
       ]
     },
     "lens": {
@@ -317,6 +325,32 @@
         "action_taken": {
           "type": "string",
           "minLength": 1
+        }
+      }
+    },
+    "project_check": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "lens",
+        "text"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^project\\.[a-z][a-z0-9-]*(\\.[a-z][a-z0-9-]*)*(?![\\s\\S])"
+        },
+        "lens": {
+          "$ref": "#/$defs/lens"
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S",
+          "not": {
+            "pattern": "[\\r\\n]"
+          }
         }
       }
     }
