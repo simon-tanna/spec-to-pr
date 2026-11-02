@@ -70,8 +70,8 @@ def main():
                         if not installed.is_file() or installed.read_bytes() != content:
                             raise AssertionError(f'Missing or changed installed asset: {installed}')
             log.write(f'PASS {destination.name}: both harness destinations, exact closure after source removal\n')
-        log.write('PASS 10 installs; counts ' + json.dumps({k: len(v) for k, v in snapshots.items()}) + '\n')
-        print(f'PASS: 10 isolated installations; evidence {args.evidence}')
+        log.write(f'PASS {len(installations)} installs; counts ' + json.dumps({k: len(v) for k, v in snapshots.items()}) + '\n')
+        print(f'PASS: {len(installations)} isolated installations; evidence {args.evidence}')
 
 
 if __name__ == '__main__':

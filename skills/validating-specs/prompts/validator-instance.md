@@ -20,7 +20,7 @@ Context only — read as needed; raise no findings against these:
 {{CONTEXT_ABS_PATHS}}
 {{/if}}
 
-Your lane: the `### {{LENS}}` rubric section(s).
+Your lane: the `### {{LENS}}` rubric section(s) (for `all`, every rubric section).
 {{#if multi_instance}}
 Sibling instances own {{OTHER_LENSES}}; a concern in their surface is theirs — leave it out of your ledger.
 {{/if}}

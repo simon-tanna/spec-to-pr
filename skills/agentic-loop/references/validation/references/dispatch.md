@@ -18,7 +18,8 @@ repository path. Children inherit none of the skill's instructions,
 conversation, MCP connections, or parent permissions.
 
 `spec-design-validator` and `spec-to-pr:spec-design-validator` mean the bundled
-validator role. (agentic-loop) `code-reviewer` and `spec-to-pr:code-reviewer`
+validator role (the registered agent or `references/validator-role.md`), never
+the standalone skill of that name. (agentic-loop) `code-reviewer` and `spec-to-pr:code-reviewer`
 mean the loop's bundled reviewer role; `team-lead` and `spec-to-pr:team-lead`
 mean its bundled planning role. Only map roles present in the invoking skill's
 resources. `general-purpose`, including explicit `--subagent general-purpose`

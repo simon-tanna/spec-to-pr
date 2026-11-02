@@ -23,7 +23,9 @@ that did not author the target, load only `spec-design-validator`, and supply
 the repository and document paths. A reviewer whose context wrote or edited the
 document returns only `INDEPENDENCE FAILURE: <reason>`; to validate from the
 session that wrote a spec, use `validating-specs`, which dispatches fresh
-children. When you request a ledger, the caller owns synthesis and any verdict.
+children. The check is best-effort: a reviewer given only a path cannot detect who
+wrote the file, so the caller must start the reviewer in a context that did not
+author it. When you request a ledger, the caller owns synthesis and any verdict.
 Controller and loop workflows continue to require fresh children.
 
 Give the reviewer only read/search/lookup capabilities. Disable file changes,

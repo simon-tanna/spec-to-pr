@@ -82,7 +82,7 @@ Follow `references/dispatch.md`. For each instance, fill `prompts/validator-inst
 
 A child returning `CLARIFICATION REQUIRED: review target — <reason>` pauses the run. It is not a failure and uses no retry. Discard every ledger returned so far, write no report or verdict, and ask the user to identify the target. When they answer, restart from step 2 (Classify) with that target. Handle this response before ledger completeness checks or failure retries.
 
-A failed child, or one returning a capability failure or `INDEPENDENCE FAILURE: <reason>`, gets one retry with a fresh child. If the retry fails, stop: tell the user the lens and the failure, and write no report and no verdict.
+A failed child, or one returning a capability failure or `INDEPENDENCE FAILURE: <reason>`, gets one retry with a fresh child. If the retry fails, stop: tell the user the lens and the failure, and write no report and no verdict. After a repeated `INDEPENDENCE FAILURE`, also tell the user the child inherited the author's context or draft; dispatch it with no inherited conversation (on Codex, `fork_turns="none"`).
 
 The step is complete when every dispatched instance has returned a ledger that meets the completeness rule in `references/validator-role.md` ## Findings ledger. Re-dispatch a ledger that does not; that counts as its retry.
 
