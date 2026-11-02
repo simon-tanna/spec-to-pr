@@ -10,9 +10,11 @@ import unittest
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 CANONICAL_VALIDATOR = ROOT / "skills/spec-design-validator/SKILL.md"
-# Files the builder writes from CANONICAL_VALIDATOR rather than copying from disk.
+# Files the builder generates from a canonical spec-design-validator source (SKILL.md
+# or references/project-checks.md) rather than copying from validating-specs on disk.
 GENERATED_FROM_CANONICAL = {ROOT / "skills/validating-specs/references/validator-role.md",
-                            ROOT / "skills/validating-specs/references/report-format.md"}
+                            ROOT / "skills/validating-specs/references/report-format.md",
+                            ROOT / "skills/validating-specs/references/project-checks.md"}
 MARKER = re.compile(r"<!-- Generated from (\S+) by scripts/build-distribution.py\. "
                     r"Maintainers: edit the canonical file and rebuild\. -->")
 
@@ -155,17 +157,43 @@ class DistributionTests(unittest.TestCase):
                 shutil.copytree(ROOT / directory, root / directory)
             target = root / "agents/spec-design-validator.md"
             target.write_text("stale\n")
+            # A stray JSON file in the bundle must be reported and pruned, like stray Markdown.
+            stray = root / "skills/agentic-loop/references/validation/references/stray.json"
+            stray.write_text("{}\n")
             command = [sys.executable, str(root / "scripts/build-distribution.py")]
-            self.assertNotEqual(subprocess.run(command + ["--check"], capture_output=True).returncode, 0)
+            check = subprocess.run(command + ["--check"], capture_output=True, text=True)
+            self.assertNotEqual(check.returncode, 0)
+            self.assertIn("stray.json", check.stdout)
             run_build(self, command)
+            self.assertFalse(stray.exists(), "stale bundle JSON was not removed")
             run_build(self, command + ["--check"])
             self.assertEqual(target.read_bytes(), (ROOT / "agents/spec-design-validator.md").read_bytes())
 
+    def test_every_role_copy_can_locate_its_schema(self):
+        # A role read from disk finds ledger.schema.json beside it or in a sibling references/.
+        for role in (CANONICAL_VALIDATOR, ROOT / "skills/validating-specs/references/validator-role.md",
+                     ROOT / "skills/agentic-loop/references/validation/references/validator-role.md"):
+            with self.subTest(role=str(role.relative_to(ROOT))):
+                self.assertIn("from this role file's own directory, or from a `references/` directory beside it",
+                              role.read_text())
+                self.assertTrue((role.parent / "ledger.schema.json").is_file()
+                                or (role.parent / "references/ledger.schema.json").is_file())
+
+    def test_native_agent_resolves_references_through_plugin_root(self):
+        # The native agent's role is its system prompt, so it has no directory of its own;
+        # Claude Code substitutes ${CLAUDE_PLUGIN_ROOT} in plugin agent bodies.
+        text = (ROOT / "agents/spec-design-validator.md").read_text()
+        relative = "skills/spec-design-validator/references/"
+        self.assertIn("`${CLAUDE_PLUGIN_ROOT}/" + relative + "`", text)
+        for reference in ("ledger.schema.json", "project-checks.md"):
+            with self.subTest(reference=reference):
+                self.assertTrue((ROOT / relative / reference).is_file())
+
     def test_independent_skill_resources(self):
         required = {
-            "spec-design-validator": [],
-            "agentic-loop": ["references/dispatch.md", "references/roles/code-reviewer.md", "references/roles/team-lead.md", "references/validation/workflow.md", "references/validation/references/validator-role.md", "references/validation/references/report-format.md", "references/validation/prompts/validator-instance.md", "scripts/check-gates.sh", "setup/hooks/lib-gates.sh", "scripts/init-run.sh"],
-            "validating-specs": ["references/dispatch.md", "references/validator-role.md", "references/report-format.md", "prompts/validator-instance.md"],
+            "spec-design-validator": ["references/ledger.schema.json"],
+            "agentic-loop": ["references/validation/references/ledger.schema.json", "references/dispatch.md", "references/roles/code-reviewer.md", "references/roles/team-lead.md", "references/validation/workflow.md", "references/validation/references/validator-role.md", "references/validation/references/report-format.md", "references/validation/prompts/validator-instance.md", "scripts/check-gates.sh", "setup/hooks/lib-gates.sh", "scripts/init-run.sh"],
+            "validating-specs": ["references/ledger.schema.json", "references/dispatch.md", "references/validator-role.md", "references/report-format.md", "prompts/validator-instance.md"],
             "diataxis-docs": ["references/quadrant-tutorial.md", "references/quadrant-how-to.md", "references/quadrant-reference.md", "references/quadrant-explanation.md"],
         }
         for skill, resources in required.items():

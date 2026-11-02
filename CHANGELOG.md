@@ -8,6 +8,52 @@ project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- `--min-severity` and `minimum_severity` support `all` (default), `Nit`,
+  `Minor` and `Major`; unsupported or conflicting values fail explicitly (#9).
+  Findings below the threshold are replaced by a `below-threshold` Checked row
+  (not a pass), and the report's Coverage leads with the resolved threshold.
+  Agentic-loop passes `all` on every iteration of both stages; Blocker/Major
+  findings and verdict rules are unchanged. The ledger gains required
+  `minimum_severity` and `checked[].status` fields; `schema_version` stays
+  `1.0` because the schema has not yet been released.
+
+- Caller-authorised project checks (#11): repeatable `--project-checks` files,
+  a task-prompt `project_checks` field, or an explicit caller instruction naming
+  a checks file. Reserved `project.*` IDs, lens routing and complete coverage
+  use the shared ledger contract. Invalid checks stop the run with
+  `INVALID PROJECT CHECKS: <reason>` and no retry. Check content supplies
+  criteria and cannot change review instructions, verdict or tools.
+
+- Versioned findings ledger JSON Schema with stable IDs on findings, strengths
+  and checked rows; prose remains the default (#8). Initial rubric IDs
+  (rubric_version 1):
+  - `scope.problem-statement`
+  - `scope.acceptance-criteria`
+  - `scope.out-of-scope`
+  - `scope.non-functional-requirements`
+  - `scope.test-coverage`
+  - `architecture.system-alignment`
+  - `architecture.interface-contracts`
+  - `architecture.codebase-fit`
+  - `architecture.technical-feasibility`
+  - `architecture.integration-risk`
+  - `execution.phase-sequencing`
+  - `execution.parallel-workstreams`
+  - `execution.milestone-exits`
+  - `execution.estimate-realism`
+  - `execution.rollback-migration`
+  - `execution.rollout-strategy`
+  - `execution.review-test-gates`
+  - `execution.operability`
+  - `domain.business-invariants`
+  - `domain.workflow-transitions`
+  - `domain.edge-cases`
+  - `domain.compliance`
+  - `security.authorization`
+  - `security.secret-handling`
+  - `security.input-verification`
+  - `security.auditability`
+
 - A self-contained `spec-design-validator` skill with the full rubric, ledger
   contract and direct report. It is now the canonical source for the generated
   validator role, report format and native agent (#6).
@@ -21,6 +67,16 @@ project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Changed
 
+- The ledger schema's `$defs/check_id` is now a `oneOf` of the built-in ID enum
+  and the `project.*` pattern, so readers of `$defs/check_id/enum` must read
+  `oneOf[0].enum` (#11). Synthesis collapses duplicate findings only within one
+  check ID; a defect that violates several checks keeps a row per check ID.
+- Validation report rows (What's Strong, Blockers, Major Concerns, Minor Issues
+  & Nits) and rubric bullets now carry their stable `check_id` (#8). The ledger
+  schema ships beside the role in the `spec-design-validator`, `validating-specs`
+  and bundled agentic-loop distributions; validator children receive its
+  directory as `{{REFERENCES_ABS_DIR}}`. Distribution generation copies and
+  prunes `.json` resources as well as Markdown.
 - Distribution generation propagates canonical content in one invocation even
   when generated intermediate resources are missing, and fails with a named
   error when the canonical skill's frontmatter or report section is malformed.

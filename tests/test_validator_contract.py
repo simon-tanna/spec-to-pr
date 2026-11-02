@@ -42,9 +42,13 @@ def paragraphs(text):
 
 class LedgerContractTests(unittest.TestCase):
     def test_ledger_has_five_blocks_in_order(self):
+        # The header line carries the JSON top-level fields; the five blocks follow it.
         blocks = re.findall(r'^([A-Z][A-Za-z ]+):', ledger_contract(), re.M)
-        self.assertEqual(blocks, ['Tooling evidence', 'Findings', 'Strengths',
+        self.assertEqual(blocks, ['Header', 'Tooling evidence', 'Findings', 'Strengths',
                                   'Checked', 'Ignored instructions'])
+        header = re.search(r'(?m)^Header:.*$', ledger_contract()).group(0)
+        for field in ('schema_version', 'rubric_version', 'minimum_severity'):
+            self.assertIn(field, header)
 
     def test_audit_block_uses_shared_record_and_empty_convention(self):
         ledger = ledger_contract()
@@ -154,6 +158,12 @@ class ControllerContractTests(unittest.TestCase):
         self.assertIn(CAPABILITY_FAILURE, instance)
         self.assertIn(CLARIFICATION, instance)
         self.assertIn(CLARIFICATION, self.dispatch)
+
+    def test_invalid_project_checks_stop_without_retry(self):
+        sentinel = 'INVALID PROJECT CHECKS: <reason>'
+        stop = next(p for p in paragraphs(self.dispatch) if sentinel in p)
+        self.assertIn('without retry', stop)
+        self.assertIn('INVALID PROJECT CHECKS', section(read('references/validator-role.md'), 'Output mode'))
 
     def test_independence_failure_is_retried_then_stops(self):
         retry = next(p for p in paragraphs(self.dispatch) if 'one retry' in p)
