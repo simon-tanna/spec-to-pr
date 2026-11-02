@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "run_id": "native-validator-registration-1317f6d8",
+  "run_dir": ".agentic-loop/native-validator-registration-1317f6d8",
+  "source_path": "/private/tmp/spec-to-pr-native-validator-source.md",
+  "source_hash": "1317f6d8094183cb01a45d585d28e8d86af6ce5f842640eea9eb495c2e94ad10",
+  "branch": "feat/native-validator-registration-1317f6d8",
+  "base_ref": "main",
+  "issue": null
+}
