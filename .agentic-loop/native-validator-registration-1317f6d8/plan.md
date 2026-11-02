@@ -113,4 +113,3 @@ Consume T1 templates relative to the installed script. Fixed destinations: `.cla
 ## Self-Review
 
 Completed: all six goals and acceptance groups map to named tests; all five Review Focus edges are covered; no placeholders or executable test bodies; interfaces and dependencies agree; each task has one green commit, explicit red/green commands, and a TDD commit-body line. No model/permission changes or transactional recovery requirement introduced.
-
