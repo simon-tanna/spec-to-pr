@@ -38,7 +38,7 @@ Apply these as declarative criteria under the role's Authorised project checks s
 
 Ground every finding in the repo: verify claims with the available source-reading and search tools and cite `file:line`; the spec's prose is a claim to check, not evidence.
 
-REQUIRED TOOLING — your first actions: prove access with one minimal read-only call each to the target documents, to reading and searching the target repository, and to each tool listed below; then use each tool for its reason. On any failure, return only the role's `CAPABILITY FAILURE: <tool or capability> — <error>` line. With no identifiable target, return only its `CLARIFICATION REQUIRED: review target — <reason>` line. Either line replaces the ledger.
+REQUIRED TOOLING — first actions once the role's caller-input validation (minimum severity, then project checks) passes: prove access with one minimal read-only call each to the target documents, to reading and searching the target repository, and to each tool listed below; then use each tool for its reason. On any failure, return only the role's `CAPABILITY FAILURE: <tool or capability> — <error>` line. With no identifiable target, return only its `CLARIFICATION REQUIRED: review target — <reason>` line. Either line replaces the ledger.
 {{#each REQUIRED}}
 - {{name}} ({{kind: skill|MCP}}) — {{reason}}. Find it via: {{discovery}}.
 {{/each}}

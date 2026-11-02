@@ -5,6 +5,8 @@ import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+CANONICAL_REFERENCES = ROOT / "skills/spec-design-validator/references"
+BUILDER = "scripts/build-distribution.py"
 
 
 def marker(source):
@@ -32,11 +34,12 @@ def outputs():
     result[validation / "references/validator-role.md"] = marker(canonical) + body
     result[validation / "references/report-format.md"] = marker(canonical) + report
 
-    schema = ROOT / "skills/spec-design-validator/references/ledger.schema.json"
-    result[validation / "references/ledger.schema.json"] = schema.read_text()
-
-    checks = ROOT / "skills/spec-design-validator/references/project-checks.md"
-    result[validation / "references/project-checks.md"] = marker(checks) + checks.read_text()
+    # Every canonical reference ships beside the copied role. JSON cannot hold an HTML
+    # comment, so a JSON reference carries its own canonical notice in `$comment` and is
+    # copied byte-for-byte.
+    for source in sorted(CANONICAL_REFERENCES.iterdir()):
+        if source.is_file() and not source.name.startswith("."):
+            result[validation / "references" / source.name] = (marker(source) if source.suffix == ".md" else "") + source.read_text()
 
     for name in ("spec-design-validator", "code-reviewer", "team-lead"):
         adapter = json.loads((ROOT / f"adapters/claude/{name}.json").read_text())
@@ -53,9 +56,14 @@ def outputs():
     for directory in ("references", "prompts"):
         sources = set((validation / directory).rglob("*")) | {p for p in result if p.parent == validation / directory}
         for source in sorted(sources):
-            if (source.is_file() or source in result) and source.suffix in (".md", ".json"):
-                # Generated sources already carry their canonical marker; copy them unchanged.
-                result[bundle / source.relative_to(validation)] = result[source] if source in result else (marker(source) if source.suffix == ".md" else "") + source.read_text()
+            if source in result:
+                # Generated sources already carry their canonical notice (Markdown marker or
+                # JSON `$comment`); copy them unchanged.
+                result[bundle / source.relative_to(validation)] = result[source]
+            elif source.is_file() and not source.name.startswith(".") and BUILDER not in source.read_text():
+                # Hand-written sources gain a marker. A generated copy absent from result is an
+                # orphan of a deleted canonical file: main() prunes it, so it must not re-ship.
+                result[bundle / source.relative_to(validation)] = (marker(source) if source.suffix == ".md" else "") + source.read_text()
     workflow = validation / "SKILL.md"
     title, rest = workflow.read_text().split("---", 2)[2].lstrip().split("\n", 1)
     result[bundle / "workflow.md"] = title + "\n\n" + marker(workflow) + rest.lstrip("\n")
@@ -68,7 +76,11 @@ def main():
     args = parser.parse_args()
     expected = outputs()
     bundle = ROOT / "skills/agentic-loop/references/validation"
-    stale = {p for p in bundle.rglob("*") if p.suffix in (".md", ".json")} - expected.keys() if bundle.exists() else set()
+    stale = {p for p in bundle.rglob("*") if p.is_file()} - expected.keys() if bundle.exists() else set()
+    # validating-specs/references mixes hand-written files with generated copies; only a
+    # file that names this builder is ours to prune once its canonical source is gone.
+    copies = ROOT / "skills/validating-specs/references"
+    stale |= {p for p in copies.iterdir() if p.is_file() and BUILDER in p.read_text()} - expected.keys()
     drift = [path for path, content in expected.items() if not path.exists() or path.read_text() != content]
     if args.check:
         for path in sorted(set(drift) | stale):

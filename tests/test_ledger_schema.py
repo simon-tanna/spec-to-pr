@@ -1,4 +1,4 @@
-"""Offline ledger contracts; live-agent scenarios live in scripts/evals/."""
+"""Offline, stdlib-only ledger contracts; jsonschema-backed behaviour lives in test_ledger_schema_validation.py."""
 import json
 import pathlib
 import re
@@ -73,9 +73,9 @@ def section(text, heading):
 def check_id_branches(schema):
     variants = schema['$defs']['check_id']['oneOf']
     built_in = [v for v in variants if 'enum' in v]
-    project = [v for v in variants if 'pattern' in v]
-    assert len(built_in) == 1 and len(project) == 1, 'expected one enum and one project branch'
-    return built_in[0], project[0]
+    project = [v for v in variants if v.get('$ref') == '#/$defs/project_id']
+    assert len(built_in) == 1 and len(project) == 1, 'expected one enum and one project_id branch'
+    return built_in[0], schema['$defs']['project_id']
 
 
 class ProjectChecks(unittest.TestCase):
@@ -106,7 +106,8 @@ class ProjectChecks(unittest.TestCase):
         self.assertEqual(row['required'], ['id', 'lens', 'text'])
         self.assertIs(row['additionalProperties'], False)
         self.assertEqual(row['properties']['lens'], {'$ref': '#/$defs/lens'})
-        self.assertEqual(row['properties']['id']['pattern'], project['pattern'])
+        # Ledger IDs and input IDs share one definition, so they cannot drift apart.
+        self.assertEqual(row['properties']['id'], {'$ref': '#/$defs/project_id'})
         text = row['properties']['text']
         for value, ok in (('Docs list every new variable.', True), ('', False), ('   ', False),
                           ('line one\nline two', False), ('line\r', False)):

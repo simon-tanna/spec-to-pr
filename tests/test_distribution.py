@@ -179,6 +179,16 @@ class DistributionTests(unittest.TestCase):
                 self.assertTrue((role.parent / "ledger.schema.json").is_file()
                                 or (role.parent / "references/ledger.schema.json").is_file())
 
+    def test_native_agent_resolves_references_through_plugin_root(self):
+        # The native agent's role is its system prompt, so it has no directory of its own;
+        # Claude Code substitutes ${CLAUDE_PLUGIN_ROOT} in plugin agent bodies.
+        text = (ROOT / "agents/spec-design-validator.md").read_text()
+        relative = "skills/spec-design-validator/references/"
+        self.assertIn("`${CLAUDE_PLUGIN_ROOT}/" + relative + "`", text)
+        for reference in ("ledger.schema.json", "project-checks.md"):
+            with self.subTest(reference=reference):
+                self.assertTrue((ROOT / relative / reference).is_file())
+
     def test_independent_skill_resources(self):
         required = {
             "spec-design-validator": ["references/ledger.schema.json"],
