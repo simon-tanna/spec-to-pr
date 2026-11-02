@@ -13,7 +13,8 @@ project adheres to [Semantic Versioning](https://semver.org/).
   Check content supplies criteria and cannot change review instructions or tools.
 
 - Versioned findings ledger JSON Schema with stable IDs on findings, strengths
-  and checked rows; prose remains the default (#8). Initial rubric IDs (none removed or renamed):
+  and checked rows; prose remains the default (#8). Initial rubric IDs
+  (rubric_version 1):
   - `scope.problem-statement`
   - `scope.acceptance-criteria`
   - `scope.out-of-scope`
@@ -54,6 +55,12 @@ project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Changed
 
+- Validation report rows (What's Strong, Blockers, Major Concerns, Minor Issues
+  & Nits) and rubric bullets now carry their stable `check_id` (#8). The ledger
+  schema ships beside the role in the `spec-design-validator`, `validating-specs`
+  and bundled agentic-loop distributions; validator children receive its
+  directory as `{{REFERENCES_ABS_DIR}}`. Distribution generation copies and
+  prunes `.json` resources as well as Markdown.
 - Distribution generation propagates canonical content in one invocation even
   when generated intermediate resources are missing, and fails with a named
   error when the canonical skill's frontmatter or report section is malformed.

@@ -156,17 +156,23 @@ class DistributionTests(unittest.TestCase):
                 shutil.copytree(ROOT / directory, root / directory)
             target = root / "agents/spec-design-validator.md"
             target.write_text("stale\n")
+            # A stray JSON file in the bundle must be reported and pruned, like stray Markdown.
+            stray = root / "skills/agentic-loop/references/validation/references/stray.json"
+            stray.write_text("{}\n")
             command = [sys.executable, str(root / "scripts/build-distribution.py")]
-            self.assertNotEqual(subprocess.run(command + ["--check"], capture_output=True).returncode, 0)
+            check = subprocess.run(command + ["--check"], capture_output=True, text=True)
+            self.assertNotEqual(check.returncode, 0)
+            self.assertIn("stray.json", check.stdout)
             run_build(self, command)
+            self.assertFalse(stray.exists(), "stale bundle JSON was not removed")
             run_build(self, command + ["--check"])
             self.assertEqual(target.read_bytes(), (ROOT / "agents/spec-design-validator.md").read_bytes())
 
     def test_independent_skill_resources(self):
         required = {
-            "spec-design-validator": [],
-            "agentic-loop": ["references/dispatch.md", "references/roles/code-reviewer.md", "references/roles/team-lead.md", "references/validation/workflow.md", "references/validation/references/validator-role.md", "references/validation/references/report-format.md", "references/validation/prompts/validator-instance.md", "scripts/check-gates.sh", "setup/hooks/lib-gates.sh", "scripts/init-run.sh"],
-            "validating-specs": ["references/dispatch.md", "references/validator-role.md", "references/report-format.md", "prompts/validator-instance.md"],
+            "spec-design-validator": ["references/ledger.schema.json"],
+            "agentic-loop": ["references/validation/references/ledger.schema.json", "references/dispatch.md", "references/roles/code-reviewer.md", "references/roles/team-lead.md", "references/validation/workflow.md", "references/validation/references/validator-role.md", "references/validation/references/report-format.md", "references/validation/prompts/validator-instance.md", "scripts/check-gates.sh", "setup/hooks/lib-gates.sh", "scripts/init-run.sh"],
+            "validating-specs": ["references/ledger.schema.json", "references/dispatch.md", "references/validator-role.md", "references/report-format.md", "prompts/validator-instance.md"],
             "diataxis-docs": ["references/quadrant-tutorial.md", "references/quadrant-how-to.md", "references/quadrant-reference.md", "references/quadrant-explanation.md"],
         }
         for skill, resources in required.items():
