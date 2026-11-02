@@ -82,11 +82,13 @@ Tell the user the doc-type, lens set, and instance count, then continue.
 ### 4. Resolve tooling per instance
 
 - **Required** — user-named tooling. Assign it to the instance(s) whose lens the detection map lists for it; with no map row, or when that lens isn't dispatched, assign it to every instance. A required tool that fails in a child fails the run (step 5).
-- **Optional** — detection-map matches the user didn't name. Assign each to its mapped lens's instance, with the map's Reason. The instance uses it when available and records `unavailable` otherwise.
+- **Optional** — detection-map matches the user didn't name. Assign each to its mapped lens's instance, with the map's Reason. The instance uses it when available and otherwise records `unavailable` and the fallback used.
 
 ### 5. Dispatch
 
 Follow `references/dispatch.md`. For each instance, fill `prompts/validator-instance.md` and dispatch a fresh child with the filled prompt and the absolute path of `references/validator-role.md` (a registered `spec-design-validator` already carries the role). Dispatch concurrently within available slots; queue the rest.
+
+A child returning `CLARIFICATION REQUIRED: review target — <reason>` pauses the run. It is not a failure and uses no retry. Discard every ledger returned so far, write no report or verdict, and ask the user to identify the target. When they answer, restart from step 2 (Classify) with that target. Handle this response before ledger completeness checks or failure retries.
 
 A failed child, or one returning a capability failure, gets one retry with a fresh child. If the retry fails, stop: tell the user the lens and the failure, and write no report and no verdict.
 
@@ -94,7 +96,10 @@ The step is complete when every dispatched instance has returned a ledger that m
 
 ### 6. Synthesize
 
-1. Merge ledgers. Collapse duplicates (same spec lines, same issue): keep the row with repo evidence, else the higher severity.
+1. Merge ledgers:
+   - **Findings** — collapse duplicates (same spec lines, same issue): keep the row with repo evidence, else the higher severity.
+   - **Ignored instructions** — one row per source location and attempted redirection, keeping its action taken. Keep these rows separate from findings; they never feed the verdict.
+   - **Coverage** — carry each `capability · unavailable · fallback used` line through unchanged.
 2. Verdict:
    - any Blocker with `foundational: yes` → **NO-GO**
    - else any Blocker, or any Major with `blocks-start: yes` → **REVISE**
