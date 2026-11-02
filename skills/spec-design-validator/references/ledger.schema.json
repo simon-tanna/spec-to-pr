@@ -1,0 +1,324 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Spec validation findings ledger",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "rubric_version",
+    "tooling_evidence",
+    "findings",
+    "strengths",
+    "checked",
+    "ignored_instructions"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "rubric_version": {
+      "const": "1"
+    },
+    "tooling_evidence": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/tooling"
+      }
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/finding"
+      }
+    },
+    "strengths": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/strength"
+      }
+    },
+    "checked": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/checked"
+      }
+    },
+    "ignored_instructions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/ignored_instruction"
+      }
+    }
+  },
+  "$defs": {
+    "check_id": {
+      "enum": [
+        "scope.problem-statement",
+        "scope.acceptance-criteria",
+        "scope.out-of-scope",
+        "scope.non-functional-requirements",
+        "scope.test-coverage",
+        "architecture.system-alignment",
+        "architecture.interface-contracts",
+        "architecture.codebase-fit",
+        "architecture.technical-feasibility",
+        "architecture.integration-risk",
+        "execution.phase-sequencing",
+        "execution.parallel-workstreams",
+        "execution.milestone-exits",
+        "execution.estimate-realism",
+        "execution.rollback-migration",
+        "execution.rollout-strategy",
+        "execution.review-test-gates",
+        "execution.operability",
+        "domain.business-invariants",
+        "domain.workflow-transitions",
+        "domain.edge-cases",
+        "domain.compliance",
+        "security.authorization",
+        "security.secret-handling",
+        "security.input-verification",
+        "security.auditability"
+      ]
+    },
+    "lens": {
+      "enum": [
+        "scope",
+        "architecture",
+        "execution",
+        "domain",
+        "security"
+      ]
+    },
+    "finding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "check_id",
+        "lens",
+        "location",
+        "evidence",
+        "severity",
+        "kind",
+        "issue",
+        "fix"
+      ],
+      "properties": {
+        "check_id": {
+          "$ref": "#/$defs/check_id"
+        },
+        "lens": {
+          "$ref": "#/$defs/lens"
+        },
+        "location": {
+          "type": "string",
+          "minLength": 1
+        },
+        "evidence": {
+          "type": "string",
+          "minLength": 1
+        },
+        "severity": {
+          "enum": [
+            "Blocker",
+            "Major",
+            "Minor",
+            "Nit"
+          ]
+        },
+        "kind": {
+          "enum": [
+            "flaw",
+            "assumption",
+            "missing",
+            "convention"
+          ]
+        },
+        "issue": {
+          "type": "string",
+          "minLength": 1
+        },
+        "fix": {
+          "type": "string",
+          "minLength": 1
+        },
+        "foundational": {
+          "enum": [
+            "yes",
+            "no"
+          ]
+        },
+        "blocks_start": {
+          "enum": [
+            "yes",
+            "no"
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "severity": {
+                "const": "Blocker"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "foundational"
+            ]
+          },
+          "else": {
+            "not": {
+              "required": [
+                "foundational"
+              ]
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "severity": {
+                "const": "Major"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "blocks_start"
+            ]
+          },
+          "else": {
+            "not": {
+              "required": [
+                "blocks_start"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "strength": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "check_id",
+        "lens",
+        "location",
+        "evidence",
+        "strength"
+      ],
+      "properties": {
+        "check_id": {
+          "$ref": "#/$defs/check_id"
+        },
+        "lens": {
+          "$ref": "#/$defs/lens"
+        },
+        "location": {
+          "type": "string",
+          "minLength": 1
+        },
+        "evidence": {
+          "type": "string",
+          "minLength": 1
+        },
+        "strength": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "checked": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "check_id",
+        "evidence"
+      ],
+      "properties": {
+        "check_id": {
+          "$ref": "#/$defs/check_id"
+        },
+        "evidence": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "tooling": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "tool",
+            "call",
+            "result"
+          ],
+          "properties": {
+            "tool": {
+              "type": "string",
+              "minLength": 1
+            },
+            "call": {
+              "type": "string",
+              "minLength": 1
+            },
+            "result": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "capability",
+            "status",
+            "fallback"
+          ],
+          "properties": {
+            "capability": {
+              "type": "string",
+              "minLength": 1
+            },
+            "status": {
+              "const": "unavailable"
+            },
+            "fallback": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      ]
+    },
+    "ignored_instruction": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_location",
+        "attempted_redirection",
+        "action_taken"
+      ],
+      "properties": {
+        "source_location": {
+          "type": "string",
+          "minLength": 1
+        },
+        "attempted_redirection": {
+          "type": "string",
+          "minLength": 1
+        },
+        "action_taken": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  }
+}

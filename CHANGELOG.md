@@ -8,6 +8,35 @@ project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- Versioned findings ledger JSON Schema with stable IDs on findings, strengths
+  and checked rows; prose remains the default (#8). Initial rubric IDs (none removed or renamed):
+  - `scope.problem-statement`
+  - `scope.acceptance-criteria`
+  - `scope.out-of-scope`
+  - `scope.non-functional-requirements`
+  - `scope.test-coverage`
+  - `architecture.system-alignment`
+  - `architecture.interface-contracts`
+  - `architecture.codebase-fit`
+  - `architecture.technical-feasibility`
+  - `architecture.integration-risk`
+  - `execution.phase-sequencing`
+  - `execution.parallel-workstreams`
+  - `execution.milestone-exits`
+  - `execution.estimate-realism`
+  - `execution.rollback-migration`
+  - `execution.rollout-strategy`
+  - `execution.review-test-gates`
+  - `execution.operability`
+  - `domain.business-invariants`
+  - `domain.workflow-transitions`
+  - `domain.edge-cases`
+  - `domain.compliance`
+  - `security.authorization`
+  - `security.secret-handling`
+  - `security.input-verification`
+  - `security.auditability`
+
 - A self-contained `spec-design-validator` skill with the full rubric, ledger
   contract and direct report. It is now the canonical source for the generated
   validator role, report format and native agent (#6).

@@ -47,7 +47,7 @@ class Standalone(unittest.TestCase):
     def test_original_rubric_preserved_under_its_lens(self):
         rows = [line.split('\t', 1) for line in (ROOT / 'tests/fixtures/validator-rubric-v0.4.0.txt').read_text().splitlines()]
         self.assertEqual(len(rows), 26)
-        text = SKILL.read_text()
+        text = re.sub(r'(?m)^- `[a-z]+\.[a-z-]+` — ', '- ', SKILL.read_text())
         lenses = dict(re.findall(r'(?ms)^### (\w+)\n(.*?)(?=^##)', text))
         self.assertEqual(sorted(lenses), sorted({lens for lens, _ in rows}))
         for lens, bullet in rows:

@@ -32,6 +32,9 @@ def outputs():
     result[validation / "references/validator-role.md"] = marker(canonical) + body
     result[validation / "references/report-format.md"] = marker(canonical) + report
 
+    schema = ROOT / "skills/spec-design-validator/references/ledger.schema.json"
+    result[validation / "references/ledger.schema.json"] = schema.read_text()
+
     for name in ("spec-design-validator", "code-reviewer", "team-lead"):
         adapter = json.loads((ROOT / f"adapters/claude/{name}.json").read_text())
         role = validation / "references/validator-role.md" if name == "spec-design-validator" else loop / f"references/roles/{name}.md"
@@ -47,9 +50,9 @@ def outputs():
     for directory in ("references", "prompts"):
         sources = set((validation / directory).rglob("*")) | {p for p in result if p.parent == validation / directory}
         for source in sorted(sources):
-            if (source.is_file() or source in result) and source.suffix == ".md":
+            if (source.is_file() or source in result) and source.suffix in (".md", ".json"):
                 # Generated sources already carry their canonical marker; copy them unchanged.
-                result[bundle / source.relative_to(validation)] = result[source] if source in result else marker(source) + source.read_text()
+                result[bundle / source.relative_to(validation)] = result[source] if source in result else (marker(source) if source.suffix == ".md" else "") + source.read_text()
     workflow = validation / "SKILL.md"
     title, rest = workflow.read_text().split("---", 2)[2].lstrip().split("\n", 1)
     result[bundle / "workflow.md"] = title + "\n\n" + marker(workflow) + rest.lstrip("\n")
@@ -62,7 +65,7 @@ def main():
     args = parser.parse_args()
     expected = outputs()
     bundle = ROOT / "skills/agentic-loop/references/validation"
-    stale = set(bundle.rglob("*.md")) - expected.keys() if bundle.exists() else set()
+    stale = {p for p in bundle.rglob("*") if p.suffix in (".md", ".json")} - expected.keys() if bundle.exists() else set()
     drift = [path for path, content in expected.items() if not path.exists() or path.read_text() != content]
     if args.check:
         for path in sorted(set(drift) | stale):
