@@ -148,8 +148,11 @@ The repository command installs published GitHub content; for unreleased changes
 replace `simon-tanna/spec-to-pr` with the absolute path to a local checkout.
 
 Skills installation does not register Claude plugin hooks or native agents.
-The bundled dispatch instructions supply roles to fresh generic children in both
-harnesses. Codex omits model overrides and uses the harness's effective defaults.
+For an optional project-local native validator, explicitly run the installed
+skill's [setup command](skills/spec-design-validator/setup/SETUP.md). Dispatch
+prefers the registered native validator when the exposed spawn schema supports
+selecting it; otherwise it supplies the bundled role to a fresh generic child.
+Codex omits model overrides and uses the harness's effective defaults.
 
 ### Optional Claude plugin
 

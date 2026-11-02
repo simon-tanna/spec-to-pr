@@ -23,10 +23,13 @@ validator role (the registered agent or `references/validator-role.md`), never
 the standalone skill of that name. (agentic-loop) `code-reviewer` and `spec-to-pr:code-reviewer`
 mean the loop's bundled reviewer role; `team-lead` and `spec-to-pr:team-lead`
 mean its bundled planning role. Only map roles present in the invoking skill's
-resources. `general-purpose`, including explicit `--subagent general-purpose`
-(agentic-loop), means a generic worker with the task prompt. A custom external
-role must actually be available; report an unavailable-role error instead of
-silently substituting it.
+resources. `general-purpose` means a generic worker with the task prompt.
+An explicit generic worker request stays generic for that worker.
+In agentic-loop, explicit `--subagent general-purpose` selects the
+implementation specialist roster only. This flag
+does not change required validator or reviewer role selection.
+A custom external role must actually be available; report an unavailable-role error
+instead of silently substituting it.
 
 ## Select the host adapter
 
@@ -40,7 +43,6 @@ File presence in `.claude/agents` or `.codex/agents` is insufficient: verify bot
 registration availability and a selectable agent-type parameter in the exposed
 spawn schema. A Codex spawn schema without an agent-type selector uses a fresh
 generic child with the bundled role, even when a definition exists on disk.
-An explicit `--subagent general-purpose` selection stays generic.
 
 - Claude Code: select the available native role through Agent's supported role
   selector; otherwise inject the bundled role into a fresh generic child.

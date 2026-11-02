@@ -163,6 +163,17 @@ class ControllerContractTests(unittest.TestCase):
         self.assertIn('Codex spawn schema without an agent-type selector', dispatch)
         self.assertNotIn('Standalone Claude skills: use the generic Agent', dispatch)
 
+    def test_specialist_roster_flag_preserves_required_review_roles(self):
+        dispatch = read('references/dispatch.md')
+        roles = section(dispatch, 'Resolve resources and roles')
+        for requirement in ('implementation specialist roster only',
+                            'does not change required validator or reviewer role selection',
+                            'explicit generic worker request stays generic for that worker'):
+            with self.subTest(requirement=requirement):
+                self.assertIn(requirement, roles)
+        adapter = section(dispatch, 'Select the host adapter')
+        self.assertNotIn('--subagent', adapter)
+
     def test_native_failure_retains_review_failure_policy(self):
         dispatch = read('references/dispatch.md')
         for requirement in ('started native', 'retry or stop', 'silently replace',
