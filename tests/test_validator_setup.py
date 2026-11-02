@@ -60,21 +60,32 @@ class ValidatorSetupTests(unittest.TestCase):
             shutil.copytree(ROOT / 'skills' / skill / 'references/native-validator', installed / 'references/native-validator')
             (installed / 'scripts').mkdir()
             shutil.copy2(ROOT / 'skills' / skill / 'scripts/setup-validator.py', installed / 'scripts/setup-validator.py')
-            project = self.base / (str(index) + ' space "quote" \\ café 東京 🐈 `tick` \x7f\nnext line')
-            project.mkdir()
-            self.success(root=project, script=installed / 'scripts/setup-validator.py')
-            reference = str(project / '.spec-to-pr/validator/references')
-            claude = (project / CLAUDE).read_text()
-            codex = tomllib.loads((project / CODEX).read_text())
-            self.assertIn(json.dumps(reference, ensure_ascii=False), claude)
-            self.assertNotIn(reference, claude)
-            self.assertIn(reference, codex['developer_instructions'])
-            self.assertEqual(set(codex), {'name', 'description', 'developer_instructions'})
-            for content in (claude, codex['developer_instructions']):
-                self.assertNotIn('{{PROJECT_REFERENCES}}', content)
-                self.assertNotIn('CLAUDE_PLUGIN_ROOT', content)
-            self.assertTrue((Path(reference) / 'ledger.schema.json').is_file())
-            self.assertTrue((Path(reference) / 'project-checks.md').is_file())
+            for host in ('claude', 'codex', 'both'):
+                with self.subTest(skill=skill, host=host):
+                    project = self.base / (str(index) + host + ' space "quote" \\ café 東京 🐈 `tick` \x7f\n## path-heading')
+                    project.mkdir()
+                    self.success(host=host, root=project, script=installed / 'scripts/setup-validator.py')
+                    reference = str(project / '.spec-to-pr/validator/references')
+                    contents = []
+                    self.assertEqual((project / CLAUDE).exists(), host != 'codex')
+                    self.assertEqual((project / CODEX).exists(), host != 'claude')
+                    if host != 'codex':
+                        claude = (project / CLAUDE).read_text()
+                        self.assertIn(json.dumps(reference, ensure_ascii=False), claude)
+                        self.assertNotIn(reference, claude)
+                        contents.append(claude)
+                    if host != 'claude':
+                        codex = tomllib.loads((project / CODEX).read_text())
+                        self.assertIn(json.dumps(reference, ensure_ascii=False), codex['developer_instructions'])
+                        self.assertNotIn(reference, codex['developer_instructions'])
+                        self.assertNotIn('\n## path-heading', codex['developer_instructions'])
+                        self.assertEqual(set(codex), {'name', 'description', 'developer_instructions'})
+                        contents.append(codex['developer_instructions'])
+                    for content in contents:
+                        self.assertNotIn('{{PROJECT_REFERENCES}}', content)
+                        self.assertNotIn('CLAUDE_PLUGIN_ROOT', content)
+                    self.assertTrue((Path(reference) / 'ledger.schema.json').is_file())
+                    self.assertTrue((Path(reference) / 'project-checks.md').is_file())
 
     def test_repeat_update_and_move(self):
         first = self.success(host='claude')
@@ -124,9 +135,12 @@ class ValidatorSetupTests(unittest.TestCase):
             self.assertEqual(before, self.snapshot())
             path.unlink()
             path.mkdir()
+            before = self.snapshot()
             result = self.run_setup()
             self.assertNotEqual(result.returncode, 0)
             self.assertIn(relative, result.stderr)
+            self.assertEqual(before, self.snapshot())
+            self.assertTrue(path.is_dir())
             path.rmdir()
             path.write_bytes(original[relative])
         (self.project / MANIFEST).unlink()
@@ -162,6 +176,10 @@ class ValidatorSetupTests(unittest.TestCase):
         unrelated = self.project / '.codex/config.toml'
         unrelated.parent.mkdir()
         unrelated.write_text('unrelated = true\n')
+        agent = self.project / '.codex/agents/local-agent.toml'
+        agent.parent.mkdir()
+        agent_bytes = b'name = \"local-agent\"\n# local instructions\n'
+        agent.write_bytes(agent_bytes)
         self.assertTrue(self.script.is_file(), str(self.script))
         spec = importlib.util.spec_from_file_location('validator_setup', self.script)
         module = importlib.util.module_from_spec(spec)
@@ -174,9 +192,14 @@ class ValidatorSetupTests(unittest.TestCase):
         import contextlib
         import io
         output = io.StringIO()
-        with patch.object(Path, 'write_bytes', fail_metadata), contextlib.redirect_stderr(output):
+        stdout = io.StringIO()
+        with (patch.object(Path, 'write_bytes', fail_metadata),
+              contextlib.redirect_stderr(output), contextlib.redirect_stdout(stdout)):
             result = module.main(['--host', 'both', '--project-root', str(self.project)])
         self.assertNotEqual(result, 0)
+        for word in ('created', 'updated', 'unchanged', 'reload'):
+            self.assertNotIn(word, stdout.getvalue().lower())
+        self.assertEqual(agent.read_bytes(), agent_bytes)
         self.assertIn('injected write failure', output.getvalue())
         for word in ('preserve', 'inspect', 'restore', 'remove', 'retry'):
             self.assertIn(word, output.getvalue().lower())
@@ -184,6 +207,7 @@ class ValidatorSetupTests(unittest.TestCase):
         self.assertIn('session', result.stdout.lower())
         self.assertIn('reload', result.stdout.lower())
         self.assertEqual(unrelated.read_text(), 'unrelated = true\n')
+        self.assertEqual(agent.read_bytes(), agent_bytes)
 
 
 if __name__ == '__main__':

@@ -23,19 +23,19 @@ def planned_files(skill_root: Path, project_root: Path, host: str) -> dict[Path,
     """Render selected host payloads and their project-local reference closure."""
     native = skill_root / 'references/native-validator'
     reference_path = str(project_root / REFERENCES)
+    # Encode the path before embedding it in either host's Markdown instructions.
+    encoded = json.dumps(reference_path, ensure_ascii=False)
+    delimiter = '`' * (max((len(run) for run in re.findall(r'`+', encoded)), default=0) + 1)
+    span = delimiter + ' ' + encoded + ' ' + delimiter
+    replacement = 'the directory specified by this JSON string: ' + span
     planned = {}
     if host in ('claude', 'both'):
         text = (native / 'claude.md').read_text(encoding='utf-8')
-        # JSON preserves control characters without introducing new Markdown lines.
-        encoded = json.dumps(reference_path, ensure_ascii=False)
-        delimiter = '`' * (max((len(run) for run in re.findall(r'`+', encoded)), default=0) + 1)
-        span = delimiter + ' ' + encoded + ' ' + delimiter
-        text = text.replace('`{{PROJECT_REFERENCES}}`',
-                            'the directory specified by this JSON string: ' + span)
+        text = text.replace('`{{PROJECT_REFERENCES}}`', replacement)
         planned[project_root / CLAUDE] = text.encode('utf-8')
     if host in ('codex', 'both'):
-        encoded = json.dumps(reference_path, ensure_ascii=False).replace('\x7f', '\\u007f')[1:-1]
-        text = (native / 'codex.toml').read_text(encoding='utf-8').replace('{{PROJECT_REFERENCES}}', encoded)
+        encoded = json.dumps(replacement, ensure_ascii=False).replace('\x7f', '\\u007f')[1:-1]
+        text = (native / 'codex.toml').read_text(encoding='utf-8').replace('`{{PROJECT_REFERENCES}}`', encoded)
         planned[project_root / CODEX] = text.encode('utf-8')
     for name in ('ledger.schema.json', 'project-checks.md'):
         planned[project_root / REFERENCES / name] = (native / 'references' / name).read_bytes()
