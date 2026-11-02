@@ -77,6 +77,26 @@ The dispatch evaluator uses existing harness authentication and writes traces to
 its explicit output directory. These live evaluations are separate from the
 offline suite.
 
+Codex smoke runs persist a session under `$CODEX_HOME/sessions` (default
+`~/.codex/sessions`). They ignore user configuration and disable plugins and
+host skill discovery for the invocation; the latter uses the experimental
+`skip_host_skill_discovery` feature. User configuration is not edited. Codex
+0.166.0 omits V2 spawn and child-reply evidence from `exec --json`, so the
+evaluator snapshots only the current controller's matching session record,
+verified against its thread ID and fixture directory. V2 acceptance requires
+one successful native spawn with `fork_turns: "none"` and the exact marker in
+that child's correlated final reply. Missing or unsupported records remain
+INCOMPLETE. Complete legacy Codex and Claude JSONL evidence remains supported.
+
+Output artifacts: `command.json`, `transcript.jsonl`, `stderr.log`,
+`expected_marker.txt`, `result.json`, and `codex-rollout.jsonl` when a Codex
+session record was verified. The result adds `evidence_source` (`jsonl`,
+`codex_rollout`, or `null` when collection failed) and `incomplete_reasons`.
+PASS requires complete evidence from one source, exit code 0 and no timeout.
+Raw session records remain local; they are not release artifacts. A generic
+dispatch PASS does not establish full interactive workflow acceptance or
+complete child-context integrity.
+
 Recorded 0.3.0 evidence and remaining acceptance gaps are in
 [the validation record](docs/validation/0.3.0/portability-validation.md); proposed
 0.5.0 independent-validator checks and publishing blockers are in
