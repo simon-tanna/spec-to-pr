@@ -25,9 +25,9 @@
         "tests/test_native_generation.py"
       ],
       "deps": [],
-      "status": "pending",
+      "status": "in-progress",
       "commit_sha": null,
-      "task_start_sha": null,
+      "task_start_sha": "20fa0bd24fc6e833ba55cf8ee8dae96ddda7d61c",
       "spec_review_sha": null,
       "quality_review_sha": null,
       "blocker_count": 0
