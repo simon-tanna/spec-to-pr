@@ -380,6 +380,7 @@
       }
     },
     "project_check": {
+      "description": "Input file schema for one caller-authorised project check row; intentionally not referenced from the ledger root.",
       "type": "object",
       "additionalProperties": false,
       "required": [
