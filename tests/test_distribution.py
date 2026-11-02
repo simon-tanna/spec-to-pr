@@ -167,6 +167,16 @@ class DistributionTests(unittest.TestCase):
             run_build(self, command + ["--check"])
             self.assertEqual(target.read_bytes(), (ROOT / "agents/spec-design-validator.md").read_bytes())
 
+    def test_every_role_copy_can_locate_its_schema(self):
+        # A role read from disk finds ledger.schema.json beside it or in a sibling references/.
+        for role in (CANONICAL_VALIDATOR, ROOT / "skills/validating-specs/references/validator-role.md",
+                     ROOT / "skills/agentic-loop/references/validation/references/validator-role.md"):
+            with self.subTest(role=str(role.relative_to(ROOT))):
+                self.assertIn("from this role file's own directory, or from a `references/` directory beside it",
+                              role.read_text())
+                self.assertTrue((role.parent / "ledger.schema.json").is_file()
+                                or (role.parent / "references/ledger.schema.json").is_file())
+
     def test_independent_skill_resources(self):
         required = {
             "spec-design-validator": ["references/ledger.schema.json"],
