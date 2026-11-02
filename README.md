@@ -147,12 +147,35 @@ reads the GitHub repository and includes each skill's supporting resources.
 The repository command installs published GitHub content; for unreleased changes,
 replace `simon-tanna/spec-to-pr` with the absolute path to a local checkout.
 
+Or ask your agent to install the skills:
+
+```text
+Install all skills from https://github.com/simon-tanna/spec-to-pr into this
+project for the agent harness I am using (Codex or Claude Code), using the
+repository's Skills CLI installation instructions. Tell me what was installed
+and whether I need to start a fresh session.
+```
+
 Skills installation does not register Claude plugin hooks or native agents.
 For an optional project-local native validator, explicitly run the installed
 skill's [setup command](skills/spec-design-validator/setup/SETUP.md). Dispatch
 prefers the registered native validator when the exposed spawn schema supports
 selecting it; otherwise it supplies the bundled role to a fresh generic child.
 Codex omits model overrides and uses the harness's effective defaults.
+
+After installing the skills, ask your agent to register the native validator:
+
+```text
+Set up the project-local native spec-design-validator for Codex in this project.
+Locate the installed spec-design-validator, validating-specs, or agentic-loop
+skill and follow its setup/SETUP.md. Run its scripts/setup-validator.py with
+--host codex and --project-root set to this project's absolute path. Preserve
+local edits if setup reports a conflict. Report the files created or updated
+and remind me to reload the host or start a new session.
+```
+
+Replace `Codex` and `--host codex` with `Claude Code` and `--host claude`, or
+request both hosts with `--host both`.
 
 ### Optional Claude plugin
 
