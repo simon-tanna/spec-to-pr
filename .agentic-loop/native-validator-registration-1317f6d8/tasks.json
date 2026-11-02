@@ -22,14 +22,15 @@
         "skills/agentic-loop/references/native-validator/codex.toml",
         "skills/agentic-loop/references/native-validator/references/ledger.schema.json",
         "skills/agentic-loop/references/native-validator/references/project-checks.md",
-        "tests/test_native_generation.py"
+        "tests/test_native_generation.py",
+        "tests/test_ledger_schema.py"
       ],
       "deps": [],
-      "status": "in-progress",
-      "commit_sha": null,
+      "status": "done",
+      "commit_sha": "d90a515f8b171f2249b45c6bb78ae9c280c314ab",
       "task_start_sha": "20fa0bd24fc6e833ba55cf8ee8dae96ddda7d61c",
-      "spec_review_sha": null,
-      "quality_review_sha": null,
+      "spec_review_sha": "d90a515f8b171f2249b45c6bb78ae9c280c314ab",
+      "quality_review_sha": "d90a515f8b171f2249b45c6bb78ae9c280c314ab",
       "blocker_count": 0
     },
     {
