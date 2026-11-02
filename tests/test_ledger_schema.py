@@ -203,7 +203,8 @@ class MinimumSeverity(unittest.TestCase):
                     if line.startswith('- **--min-severity**'))
         for clause in ('accept exactly `all`, `Nit`, `Minor`, `Major`', 'Validate before reading review targets',
                        'including `Blocker`', 'a flag with no value', 'conflicting', self.INVALID_LINE,
-                       'dispatch nothing', 'Identical repeats are allowed'):
+                       'dispatch nothing', 'Identical repeats are allowed',
+                       'Validate this before `--project-checks`'):
             with self.subTest(clause=clause):
                 self.assertIn(clause, flag)
         dispatch = section(workflow, '### 5. Dispatch')
