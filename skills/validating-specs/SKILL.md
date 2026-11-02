@@ -113,7 +113,7 @@ Verify coverage against the recorded authorised IDs and lenses as well as built-
 1. Merge ledgers:
    - **Findings** — collapse duplicates (same spec lines, same issue): within each check_id keep the row with repo evidence, else the higher severity. Retain separate rows for all check IDs when one defect violates multiple checks.
    - **Ignored instructions** — one row per source location and attempted redirection, keeping its action taken. Keep these rows separate from findings; they never feed the verdict.
-   - **Coverage** — carry below-threshold Checked rows by check ID, suppressed severities and evidence without turning them into passed checks or findings; state the resolved minimum_severity. Carry each `capability · unavailable · fallback used` line through unchanged.
+   - **Coverage** — carry below-threshold Checked rows by check ID, suppressed severities and evidence without turning them into passed checks or findings; state the resolved minimum_severity. Carry each `capability · unavailable · fallback used` line through unchanged. Add one worker line per lens from the dispatch record: `validator worker · <lens> · native:<registered name>` or `validator worker · <lens> · generic-fallback (<reason>)`.
 2. Verdict: read `references/report-format.md` and apply its verdict rules to the merged findings.
 3. Emit the report in that file's format; it is done when it meets that file's completeness rule.
 4. Write it to `--out` when given. Otherwise offer `<spec-dir>/<spec-basename>-validation.md` and write only on acceptance.

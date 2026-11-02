@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build committed Claude adapters and self-contained skills (stdlib only)."""
+"""Build committed Claude adapters, native Claude/Codex validator payloads and self-contained skills (stdlib only)."""
 import argparse
 import json
 import re
@@ -100,9 +100,22 @@ def outputs():
     return result
 
 
+def names_builder(path: Path) -> bool:
+    """Whether a text file names this builder; undecodable files (e.g. .DS_Store) never do."""
+    try:
+        return BUILDER in path.read_text()
+    except UnicodeDecodeError:
+        return False
+
+
 def is_generated_payload(path: Path) -> bool:
     """Recognize explicit generated ownership notices in native payload formats."""
-    text = path.read_text()
+    if path.suffix not in (".md", ".toml", ".json"):
+        return False
+    try:
+        text = path.read_text()
+    except UnicodeDecodeError:
+        return False
     if path.suffix == ".md":
         return bool(re.search(r"(?m)^<!-- Generated from \S+ by scripts/build-distribution\.py\. Maintainers: edit the canonical file and rebuild\. -->$", text))
     if path.suffix == ".toml":
@@ -127,7 +140,7 @@ def main():
     # validating-specs/references mixes hand-written files with generated copies; only a
     # file that names this builder is ours to prune once its canonical source is gone.
     copies = ROOT / "skills/validating-specs/references"
-    stale |= {p for p in copies.iterdir() if p.is_file() and BUILDER in p.read_text()} - expected.keys()
+    stale |= {p for p in copies.iterdir() if p.is_file() and names_builder(p)} - expected.keys()
     for skill in ("spec-design-validator", "validating-specs", "agentic-loop"):
         native = ROOT / "skills" / skill / "references/native-validator"
         if native.exists():

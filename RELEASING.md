@@ -47,7 +47,9 @@ marketplace with `source: "./"`.
    not native acceptance. Missing selectors or authentication remain INCOMPLETE;
    installation success alone makes no runtime or finding-quality claim.
 6. Run packaging/generation tests, initialization integration tests, shared-gate
-   tests, and existing hook/nudge regressions. Record test results separately from
+   tests, and existing hook/nudge regressions. These tests and the installation
+   evaluator parse TOML with `tomllib` and need Python 3.11+; the shipped setup
+   command itself needs only 3.10+. Record test results separately from
    live-harness evidence. Require recorded fresh-child delegation, interactive
    question/answer pause and resume, negative gate cases, and a complete fixture
    run for each claimed harness. Missing credentials or an unavailable harness

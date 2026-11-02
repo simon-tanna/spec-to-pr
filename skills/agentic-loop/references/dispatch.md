@@ -45,14 +45,24 @@ spawn schema. A Codex spawn schema without an agent-type selector uses a fresh
 generic child with the bundled role, even when a definition exists on disk.
 
 - Claude Code: select the available native role through Agent's supported role
-  selector; otherwise inject the bundled role into a fresh generic child.
+  selector; otherwise inject the bundled role into a fresh generic child. When
+  both are selectable, prefer the plugin role `spec-to-pr:spec-design-validator`,
+  which ships with the invoking skill's rubric; use a project-local
+  `spec-design-validator` only when no plugin role is selectable.
   Retain the existing Claude model tiers through the Claude adapter.
 - Codex: select the available native role only through a supported agent-type
   selector; otherwise inject the bundled role into a supported generic child.
   Use fresh context (`fork_turns="none"` where supported). Omit model and
   reasoning overrides, inheriting the host's effective defaults.
 
-Once a started native worker fails, apply the invoking workflow's existing
+Record the worker used for each lens and attempt as a Coverage line:
+`validator worker · <lens> · native:<registered name>` or
+`validator worker · <lens> · generic-fallback (<reason>)`, where the reason is
+`no selector`, `role not registered` or `explicit generic request`.
+
+A native attempt starts when the controller spawns with the native role
+selected; a rejected native spawn is a failed native attempt, not a reason to
+fall back. Once a started native worker fails, apply the invoking workflow's existing
 retry or stop policy. Never silently replace a failed native attempt with a
 generic child. Every retry is fresh and retains the role, exact artifact paths,
 required tooling, lens assignment, and output instructions. Setup is an explicit

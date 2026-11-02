@@ -16,6 +16,17 @@ project adheres to [Semantic Versioning](https://semver.org/).
   retaining fresh generic fallback otherwise and the existing failure policy.
   Installation closure is checked after source removal for both host layouts.
 
+### Changed
+
+- Validator dispatch prefers a selectable native `spec-design-validator` on both
+  Claude Code and Codex, replacing the standalone-Claude generic-only rule. On
+  Claude Code the plugin role takes precedence over a project-local one. A
+  rejected or failed native attempt follows the retry/stop policy instead of
+  falling back silently, and validation reports record the worker used per lens.
+- In agentic-loop, `--subagent general-purpose` now selects only the
+  implementation specialist roster; required validator and reviewer roles are
+  unaffected.
+
 ## [0.5.0] - 2026-11-02
 
 ### Added

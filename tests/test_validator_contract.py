@@ -174,6 +174,20 @@ class ControllerContractTests(unittest.TestCase):
         adapter = section(dispatch, 'Select the host adapter')
         self.assertNotIn('--subagent', adapter)
 
+    def test_plugin_registration_precedes_project_local(self):
+        adapter = section(read('references/dispatch.md'), 'Select the host adapter')
+        self.assertRegex(adapter, r'prefer the plugin role\s+`spec-to-pr:spec-design-validator`')
+        self.assertRegex(adapter, r'project-local\s+`spec-design-validator`\s+only when no plugin role is selectable')
+
+    def test_native_spawn_rejection_and_worker_record(self):
+        adapter = section(read('references/dispatch.md'), 'Select the host adapter')
+        self.assertRegex(adapter, r'rejected native spawn\s+is a failed native attempt')
+        for token in ('validator worker · <lens> · native:<registered name>',
+                      'validator worker · <lens> · generic-fallback (<reason>)'):
+            with self.subTest(token=token):
+                self.assertIn(token, adapter)
+                self.assertIn(token, self.synthesis)
+
     def test_native_failure_retains_review_failure_policy(self):
         dispatch = read('references/dispatch.md')
         for requirement in ('started native', 'retry or stop', 'silently replace',

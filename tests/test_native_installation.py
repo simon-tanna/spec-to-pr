@@ -97,7 +97,8 @@ class NativeInstallationTests(unittest.TestCase):
                 self.assertEqual((project / '.claude/agents/spec-design-validator.md').exists(), host != 'codex')
                 self.assertEqual((project / '.codex/agents/spec-design-validator.toml').exists(), host != 'claude')
         setup = (ROOT / 'skills/spec-design-validator/setup/SETUP.md').read_text().lower()
-        for topic in ('conflict', 'ownership', 'upgrade', 'move', 'partial', 'reload', 'plugin', 'permissions', 'selector', 'fallback'):
+        for topic in ('conflict', 'ownership', 'upgrading the skill', 'move', 'atomically', 'reload', 'plugin',
+                      'permissions', 'selector', 'fallback', 'precedence'):
             self.assertIn(topic, setup)
         rubric = (ROOT / 'skills/spec-design-validator/SKILL.md').read_text()
         self.assertNotIn('setup-validator.py', rubric)
