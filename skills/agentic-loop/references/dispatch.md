@@ -7,14 +7,6 @@ waits, synthesizes, asks the user questions, and changes workflow state. Workers
 return artifacts/findings and never delegate further. Required validation and
 review always use a fresh child; never replace them with the author's inline review.
 
-## Independent role-only entrypoint
-
-An external caller may establish a reviewer in fresh context that did not author
-the document and load the standalone `spec-design-validator` skill. That reviewer
-applies all lenses inline and returns the requested ledger to the caller. This
-meets the independence intent. Controller and loop invocations still require
-fresh children and stop when they cannot create one; `--single` still dispatches.
-
 ## Resolve resources and roles
 
 Resolve each resource path relative to the directory of the file that names it,
@@ -50,7 +42,9 @@ and parameters below describe behavior, not a fixed API to invoke blindly.
   a `.codex/agents` installation or pretend Claude agent names are native types.
 
 If a fresh child cannot be created, stop at the affected required gate and report
-the missing capability. Do not claim a review occurred.
+the missing capability. Do not claim a review occurred. `--single` still
+dispatches one fresh child; loading the `spec-design-validator` skill inline in
+this session is not a dispatch.
 
 ## Probe, dispatch, collect
 
@@ -63,8 +57,7 @@ capability failure; the invoking skill decides retry or stop.
 Pass the role as above, the task, input paths, success criteria, allowed scope,
 required tools/skills, and output format. Review workers must not edit files;
 this prompt restriction is not a filesystem sandbox. Use the host sandbox when
-available. When inlining a validator role, resolve `{{REPORT_FORMAT}}` by
-including the `report-format.md` beside the validator role.
+available.
 
 Create a fresh worker for each lens and each review attempt, including after
 revisions. Queue assignments when host capacity is exhausted; wait and collect

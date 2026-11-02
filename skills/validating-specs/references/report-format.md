@@ -2,10 +2,10 @@
 
 ## Validation report format
 
-Severities are defined in the validator role's `## Severity` section. Every section appears, in order; write `None.` under an empty one.
+Severities are defined in the validator role's ## Severity section. Every section appears, in order; write `None.` under an empty one.
 
 1. **Executive Summary** — one paragraph: the recommendation and why.
-2. **Coverage** — one line per lens: `lens · instance outcome`; one line per tool: `tool · required|optional · evidence or unavailable`; one line per unavailable optional capability: `capability · unavailable · fallback used`.
+2. **Coverage** — one line per lens: `lens · outcome`; one line per tool: `tool · required|optional · evidence or unavailable`; one line per unavailable optional capability: `capability · unavailable · fallback used`.
 3. **What's Strong** — evidence-backed strengths, each with its citation.
 4. **Blockers** — `B<n> · lens · kind · spec line(s) · evidence · issue · fix · foundational: yes|no`
 5. **Major Concerns** — `M<n> · lens · kind · spec line(s) · evidence · issue · fix · blocks-start: yes|no`. On GO, these are the verdict's conditions.
@@ -15,6 +15,6 @@ Severities are defined in the validator role's `## Severity` section. Every sect
 9. **Final Verdict** — one rationale line, then the report's last line, exactly one of:
    `Verdict: GO` · `Verdict: REVISE` · `Verdict: NO-GO`
 
-`kind` is one of `flaw`, `assumption`, `missing`, `convention`. The report is complete when every merged finding appears exactly once in sections 4–6, every merged Ignored instructions row appears in section 8 (or `None.` when there are none), and its last line is a verdict line.
+`kind` is one of `flaw`, `assumption`, `missing`, `convention`. The report is complete when every finding appears exactly once in sections 4–6, every Ignored instructions row appears in section 8 (or `None.` when there are none), and its last line is a verdict line.
 
-Verdict rules: any foundational Blocker means NO-GO; otherwise any Blocker or Major marked blocks-start means REVISE; otherwise GO, with remaining Majors as conditions.
+Verdict rules: any Blocker with `foundational: yes` means NO-GO; otherwise any Blocker, or any Major with `blocks-start: yes`, means REVISE; otherwise GO, with the remaining Majors as its conditions.

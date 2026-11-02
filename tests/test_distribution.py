@@ -1,4 +1,5 @@
 """Exercise generated distribution drift and isolated skill resources."""
+import json
 import pathlib
 import re
 import shutil
@@ -8,6 +9,19 @@ import tempfile
 import unittest
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
+CANONICAL_VALIDATOR = ROOT / "skills/spec-design-validator/SKILL.md"
+# Files the builder writes from CANONICAL_VALIDATOR rather than copying from disk.
+GENERATED_FROM_CANONICAL = {ROOT / "skills/validating-specs/references/validator-role.md",
+                            ROOT / "skills/validating-specs/references/report-format.md"}
+MARKER = re.compile(r"<!-- Generated from (\S+) by scripts/build-distribution.py\. "
+                    r"Maintainers: edit the canonical file and rebuild\. -->")
+
+
+def run_build(test, command):
+    """Run the builder and fail with its stderr, so a build traceback is visible."""
+    result = subprocess.run(command, capture_output=True, text=True)
+    test.assertEqual(result.returncode, 0, result.stderr or result.stdout)
+    return result
 
 
 class DistributionTests(unittest.TestCase):
@@ -16,8 +30,14 @@ class DistributionTests(unittest.TestCase):
         frontmatter = validator.split("---", 2)[1]
         self.assertNotRegex(frontmatter, r"(?m)^memory:")
         self.assertNotIn("agent memory files excepted", validator)
-        # Whole sentence, so an appended exception ("unchanged, except ...") fails.
-        self.assertRegex(validator, r"Leave agent memory files unchanged\. [A-Z]")
+        # Every copy must be the whole sentence, so an exception appended to any one
+        # copy ("unchanged, except ...") fails even when another copy is intact.
+        for path in (ROOT / "agents/spec-design-validator.md", CANONICAL_VALIDATOR,
+                     ROOT / "skills/validating-specs/prompts/validator-instance.md"):
+            sentences = re.findall(r"Leave agent memory files[^.]*\.", path.read_text())
+            with self.subTest(path=str(path.relative_to(ROOT))):
+                self.assertTrue(sentences)
+                self.assertEqual(set(sentences), {"Leave agent memory files unchanged."})
         self.assertIn("The session that dispatched you owns all further dispatch", validator)
         self.assertIn("Put everything you produce", validator)
         self.assertIn("Leave the working tree, index, and commit history exactly as you found them", validator)
@@ -45,26 +65,39 @@ class DistributionTests(unittest.TestCase):
                 self.assertNotIn(stale, team_lead)
 
     def test_shared_role_paragraphs_are_identical(self):
-        roles = [ROOT / "skills/agentic-loop/references/roles/code-reviewer.md",
-                 ROOT / "skills/agentic-loop/references/roles/team-lead.md"]
-        dispatch_scope = re.compile(r"(?ms)^## Dispatch scope\n\n.*?\n(?=\n)")
+        code_reviewer = ROOT / "skills/agentic-loop/references/roles/code-reviewer.md"
+        team_lead = ROOT / "skills/agentic-loop/references/roles/team-lead.md"
+        instance = ROOT / "skills/validating-specs/prompts/validator-instance.md"
+        prefix = json.loads((ROOT / "adapters/claude/spec-design-validator.json").read_text())["prefix"]
+        # The validator's worker paragraph lives in the native-agent prefix and in the
+        # instance prompt (the standalone role addresses no controller). The one
+        # intended divergence: the validator leaves agent memory unchanged, while
+        # code-reviewer and team-lead exempt it. Strip each side's clause, requiring
+        # it to occur exactly once, then compare all four copies.
+        excepted, unchanged = " (agent memory files excepted)", " Leave agent memory files unchanged."
+        worker = {"code-reviewer": (code_reviewer.read_text(), excepted),
+                  "team-lead": (team_lead.read_text(), excepted),
+                  "adapter prefix": (prefix, unchanged),
+                  "validator-instance": (instance.read_text(), unchanged)}
+        found = []
+        for name, (text, clause) in worker.items():
+            matches = re.findall(r"(?m)^You are a worker\..*$", text)
+            with self.subTest(copy=name):
+                self.assertEqual(len(matches), 1)
+                self.assertEqual(matches[0].count(clause), 1)
+            found.append(matches[0].replace(clause, ""))
+        self.assertEqual(len(set(found)), 1, "worker paragraphs diverge")
+        for name in ("code-reviewer", "team-lead", "adapter prefix"):
+            with self.subTest(heading=name):
+                self.assertRegex(worker[name][0], r"(?m)^## Dispatch scope\n\nYou are a worker\.")
         precedence = re.compile(r"(?m)^When the task prompt specifies an output format.*$")
-        # The one intended divergence: the validator leaves agent memory unchanged,
-        # while code-reviewer and team-lead exempt it. Strip each side's clause,
-        # requiring it to occur exactly once, then compare all three copies.
-        memory_clause = {roles[0]: " (agent memory files excepted)",
-                         roles[1]: " (agent memory files excepted)"}
-        for pattern in (dispatch_scope, precedence):
-            found = []
-            for role in roles:
-                matches = pattern.findall(role.read_text())
-                with self.subTest(role=role.name, pattern=pattern.pattern):
-                    self.assertEqual(len(matches), 1)
-                    if pattern is dispatch_scope:
-                        self.assertEqual(matches[0].count(memory_clause[role]), 1)
-                        matches = [matches[0].replace(memory_clause[role], "")]
-                found.extend(matches)
-            self.assertEqual(len(set(found)), 1, pattern.pattern)
+        found = []
+        for role in (code_reviewer, team_lead, ROOT / "skills/validating-specs/references/validator-role.md"):
+            matches = precedence.findall(role.read_text())
+            with self.subTest(role=role.name, pattern="precedence"):
+                self.assertEqual(len(matches), 1)
+            found.extend(matches)
+        self.assertEqual(len(set(found)), 1, precedence.pattern)
 
     def test_load_bearing_categories_are_identical(self):
         copies = [ROOT / "skills/agentic-loop/prompts/decision-rules.md",
@@ -91,10 +124,26 @@ class DistributionTests(unittest.TestCase):
             marker = (f"<!-- Generated from {source.relative_to(ROOT)} by scripts/build-distribution.py. "
                       "Maintainers: edit the canonical file and rebuild. -->\n\n")
             with self.subTest(copy=str(copy.relative_to(ROOT))):
-                self.assertEqual(copy.read_text(), marker + source.read_text())
+                # A source that is itself generated is copied as-is, keeping its canonical marker.
+                expected = source.read_text() if source in GENERATED_FROM_CANONICAL else marker + source.read_text()
+                self.assertEqual(copy.read_text(), expected)
         workflow = (bundle / "workflow.md").read_text().split("\n")
         self.assertTrue(workflow[0].startswith("# "))
         self.assertTrue(workflow[2].startswith("<!-- Generated from skills/validating-specs/SKILL.md "))
+
+    def test_every_marker_names_a_hand_edited_file(self):
+        generated = set(GENERATED_FROM_CANONICAL)
+        for path in [*ROOT.glob("skills/**/*.md"), *ROOT.glob("agents/*.md")]:
+            names = MARKER.findall(path.read_text())
+            if names:
+                generated.add(path)
+            with self.subTest(path=str(path.relative_to(ROOT))):
+                self.assertLessEqual(len(names), 1, "file carries more than one generated marker")
+        for path in [*ROOT.glob("skills/**/*.md"), *ROOT.glob("agents/*.md")]:
+            for name in MARKER.findall(path.read_text()):
+                with self.subTest(path=str(path.relative_to(ROOT)), source=name):
+                    self.assertTrue((ROOT / name).is_file())
+                    self.assertNotIn(ROOT / name, generated, "marker names a generated file")
 
     def test_committed_distribution_is_current(self):
         subprocess.run([sys.executable, str(ROOT / "scripts/build-distribution.py"), "--check"], check=True)
@@ -108,8 +157,8 @@ class DistributionTests(unittest.TestCase):
             target.write_text("stale\n")
             command = [sys.executable, str(root / "scripts/build-distribution.py")]
             self.assertNotEqual(subprocess.run(command + ["--check"], capture_output=True).returncode, 0)
-            subprocess.run(command, check=True, capture_output=True)
-            subprocess.run(command + ["--check"], check=True, capture_output=True)
+            run_build(self, command)
+            run_build(self, command + ["--check"])
             self.assertEqual(target.read_bytes(), (ROOT / "agents/spec-design-validator.md").read_bytes())
 
     def test_independent_skill_resources(self):

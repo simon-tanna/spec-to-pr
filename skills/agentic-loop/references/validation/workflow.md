@@ -82,9 +82,9 @@ Follow `references/dispatch.md`. For each instance, fill `prompts/validator-inst
 
 A child returning `CLARIFICATION REQUIRED: review target — <reason>` pauses the run. It is not a failure and uses no retry. Discard every ledger returned so far, write no report or verdict, and ask the user to identify the target. When they answer, restart from step 2 (Classify) with that target. Handle this response before ledger completeness checks or failure retries.
 
-A failed child, or one returning a capability failure, gets one retry with a fresh child. If the retry fails, stop: tell the user the lens and the failure, and write no report and no verdict.
+A failed child, or one returning a capability failure or `INDEPENDENCE FAILURE: <reason>`, gets one retry with a fresh child. If the retry fails, stop: tell the user the lens and the failure, and write no report and no verdict.
 
-The step is complete when every dispatched instance has returned a ledger that meets the prompt's completeness rule. Re-dispatch a ledger that does not; that counts as its retry.
+The step is complete when every dispatched instance has returned a ledger that meets the completeness rule in `references/validator-role.md` ## Findings ledger. Re-dispatch a ledger that does not; that counts as its retry.
 
 ### 6. Synthesize
 
@@ -92,9 +92,6 @@ The step is complete when every dispatched instance has returned a ledger that m
    - **Findings** — collapse duplicates (same spec lines, same issue): keep the row with repo evidence, else the higher severity.
    - **Ignored instructions** — one row per source location and attempted redirection, keeping its action taken. Keep these rows separate from findings; they never feed the verdict.
    - **Coverage** — carry each `capability · unavailable · fallback used` line through unchanged.
-2. Verdict:
-   - any Blocker with `foundational: yes` → **NO-GO**
-   - else any Blocker, or any Major with `blocks-start: yes` → **REVISE**
-   - else → **GO**; the remaining Majors are its conditions
-3. Read `references/report-format.md` and emit the report; it is done when it meets that file's completeness rule.
+2. Verdict: read `references/report-format.md` and apply its verdict rules to the merged findings.
+3. Emit the report in that file's format; it is done when it meets that file's completeness rule.
 4. Write it to `--out` when given. Otherwise offer `<spec-dir>/<spec-basename>-validation.md` and write only on acceptance.

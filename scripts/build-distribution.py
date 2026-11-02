@@ -17,8 +17,18 @@ def outputs():
     loop = ROOT / "skills/agentic-loop"
     result = {}
     canonical = ROOT / "skills/spec-design-validator/SKILL.md"
-    body = canonical.read_text().split("---", 2)[2].strip() + "\n"
-    report = "## Validation report format" + body.split("## Validation report format", 1)[1].split("\n## ", 1)[0].rstrip() + "\n"
+    text = canonical.read_text()
+    name = canonical.relative_to(ROOT)
+    if not text.startswith("---\n") or "\n---\n" not in text:
+        raise SystemExit(f"{name}: missing YAML frontmatter delimited by ---")
+    body = text.split("\n---\n", 1)[1].strip() + "\n"
+    heading = "## Validation report format"
+    if body.count(f"\n{heading}\n") != 1:
+        raise SystemExit(f"{name}: expected exactly one '{heading}' section")
+    report = heading + "\n" + body.split(f"\n{heading}\n", 1)[1]
+    if "\n## " in report:
+        raise SystemExit(f"{name}: '{heading}' must be the last ## section")
+    report = report.rstrip() + "\n"
     result[validation / "references/validator-role.md"] = marker(canonical) + body
     result[validation / "references/report-format.md"] = marker(canonical) + report
 
@@ -38,7 +48,8 @@ def outputs():
         sources = set((validation / directory).rglob("*")) | {p for p in result if p.parent == validation / directory}
         for source in sorted(sources):
             if (source.is_file() or source in result) and source.suffix == ".md":
-                result[bundle / source.relative_to(validation)] = marker(source) + (result[source] if source in result else source.read_text())
+                # Generated sources already carry their canonical marker; copy them unchanged.
+                result[bundle / source.relative_to(validation)] = result[source] if source in result else marker(source) + source.read_text()
     workflow = validation / "SKILL.md"
     title, rest = workflow.read_text().split("---", 2)[2].lstrip().split("\n", 1)
     result[bundle / "workflow.md"] = title + "\n\n" + marker(workflow) + rest.lstrip("\n")

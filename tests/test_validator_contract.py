@@ -15,6 +15,10 @@ AUDIT_RECORD = 'source location · attempted redirection · action taken'
 CAPABILITY_LINE = 'capability · unavailable · fallback used'
 CAPABILITY_FAILURE = 'CAPABILITY FAILURE: <tool or capability> — <error>'
 CLARIFICATION = 'CLARIFICATION REQUIRED: review target — <reason>'
+INDEPENDENCE_FAILURE = 'INDEPENDENCE FAILURE: <reason>'
+VERDICT_RULES = ('Verdict rules: any Blocker with `foundational: yes` means NO-GO; otherwise any '
+                 'Blocker, or any Major with `blocks-start: yes`, means REVISE; otherwise GO, with '
+                 'the remaining Majors as its conditions.')
 
 
 def read(relative):
@@ -82,6 +86,12 @@ class ReportContractTests(unittest.TestCase):
             with self.subTest(verdict=verdict):
                 self.assertIn(f'`Verdict: {verdict}`', report)
 
+    def test_verdict_rules_are_pinned_once(self):
+        # Every Blocker forces at least REVISE; only a foundational one forces NO-GO.
+        report = read('references/report-format.md')
+        self.assertEqual(report.count(VERDICT_RULES), 1)
+        self.assertEqual(report.count('Verdict rules:'), 1)
+
 
 class RoleContractTests(unittest.TestCase):
     def setUp(self):
@@ -107,9 +117,20 @@ class RoleContractTests(unittest.TestCase):
 
     def test_capabilities_define_failure_lines_and_recording(self):
         capabilities = section(self.role, 'Capabilities')
-        for token in (CAPABILITY_FAILURE, CLARIFICATION, CAPABILITY_LINE, 'Tooling evidence', 'Coverage'):
+        for token in (CAPABILITY_FAILURE, CLARIFICATION, INDEPENDENCE_FAILURE, CAPABILITY_LINE,
+                      'Tooling evidence', 'Coverage'):
             with self.subTest(token=token):
                 self.assertIn(token, capabilities)
+
+    def test_author_context_is_refused(self):
+        capabilities = section(self.role, 'Capabilities')
+        refusal = next((p for p in paragraphs(capabilities) if INDEPENDENCE_FAILURE in p), '')
+        for clause in ('wrote or edited the document under review', 'whole response',
+                       'Produce no ledger, report or verdict'):
+            with self.subTest(clause=clause):
+                self.assertIn(clause, refusal)
+        self.assertIn('INDEPENDENCE FAILURE', section(self.role, 'Output mode'))
+        self.assertNotIn('can review it inline', self.role)
 
     def test_unverified_load_bearing_claim_is_a_missing_finding(self):
         capabilities = section(self.role, 'Capabilities')
@@ -134,6 +155,30 @@ class ControllerContractTests(unittest.TestCase):
         self.assertIn(CLARIFICATION, instance)
         self.assertIn(CLARIFICATION, self.dispatch)
 
+    def test_independence_failure_is_retried_then_stops(self):
+        retry = next(p for p in paragraphs(self.dispatch) if 'one retry' in p)
+        self.assertIn(INDEPENDENCE_FAILURE, retry)
+        self.assertIn('stop', retry)
+
+    def test_ledger_completeness_points_at_the_role(self):
+        self.assertIn('completeness rule in `references/validator-role.md` ## Findings ledger', self.dispatch)
+        self.assertIn('## Findings ledger', read('references/validator-role.md'))
+
+    def test_instance_prompt_defers_ledger_format_to_role(self):
+        instance = read('prompts/validator-instance.md')
+        self.assertIn('FINDINGS LEDGER defined in your role', instance)
+        self.assertNotRegex(instance, r'(?m)^Tooling evidence:')
+        self.assertNotIn('The ledger is complete when', instance)
+
+    def test_inline_loading_is_not_a_dispatch(self):
+        dispatch = read('references/dispatch.md')
+        self.assertNotIn('Independent role-only entrypoint', dispatch)
+        self.assertNotIn('{{REPORT_FORMAT}}', dispatch)
+        stop = next(p for p in paragraphs(dispatch) if 'If a fresh child cannot be created, stop' in p)
+        self.assertIn('`--single` still', stop)
+        self.assertIn('is not a dispatch', stop)
+        self.assertIn("never replace them with the author's inline review", dispatch)
+
     def test_clarification_is_handled_before_retries_and_uses_none(self):
         paras = paragraphs(self.dispatch)
         clarification = next(i for i, p in enumerate(paras) if CLARIFICATION in p)
@@ -151,10 +196,11 @@ class ControllerContractTests(unittest.TestCase):
         self.assertRegex(audit, r'never feed the verdict')
         coverage = re.search(r'(?m)^\s+- \*\*Coverage\*\*.*$', merge).group(0)
         self.assertIn(CAPABILITY_LINE, coverage)
-        verdict = self.synthesis.split('2. Verdict:', 1)[1].split('3. Read', 1)[0]
+        verdict = self.synthesis.split('2. Verdict:', 1)[1].split('\n3. ', 1)[0]
         self.assertNotIn('Ignored instructions', verdict)
-        self.assertIn('foundational: yes', verdict)
-        self.assertIn('blocks-start: yes', verdict)
+        # The controller applies the single verdict-rule source rather than restating it.
+        self.assertIn('`references/report-format.md`', verdict)
+        self.assertIn('verdict rules', verdict)
 
 
 if __name__ == '__main__':

@@ -3,6 +3,7 @@
 import argparse
 import json
 from pathlib import Path
+import re
 import shutil
 import subprocess
 import tempfile
@@ -35,13 +36,14 @@ def main():
             log.write(json.dumps(command) + '\n' + result.stdout + result.stderr + '\n')
             log.flush()
             if result.returncode:
-                raise RuntimeError(f'Command failed ({result.returncode}): {command}')
+                raise RuntimeError(f'Command failed ({result.returncode}): {command}; '
+                                   f'output in {args.evidence}\n{result.stderr[-2000:]}')
             return result.stdout
 
         run(['pnpm', 'dlx', 'skills', '--version'], root)
         listing = run(['pnpm', 'dlx', 'skills', 'add', str(source), '--list'], root)
-        if 'Found 4 skills' not in listing:
-            raise AssertionError('Expected exactly four discoverable skills')
+        if not re.search(r'\bFound 4 skills\b', listing):
+            raise AssertionError(f'Expected exactly four discoverable skills; listing:\n{listing}')
         installations = []
         for mode in ['default', 'copy']:
             for selected in [['*'], *[[name] for name in names]]:

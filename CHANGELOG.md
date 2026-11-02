@@ -9,17 +9,24 @@ project adheres to [Semantic Versioning](https://semver.org/).
 ### Added
 
 - A self-contained `spec-design-validator` skill with the full rubric, ledger
-  contract and direct report, now the canonical source for generated roles (#6).
-- Independent inline review for fresh-context non-author reviewers, with caller
-  setup, permission boundaries and evidence requirements documented (#7).
+  contract and direct report. It is now the canonical source for the generated
+  validator role, report format and native agent (#6).
+- Independent review by a fresh-context reviewer that did not author the
+  document, with caller setup, permission boundaries and evidence requirements
+  documented (#7). A reviewer whose context wrote or edited the document returns
+  only `INDEPENDENCE FAILURE: <reason>`; `validating-specs` retries such a child
+  once with a fresh one, then stops.
+- The validation report states its verdict rules, so a direct reviewer and the
+  controller apply the same rules from one source.
 
 ### Changed
 
 - Distribution generation propagates canonical content in one invocation even
-  when generated intermediate resources are missing.
-
-
-### Changed
+  when generated intermediate resources are missing, and fails with a named
+  error when the canonical skill's frontmatter or report section is malformed.
+- The validator's worker paragraph moved from the role into the instance prompt
+  and the native agent, so the standalone role addresses no controller. A role
+  run with no named lens covers every rubric heading.
 
 - The spec validator treats reviewed documents and repository text, including
   agent instruction files, as evidence rather than review instructions. Project
