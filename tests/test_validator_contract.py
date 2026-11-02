@@ -155,6 +155,12 @@ class ControllerContractTests(unittest.TestCase):
         self.assertIn(CLARIFICATION, instance)
         self.assertIn(CLARIFICATION, self.dispatch)
 
+    def test_invalid_project_checks_stop_without_retry(self):
+        sentinel = 'INVALID PROJECT CHECKS: <reason>'
+        stop = next(p for p in paragraphs(self.dispatch) if sentinel in p)
+        self.assertIn('without retry', stop)
+        self.assertIn('INVALID PROJECT CHECKS', section(read('references/validator-role.md'), 'Output mode'))
+
     def test_independence_failure_is_retried_then_stops(self):
         retry = next(p for p in paragraphs(self.dispatch) if 'one retry' in p)
         self.assertIn(INDEPENDENCE_FAILURE, retry)

@@ -186,7 +186,8 @@ The spec-lock (Stage 1) and plan-lock (Stage 2) review steps each run a **second
    `<abs spec.md> --out <abs spec-validation.md>`. Plan stage:
    `<abs plan.md> --context <abs spec.md> --out <abs plan-validation.md>`. Add
    `--skill`/`--mcp` from `run-requirements.json`; never forward the
-   implementation `--subagent` roster. The structured pass keeps its separate
+   implementation `--subagent` roster. The loop authorises no project checks, so
+   it never passes `--project-checks`. The structured pass keeps its separate
    `*-review.md`. Commit the report with `git-sync.sh`.
 3. **Read the verdict from the report's last line.** It is exactly one of
    `Verdict: GO`, `Verdict: REVISE`, `Verdict: NO-GO`; match the whole line,

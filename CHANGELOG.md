@@ -8,10 +8,12 @@ project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Added
 
-- Caller-authorised project check files and task-prompt checks, reserved `project.*`
-  IDs, lens routing and complete coverage using the shared ledger contract (#11).
-  Check content supplies criteria and cannot change review instructions or tools.
-
+- Caller-authorised project checks (#11): repeatable `--project-checks` files,
+  a task-prompt `project_checks` field, or an explicit caller instruction naming
+  a checks file. Reserved `project.*` IDs, lens routing and complete coverage
+  use the shared ledger contract. Invalid checks stop the run with
+  `INVALID PROJECT CHECKS: <reason>` and no retry. Check content supplies
+  criteria and cannot change review instructions, verdict or tools.
 - Versioned findings ledger JSON Schema with stable IDs on findings, strengths
   and checked rows; prose remains the default (#8). Initial rubric IDs
   (rubric_version 1):
@@ -55,6 +57,10 @@ project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Changed
 
+- The ledger schema's `$defs/check_id` is now a `oneOf` of the built-in ID enum
+  and the `project.*` pattern, so readers of `$defs/check_id/enum` must read
+  `oneOf[0].enum` (#11). Synthesis collapses duplicate findings only within one
+  check ID; a defect that violates several checks keeps a row per check ID.
 - Validation report rows (What's Strong, Blockers, Major Concerns, Minor Issues
   & Nits) and rubric bullets now carry their stable `check_id` (#8). The ledger
   schema ships beside the role in the `spec-design-validator`, `validating-specs`
