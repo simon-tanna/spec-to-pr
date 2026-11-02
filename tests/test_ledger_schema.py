@@ -28,6 +28,7 @@ class StableLedger(unittest.TestCase):
                          'skills/agentic-loop/references/validation/references/ledger.schema.json'):
             with self.subTest(relative=relative):
                 self.assertEqual(SCHEMA.read_bytes(), (ROOT / relative).read_bytes())
+                json.loads((ROOT / relative).read_text())  # copies carry no generated marker
 
     def test_schema_covers_rows_and_severity_flags(self):
         self.assertTrue(SCHEMA.is_file(), 'canonical ledger schema missing')

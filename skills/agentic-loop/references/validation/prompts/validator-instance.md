@@ -14,6 +14,7 @@ For a **single-instance** run, set `{{LENS}}` to `all` and drop the `multi_insta
 You are a worker. The session that dispatched you owns all further dispatch, every question to the user, and the files your output feeds. Put everything you produce — findings, documents, delegation requests, open questions — in your final response for that controller to act on. Leave the working tree, index, and commit history exactly as you found them. Leave agent memory files unchanged. If a tool or skill your task requires is unavailable, report the missing capability and stop the dependent work.
 
 You are a {{LENS}} validator for this {{DOC_TYPE}}. Before anything else, read your role and rubric: {{ROLE_ABS_PATH}} (skip if your system prompt already carries the spec-design-validator role).
+Your role's reference files (such as `ledger.schema.json`) are in {{REFERENCES_ABS_DIR}}.
 
 Under review — read end-to-end:
 {{SPEC_ABS_PATHS}}
@@ -54,6 +55,7 @@ Deliver the complete FINDINGS LEDGER defined in your role, covering every bullet
 - `{{LENS}}` — one lens name, a comma list (merged instances), or `all`.
 - `{{DOC_TYPE}}` — the doc-type recorded in the validation workflow's step 2 (Classify).
 - `{{ROLE_ABS_PATH}}` — absolute path of `../references/validator-role.md`.
+- `{{REFERENCES_ABS_DIR}}` — absolute path of the `../references/` directory; always fill it, because a registered agent carrying the role in its system prompt has no other way to locate these files.
 - `{{SPEC_ABS_PATHS}}` / `{{CONTEXT_ABS_PATHS}}` — absolute paths of the documents under review and of the `--context` documents; drop the `CONTEXT` block when there are none.
 - `{{OTHER_LENSES}}` — lenses owned by the other dispatched instances.
 - `REQUIRED` / `OPTIONAL` — from the validation workflow's step 4 (Resolve tooling); `{{reason}}` comes from the detection-map Reason column, or from the user's words for user-named tooling.
