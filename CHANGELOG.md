@@ -6,6 +6,16 @@ project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- Explicit project-local native validator setup for standalone
+  `spec-design-validator`, `validating-specs` and `agentic-loop` installations:
+  `python3 <installed-skill>/scripts/setup-validator.py --host claude|codex|both [--project-root <directory>]`.
+  Setup preserves local edits and tracks managed upgrades. Controllers prefer
+  registered native validators when the exposed spawn schema supports selection,
+  retaining fresh generic fallback otherwise and the existing failure policy.
+  Installation closure is checked after source removal for both host layouts.
+
 ## [0.5.0] - 2026-11-02
 
 ### Added

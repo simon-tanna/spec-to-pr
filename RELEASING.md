@@ -39,7 +39,13 @@ marketplace with `source: "./"`.
    list exactly four public skills; install each alone and the whole suite for
    Codex and Claude in disposable directories, in default and `--copy` modes.
    Verify bundled resources after making the source checkout unavailable. Never
-   use global installation for these release tests.
+   use global installation for these release tests. Run each installed validator
+   setup command after source removal for all three relevant single-skill installs
+   and the suite, both layouts and both modes; verify host syntax and reference closure.
+   Separately record native discovery plus a successful named spawn and correlated
+   child read/result for each claimed host. A generic spawn is fallback evidence,
+   not native acceptance. Missing selectors or authentication remain INCOMPLETE;
+   installation success alone makes no runtime or finding-quality claim.
 6. Run packaging/generation tests, initialization integration tests, shared-gate
    tests, and existing hook/nudge regressions. Record test results separately from
    live-harness evidence. Require recorded fresh-child delegation, interactive

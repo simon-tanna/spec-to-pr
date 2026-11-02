@@ -14,8 +14,9 @@ not the working repository or a plugin root. Give each child its role either as
 a registered native role, or as the role file's absolute path with an instruction
 to read it first; inline the role's content only when the child cannot read
 files. Include the filled task template, exact artifact paths, and the working
-repository path. Children inherit none of the skill's instructions,
-conversation, MCP connections, or parent permissions.
+repository path. Supply skill instructions and tool requirements explicitly. Use
+fresh conversation context; inspect the child's actual permissions and tool
+availability rather than assuming the parent's capabilities transfer.
 
 `spec-design-validator` and `spec-to-pr:spec-design-validator` mean the bundled
 validator role (the registered agent or `references/validator-role.md`), never
@@ -32,15 +33,28 @@ silently substituting it.
 Inspect the currently exposed spawn, wait, and result tool schemas. Tool names
 and parameters below describe behavior, not a fixed API to invoke blindly.
 
-- Claude Code plugin: use a registered native role when available. Otherwise
-  use the available `general-purpose` Agent worker and inject the bundled role.
-  Claude model tiers apply only through the Claude adapter.
-- Standalone Claude skills: use the generic Agent worker with injected role;
-  installing skills does not register native plugin agents or hooks.
-- Codex: use its available child-agent tool and supported built-in worker role,
-  with a fresh context (`fork_turns="none"` where supported). Omit model and
-  reasoning overrides, inheriting the host's effective defaults. Do not require
-  a `.codex/agents` installation or pretend Claude agent names are native types.
+For the bundled validator on Claude Code or Codex, prefer the registered native
+`spec-design-validator` when this session's exposed selector accepts that role.
+This applies to plugin registrations and explicit project-local registrations.
+File presence in `.claude/agents` or `.codex/agents` is insufficient: verify both
+registration availability and a selectable agent-type parameter in the exposed
+spawn schema. A Codex spawn schema without an agent-type selector uses a fresh
+generic child with the bundled role, even when a definition exists on disk.
+An explicit `--subagent general-purpose` selection stays generic.
+
+- Claude Code: select the available native role through Agent's supported role
+  selector; otherwise inject the bundled role into a fresh generic child.
+  Retain the existing Claude model tiers through the Claude adapter.
+- Codex: select the available native role only through a supported agent-type
+  selector; otherwise inject the bundled role into a supported generic child.
+  Use fresh context (`fork_turns="none"` where supported). Omit model and
+  reasoning overrides, inheriting the host's effective defaults.
+
+Once a started native worker fails, apply the invoking workflow's existing
+retry or stop policy. Never silently replace a failed native attempt with a
+generic child. Every retry is fresh and retains the role, exact artifact paths,
+required tooling, lens assignment, and output instructions. Setup is an explicit
+user operation; dispatch never installs or repairs native registrations.
 
 If a fresh child cannot be created, stop at the affected required gate and report
 the missing capability. Do not claim a review occurred. `--single` still

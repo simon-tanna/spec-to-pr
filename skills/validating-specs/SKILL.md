@@ -14,6 +14,12 @@ You are the **controller**: you classify the artifact, dispatch fresh `spec-desi
 
 Resolve every `references/` and `prompts/` path in this file relative to the directory containing this file, and hand children absolute paths. Run this workflow in the main session; children return ledgers and never delegate.
 
+Optional native registration is an explicit user setup step, separate from this
+workflow. From the installed top-level `validating-specs` or `agentic-loop` skill
+directory, use its `setup/SETUP.md` and `scripts/setup-validator.py`; these paths
+are relative to that installed skill root, including when this workflow is bundled.
+Continue with the fresh generic fallback when no selectable native role is exposed.
+
 ## Workflow
 
 ### 1. Parse invocation

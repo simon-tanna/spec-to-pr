@@ -47,8 +47,12 @@ agent memory unchanged. The caller will produce any report and verdict.
 ### Roles and optional native agents
 
 Each skill bundles the role instructions it needs. Claude plugin installation also
-registers native agents; skills-only installation supplies the same instructions
-to generic fresh children. Controller and loop validation and review stop if the harness
+registers native agents. Skills-only installations can explicitly register a
+project-local validator using the self-contained
+[validator setup guide](skills/spec-design-validator/setup/SETUP.md), also included
+with `validating-specs` and `agentic-loop`. Controllers prefer a registered native
+validator only when the current spawn schema exposes a selector accepting it;
+otherwise they supply the bundled instructions to fresh generic children. Controller and loop validation and review stop if the harness
 cannot create an independent child; [independent review](#independent-review) uses the
 `spec-design-validator` skill.
 
