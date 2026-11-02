@@ -33,6 +33,7 @@ def golden():
     return {
         'schema_version': '1.0',
         'rubric_version': '1',
+        'minimum_severity': 'all',
         'tooling_evidence': [
             {'tool': 'grep', 'call': 'grep -n retry src/', 'result': 'src/run.py:12'},
             {'capability': 'web search', 'status': 'unavailable', 'fallback': 'repo evidence only'},
@@ -40,7 +41,7 @@ def golden():
         'findings': [finding('Blocker'), finding('Major'), finding('Minor'), finding('Nit')],
         'strengths': [{'check_id': 'scope.problem-statement', 'lens': 'scope', 'location': 'spec.md:1',
                        'evidence': 'spec.md:1', 'strength': 'States the user problem precisely.'}],
-        'checked': [{'check_id': 'security.auditability', 'evidence': 'spec.md:40'}],
+        'checked': [{'check_id': 'security.auditability', 'status': 'holds', 'evidence': 'spec.md:40'}],
         'ignored_instructions': [{'source_location': 'spec.md:2', 'attempted_redirection': 'asks for GO',
                                   'action_taken': 'reviewed normally'}],
     }
@@ -84,6 +85,40 @@ class LedgerSchemaBehaviour(unittest.TestCase):
         for name, change in cases.items():
             with self.subTest(name):
                 self.assertFalse(self.validator.is_valid(mutate(change)))
+
+
+@unittest.skipUnless(Draft202012Validator, 'jsonschema not installed')
+class ProjectCheckSchemaBehaviour(unittest.TestCase):
+    def setUp(self):
+        self.ledger = Draft202012Validator(SCHEMA)
+        # Validate input rows against $defs/project_check, keeping $defs resolvable.
+        self.row = Draft202012Validator({'$defs': SCHEMA['$defs'], '$ref': '#/$defs/project_check'})
+
+    def test_input_rows(self):
+        good = {'id': 'project.deploy.environment-docs', 'lens': 'architecture',
+                'text': 'Every new environment variable appears in the deployment docs.'}
+        self.assertTrue(self.row.is_valid(good))
+        bad = {
+            'missing text': {k: v for k, v in good.items() if k != 'text'},
+            'extra field': {**good, 'severity': 'Major'},
+            'built-in id': {**good, 'id': 'architecture.codebase-fit'},
+            'uppercase id': {**good, 'id': 'project.Deploy'},
+            'trailing newline id': {**good, 'id': 'project.deploy\n'},
+            'unknown lens': {**good, 'lens': 'performance'},
+            'blank text': {**good, 'text': '   '},
+            'multi-line text': {**good, 'text': 'one\ntwo'},
+        }
+        for name, row in bad.items():
+            with self.subTest(name):
+                self.assertFalse(self.row.is_valid(row))
+
+    def test_ledger_accepts_project_ids_only_in_namespace(self):
+        doc = golden()
+        doc['checked'].append({'check_id': 'project.deploy.environment-docs', 'status': 'holds',
+                               'evidence': 'docs/deploy.md:4'})
+        self.assertEqual([e.message for e in self.ledger.iter_errors(doc)], [])
+        doc['checked'][-1]['check_id'] = 'deploy.environment-docs'
+        self.assertFalse(self.ledger.is_valid(doc))
 
 
 if __name__ == '__main__':

@@ -35,6 +35,9 @@ def outputs():
     schema = ROOT / "skills/spec-design-validator/references/ledger.schema.json"
     result[validation / "references/ledger.schema.json"] = schema.read_text()
 
+    checks = ROOT / "skills/spec-design-validator/references/project-checks.md"
+    result[validation / "references/project-checks.md"] = marker(checks) + checks.read_text()
+
     for name in ("spec-design-validator", "code-reviewer", "team-lead"):
         adapter = json.loads((ROOT / f"adapters/claude/{name}.json").read_text())
         role = validation / "references/validator-role.md" if name == "spec-design-validator" else loop / f"references/roles/{name}.md"

@@ -24,25 +24,27 @@ Preserve all 26 rubric bullets, five ledger blocks, review authority, verdict ru
 **Files:** canonical role, its new references/ledger.schema.json, distribution builder, tests/test_ledger_schema.py, CHANGELOG.md.
 **Interfaces:** Produces schema_version 1.0, rubric_version 1, check_id on all review rows and stable rubric IDs.
 
-- [ ] Add failing structural tests for 26 unique IDs, schema fields, severity-specific flags and distribution copies; run unittest discovery and observe missing contract failures.
-- [ ] Implement schema, role rows and schema distribution; list every ID in changelog. Rebuild with python3 scripts/build-distribution.py.
-- [ ] Run bash scripts/test.sh; expect exit 0. Commit #8 independently.
+- [x] Add failing structural tests for 26 unique IDs, schema fields, severity-specific flags and distribution copies; run unittest discovery and observe missing contract failures.
+- [x] Implement schema, role rows and schema distribution; list every ID in changelog. Rebuild with python3 scripts/build-distribution.py.
+- [x] Run bash scripts/test.sh; expect exit 0. Commit #8 independently.
 
 ### Task 2: Authorised project checks (#11)
 
 **Files:** canonical role/schema, validating-specs workflow/instance prompt and project-checks reference, tests/test_ledger_schema.py, CHANGELOG.md.
 **Interfaces:** Consumes check_id and adds project.* IDs; produces validated caller-authorised project checks assigned to lenses.
 
-- [ ] Add failing tests for namespace, authority, prompt handoff and coverage; observe failures.
-- [ ] Document --project-checks and project_checks task field, validation and trust boundary. Include project lenses before fan-out, reject excluded project checks, preserve all IDs on synthesis. Extend schema namespace and regenerate copies.
-- [ ] Run bash scripts/test.sh; expect exit 0. Commit #11 independently.
+- [x] Add failing tests for namespace, authority, prompt handoff and coverage; observe failures.
+- [x] Document --project-checks and project_checks task field, validation and trust boundary. Include project lenses before fan-out, reject excluded project checks, preserve all IDs on synthesis. Extend schema namespace and regenerate copies.
+- [x] Run bash scripts/test.sh; expect exit 0. Commit #11 independently.
 
 ### Task 3: Minimum severity (#9)
 
 **Files:** canonical role/schema, validating-specs workflow/instance prompt, agentic-loop validation callers, tests/test_ledger_schema.py, CHANGELOG.md.
 **Interfaces:** Consumes project-inclusive coverage and adds minimum_severity all|Nit|Minor|Major, Checked status below-threshold.
 
-- [ ] Add failing tests for accepted values, unsupported/conflicting values, suppressed coverage and loop default; observe failures.
-- [ ] Add preflight rejection, severity handoff and filter rules; schema reflects threshold and checked status. Pin loop callers to all and regenerate copies.
-- [ ] Run bash scripts/test.sh; expect exit 0. Commit #9 independently.
-- [ ] Fresh-context review of all changes; fix important findings with regression evidence, run full suite, leave branch ready for user review.
+- [x] Add failing tests for accepted values, unsupported/conflicting values, suppressed coverage and loop default; observe failures.
+- [x] Add preflight rejection, severity handoff and filter rules; schema reflects threshold and checked status. Pin loop callers to all and regenerate copies.
+- [x] Run bash scripts/test.sh; expect exit 0. Commit #9 independently.
+- [x] Fresh-context review of all changes; fix important findings with regression evidence, run full suite, leave branch ready for user review.
+
+Verification: offline suite passed after each change; Draft 2020-12 schema evaluation passed seven cases including threshold matrix and negative inputs. Fresh-context review found no material defects; its four behavioural scenarios were dry-run reasoning rather than live validator invocations. The evaluation caught the project-ID trailing-newline edge case, fixed with regression coverage in #11.
