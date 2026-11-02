@@ -48,9 +48,9 @@
       "deps": [
         "T1"
       ],
-      "status": "pending",
+      "status": "in-progress",
       "commit_sha": null,
-      "task_start_sha": null,
+      "task_start_sha": "f4a8d65ae32f085517b12653cfe5b58995e17aa6",
       "spec_review_sha": null,
       "quality_review_sha": null,
       "blocker_count": 0
