@@ -76,9 +76,9 @@
         "T1",
         "T2"
       ],
-      "status": "pending",
+      "status": "in-progress",
       "commit_sha": null,
-      "task_start_sha": null,
+      "task_start_sha": "a0f5faca5cc8abd09e048e32e91111d9cc0469c0",
       "spec_review_sha": null,
       "quality_review_sha": null,
       "blocker_count": 0
