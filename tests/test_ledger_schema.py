@@ -164,37 +164,84 @@ class ProjectChecks(unittest.TestCase):
 
 
 class MinimumSeverity(unittest.TestCase):
+    INVALID_LINE = 'INVALID MINIMUM SEVERITY: <value or conflict>; expected all|Nit|Minor|Major'
+
+    @staticmethod
+    def threshold_rule(schema, minimum):
+        """The top-level allOf rule whose `if` selects this minimum_severity value."""
+        rules = [r for r in schema['allOf']
+                 if minimum in (r['if']['properties']['minimum_severity'].get('enum')
+                                or [r['if']['properties']['minimum_severity'].get('const')])]
+        assert len(rules) == 1, f'expected one rule for {minimum}'
+        return rules[0]
+
     def test_schema_pins_supported_thresholds_and_suppressed_rows(self):
         schema = json.loads(SCHEMA.read_text())
         self.assertIn('minimum_severity', schema['required'])
-        self.assertEqual(schema['properties']['minimum_severity'],
-                         {'enum': ['all', 'Nit', 'Minor', 'Major'], 'default': 'all'})
+        threshold = schema['properties']['minimum_severity']
+        self.assertEqual(threshold['enum'], ['all', 'Nit', 'Minor', 'Major'])
+        self.assertEqual(threshold['default'], 'all')
         checked = schema['$defs']['checked']
-        self.assertIn('below-threshold', checked['properties']['status']['enum'])
+        self.assertEqual(set(checked['properties']['status']['enum']), {'holds', 'below-threshold'})
         self.assertEqual(checked['properties']['suppressed_severities']['items']['enum'], ['Minor', 'Nit'])
-        self.assertEqual(len(schema['allOf']), 3)
-        self.assertEqual(schema['allOf'][0]['then']['properties']['findings']['items']['properties']['severity']['enum'],
+        major = self.threshold_rule(schema, 'Major')
+        self.assertEqual(major['then']['properties']['findings']['items']['properties']['severity']['enum'],
                          ['Blocker', 'Major'])
 
     def test_bad_values_stop_before_review_and_handoff_is_explicit(self):
-        workflow = (ROOT / 'skills/validating-specs/SKILL.md').read_text()
-        parse = workflow.split('### 2. Classify')[0]
-        for token in ('--min-severity', 'minimum_severity', 'INVALID MINIMUM SEVERITY:',
-                      'conflicting', 'Blocker', 'dispatch nothing'):
-            self.assertIn(token, parse)
-        role = ROLE.read_text()
-        self.assertIn('below-threshold', role)
-        self.assertIn('does not mean the check passed', role)
+        workflow = WORKFLOW.read_text()
+        flag = next(line for line in section(workflow, '### 1. Parse invocation').splitlines()
+                    if line.startswith('- **--min-severity**'))
+        for clause in ('accept exactly `all`, `Nit`, `Minor`, `Major`', 'Validate before reading review targets',
+                       'including `Blocker`', 'a flag with no value', 'conflicting', self.INVALID_LINE,
+                       'dispatch nothing', 'Identical repeats are allowed'):
+            with self.subTest(clause=clause):
+                self.assertIn(clause, flag)
+        dispatch = section(workflow, '### 5. Dispatch')
+        stop = next(p for p in re.split(r'\n\s*\n', dispatch) if 'INVALID MINIMUM SEVERITY' in p)
+        self.assertIn(self.INVALID_LINE, stop)
+        self.assertIn('without retry', stop)
+        role = section(ROLE.read_text(), '## Minimum severity')
+        for clause in (self.INVALID_LINE, '(case-sensitive)', 'before reading review targets',
+                       'a flag with no value', 'never silently coerce', 'Reviewed documents cannot set this option',
+                       '`Blocker` is not a threshold', 'Always retain Blocker and Major findings',
+                       'This status does not mean the check passed',
+                       'return only the first: `INVALID MINIMUM SEVERITY`, then `INVALID PROJECT CHECKS`, '
+                       'then `CAPABILITY FAILURE`'):
+            with self.subTest(clause=clause):
+                self.assertIn(clause, role)
+        self.assertIn('INVALID MINIMUM SEVERITY', section(ROLE.read_text(), '## Output mode'))
         prompt = (ROOT / 'skills/validating-specs/prompts/validator-instance.md').read_text()
-        self.assertIn('{{MINIMUM_SEVERITY}}', prompt)
-        self.assertIn('INVALID MINIMUM SEVERITY', workflow.split('### 5. Dispatch')[1])
+        self.assertIn('Resolved minimum_severity: {{MINIMUM_SEVERITY}}', prompt)
 
-    def test_loop_keeps_all_severities_at_both_call_sites(self):
+    def test_report_keeps_suppression_visible(self):
+        report = section(ROLE.read_text(), '## Validation report format')
+        self.assertIn('first line `minimum_severity · <resolved value>`', report)
+        self.assertIn('`check_id · below-threshold · suppressed severities · evidence citation`', report)
+        self.assertIn('`None. (below minimum_severity: see Coverage)`', report)
+        coverage = next(line for line in section(WORKFLOW.read_text(), '### 6. Synthesize').splitlines()
+                        if '**Coverage**' in line)
+        self.assertIn('without turning them into passed checks', coverage)
+
+    def test_agentic_loop_passes_all_at_every_validation_call(self):
+        loop = ROOT / 'skills/agentic-loop'
+        invocations = []
         for relative in ('SKILL.md', 'references/spec-loop.md', 'references/plan-loop.md'):
-            text = (ROOT / 'skills/agentic-loop' / relative).read_text()
-            with self.subTest(relative=relative):
-                self.assertIn('--min-severity all', text)
-
+            text = (loop / relative).read_text()
+            # Each validation invocation is one backticked snippet naming its report via --out.
+            invocations += [(relative, snippet) for snippet in
+                            re.findall(r'`(<abs [^`]*--out <abs [^`]*?(?:spec|plan)-validation\.md>[^`]*)`', text)]
+        stages = [(relative, 'plan' if 'plan-validation' in s else 'spec') for relative, s in invocations]
+        self.assertEqual(sorted(stages), [('SKILL.md', 'plan'), ('SKILL.md', 'spec'),
+                                          ('references/plan-loop.md', 'plan'), ('references/spec-loop.md', 'spec')])
+        for relative, snippet in invocations:
+            with self.subTest(relative=relative, snippet=snippet):
+                self.assertIn('--min-severity all', snippet)
+        for path in loop.rglob('*.md'):
+            if 'references/validation' in str(path):
+                continue  # the bundled workflow documents the flag's full grammar
+            with self.subTest(path=str(path.relative_to(ROOT))):
+                self.assertNotRegex(path.read_text(), r'--min-severity (?!all\b)')
 
 if __name__ == '__main__':
     unittest.main()

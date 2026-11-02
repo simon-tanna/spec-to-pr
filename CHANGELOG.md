@@ -10,9 +10,12 @@ project adheres to [Semantic Versioning](https://semver.org/).
 
 - `--min-severity` and `minimum_severity` support `all` (default), `Nit`,
   `Minor` and `Major`; unsupported or conflicting values fail explicitly (#9).
-  Suppressed findings retain below-threshold Checked coverage by check ID,
-  without implying success. Agentic-loop explicitly keeps `all` initially;
-  Blocker/Major findings and verdict rules are unchanged.
+  Findings below the threshold are replaced by a `below-threshold` Checked row
+  (not a pass), and the report's Coverage leads with the resolved threshold.
+  Agentic-loop passes `all` on every iteration of both stages; Blocker/Major
+  findings and verdict rules are unchanged. The ledger gains required
+  `minimum_severity` and `checked[].status` fields; `schema_version` stays
+  `1.0` because the schema has not yet been released.
 
 - Caller-authorised project checks (#11): repeatable `--project-checks` files,
   a task-prompt `project_checks` field, or an explicit caller instruction naming

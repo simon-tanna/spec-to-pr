@@ -2,6 +2,7 @@
 
 Run with a Python environment containing jsonschema:
     python scripts/evals/test_ledger_schema.py -v
+scripts/test.sh runs it through uv when uv is available.
 The default offline suite independently pins distribution and structural contracts.
 """
 import copy
@@ -33,6 +34,10 @@ def finding(severity):
     return row
 
 
+# Severity rank; a finding is reportable when its rank meets the threshold's.
+RANK = {'all': 0, 'Nit': 0, 'Minor': 1, 'Major': 2, 'Blocker': 3}
+
+
 class LedgerSchemaEvaluation(unittest.TestCase):
     def setUp(self):
         self.validator = Draft202012Validator(SCHEMA)
@@ -47,8 +52,7 @@ class LedgerSchemaEvaluation(unittest.TestCase):
                 with self.subTest(minimum=minimum, severity=severity):
                     data = ledger(minimum)
                     data['findings'] = [finding(severity)]
-                    expected = not (minimum == 'Major' and severity in ('Minor', 'Nit')
-                                    or minimum == 'Minor' and severity == 'Nit')
+                    expected = RANK[severity] >= RANK[minimum]
                     self.assertEqual(self.validator.is_valid(data), expected)
 
     def test_unsupported_thresholds_are_invalid(self):
@@ -72,6 +76,9 @@ class LedgerSchemaEvaluation(unittest.TestCase):
 
     def test_suppression_preserves_reportable_finding_for_same_check(self):
         for minimum, suppressed, valid in (('Major', ['Minor', 'Nit'], True),
+                                            ('Major', ['Minor'], True),
+                                            ('Major', ['Nit'], True),
+                                            ('Major', ['Nit', 'Minor'], True),
                                             ('Minor', ['Nit'], True),
                                             ('Minor', ['Minor'], False),
                                             ('all', ['Nit'], False),
@@ -91,6 +98,17 @@ class LedgerSchemaEvaluation(unittest.TestCase):
         self.assertFalse(self.validator.is_valid(data))
         data['checked'][0]['issue'] = 'Leaked suppressed issue'
         self.assertFalse(self.validator.is_valid(data))
+        # A passing row cannot claim suppressed severities.
+        data = ledger('Major')
+        data['checked'][0]['suppressed_severities'] = ['Minor']
+        self.assertFalse(self.validator.is_valid(data))
+
+    def test_any_below_threshold_finding_invalidates_the_ledger(self):
+        data = ledger('Major')
+        data['findings'] = [finding('Major'), finding('Minor')]
+        self.assertFalse(self.validator.is_valid(data))
+        data['findings'] = [finding('Blocker'), finding('Major')]
+        self.validator.validate(data)
 
     def test_project_input_and_output_namespace(self):
         validator = self.validator.evolve(schema={'$ref': '#/$defs/project_check', '$defs': SCHEMA['$defs']})

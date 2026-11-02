@@ -7,6 +7,7 @@ python3 scripts/build-distribution.py --check
 # (no runtime dependency) and let them skip otherwise.
 if command -v uv >/dev/null 2>&1; then
   uv run --no-project --quiet --with jsonschema python3 -m unittest discover -s tests -v
+  uv run --no-project --quiet --with jsonschema python3 scripts/evals/test_ledger_schema.py -v
 else
   echo "uv not found: jsonschema-backed schema tests will be skipped" >&2
   python3 -m unittest discover -s tests -v

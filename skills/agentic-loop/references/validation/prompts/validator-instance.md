@@ -23,7 +23,7 @@ Context only — read as needed; raise no findings against these:
 {{CONTEXT_ABS_PATHS}}
 {{/if}}
 
-Resolved minimum_severity: {{MINIMUM_SEVERITY}}. Apply the role's Minimum severity rules, including rejection of unsupported values and below-threshold Checked coverage.
+Resolved minimum_severity: {{MINIMUM_SEVERITY}}. Apply the role's Minimum severity rules, including below-threshold Checked coverage. The caller has validated this value; as a defence for direct or native invocation, return the role's `INVALID MINIMUM SEVERITY` line only if this slot is empty or not one of `all`, `Nit`, `Minor`, `Major`.
 
 Your lane: the `### {{LENS}}` rubric section(s) (for `all`, every rubric section).
 {{#if multi_instance}}
