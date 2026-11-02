@@ -54,6 +54,7 @@ def outputs():
     result[validation / "references/report-format.md"] = marker(canonical) + report
 
     for skill in ("spec-design-validator", "validating-specs", "agentic-loop"):
+        result[ROOT / "skills" / skill / "scripts/setup-validator.py"] = (ROOT / "scripts/setup-validator.py").read_text()
         native = ROOT / "skills" / skill / "references/native-validator"
         for filename, content in standalone_payloads(body).items():
             result[native / filename] = content
