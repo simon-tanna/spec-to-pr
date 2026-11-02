@@ -21,6 +21,8 @@ Context only — read as needed; raise no findings against these:
 {{CONTEXT_ABS_PATHS}}
 {{/if}}
 
+Resolved minimum_severity: {{MINIMUM_SEVERITY}}. Apply the role's Minimum severity rules, including below-threshold Checked coverage. The caller has validated this value; as a defence for direct or native invocation, return the role's `INVALID MINIMUM SEVERITY` line only if this slot is empty or not one of `all`, `Nit`, `Minor`, `Major`.
+
 Your lane: the `### {{LENS}}` rubric section(s) (for `all`, every rubric section).
 {{#if multi_instance}}
 Sibling instances own {{OTHER_LENSES}}; a concern in their surface is theirs — leave it out of your ledger.
@@ -56,6 +58,7 @@ Deliver the complete FINDINGS LEDGER defined in your role, covering every bullet
 
 ## Filling notes
 
+- `{{MINIMUM_SEVERITY}}` — validated `all`, `Nit`, `Minor` or `Major`, default `all`; always fill this slot.
 - `{{LENS}}` — one lens name, a comma list (merged instances), or `all`.
 - `{{DOC_TYPE}}` — the doc-type recorded in the validation workflow's step 2 (Classify).
 - `{{ROLE_ABS_PATH}}` — absolute path of `../references/validator-role.md`.

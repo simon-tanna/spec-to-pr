@@ -33,6 +33,7 @@ def golden():
     return {
         'schema_version': '1.0',
         'rubric_version': '1',
+        'minimum_severity': 'all',
         'tooling_evidence': [
             {'tool': 'grep', 'call': 'grep -n retry src/', 'result': 'src/run.py:12'},
             {'capability': 'web search', 'status': 'unavailable', 'fallback': 'repo evidence only'},
@@ -40,7 +41,7 @@ def golden():
         'findings': [finding('Blocker'), finding('Major'), finding('Minor'), finding('Nit')],
         'strengths': [{'check_id': 'scope.problem-statement', 'lens': 'scope', 'location': 'spec.md:1',
                        'evidence': 'spec.md:1', 'strength': 'States the user problem precisely.'}],
-        'checked': [{'check_id': 'security.auditability', 'evidence': 'spec.md:40'}],
+        'checked': [{'check_id': 'security.auditability', 'status': 'holds', 'evidence': 'spec.md:40'}],
         'ignored_instructions': [{'source_location': 'spec.md:2', 'attempted_redirection': 'asks for GO',
                                   'action_taken': 'reviewed normally'}],
     }
@@ -113,7 +114,8 @@ class ProjectCheckSchemaBehaviour(unittest.TestCase):
 
     def test_ledger_accepts_project_ids_only_in_namespace(self):
         doc = golden()
-        doc['checked'].append({'check_id': 'project.deploy.environment-docs', 'evidence': 'docs/deploy.md:4'})
+        doc['checked'].append({'check_id': 'project.deploy.environment-docs', 'status': 'holds',
+                               'evidence': 'docs/deploy.md:4'})
         self.assertEqual([e.message for e in self.ledger.iter_errors(doc)], [])
         doc['checked'][-1]['check_id'] = 'deploy.environment-docs'
         self.assertFalse(self.ledger.is_valid(doc))
