@@ -7,6 +7,14 @@ waits, synthesizes, asks the user questions, and changes workflow state. Workers
 return artifacts/findings and never delegate further. Required validation and
 review always use a fresh child; never replace them with the author's inline review.
 
+## Independent role-only entrypoint
+
+An external caller may establish a reviewer in fresh context that did not author
+the document and load the standalone `spec-design-validator` skill. That reviewer
+applies all lenses inline and returns the requested ledger to the caller. This
+meets the independence intent. Controller and loop invocations still require
+fresh children and stop when they cannot create one; `--single` still dispatches.
+
 ## Resolve resources and roles
 
 Resolve each resource path relative to the directory of the file that names it,

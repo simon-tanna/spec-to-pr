@@ -29,7 +29,7 @@ def section(text, heading):
 
 
 def ledger_contract():
-    return read('prompts/validator-instance.md').split('Deliver a FINDINGS LEDGER', 1)[1].split('```', 1)[0]
+    return (ROOT / 'skills/spec-design-validator/SKILL.md').read_text().split('Deliver a FINDINGS LEDGER', 1)[1].split('## Validation report format', 1)[0]
 
 
 def paragraphs(text):

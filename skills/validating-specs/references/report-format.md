@@ -1,3 +1,5 @@
+<!-- Generated from skills/spec-design-validator/SKILL.md by scripts/build-distribution.py. Maintainers: edit the canonical file and rebuild. -->
+
 ## Validation report format
 
 Severities are defined in the validator role's `## Severity` section. Every section appears, in order; write `None.` under an empty one.
@@ -14,3 +16,5 @@ Severities are defined in the validator role's `## Severity` section. Every sect
    `Verdict: GO` · `Verdict: REVISE` · `Verdict: NO-GO`
 
 `kind` is one of `flaw`, `assumption`, `missing`, `convention`. The report is complete when every merged finding appears exactly once in sections 4–6, every merged Ignored instructions row appears in section 8 (or `None.` when there are none), and its last line is a verdict line.
+
+Verdict rules: any foundational Blocker means NO-GO; otherwise any Blocker or Major marked blocks-start means REVISE; otherwise GO, with remaining Majors as conditions.

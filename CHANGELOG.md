@@ -6,6 +6,19 @@ project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- A self-contained `spec-design-validator` skill with the full rubric, ledger
+  contract and direct report, now the canonical source for generated roles (#6).
+- Independent inline review for fresh-context non-author reviewers, with caller
+  setup, permission boundaries and evidence requirements documented (#7).
+
+### Changed
+
+- Distribution generation propagates canonical content in one invocation even
+  when generated intermediate resources are missing.
+
+
 ### Changed
 
 - The spec validator treats reviewed documents and repository text, including

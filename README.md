@@ -9,6 +9,30 @@ validation, code review, and documentation.
 
 ### Skills
 
+`spec-design-validator` is also independently installable with
+`--skill spec-design-validator`. It provides the complete reviewer rubric,
+five-block findings ledger and default nine-section verdict report.
+
+For independent inline review, start a fresh reviewer context that did not
+author the target, load only `spec-design-validator`, and supply the repository
+and document paths. The caller owns synthesis and any verdict when requesting
+a ledger. Controller and loop workflows continue to require fresh children.
+
+Give the reviewer only read/search/lookup capabilities. Disable file changes,
+command-driven writes, memory updates and helper creation through runtime
+permissions or a read-only sandbox where supported. Skill instructions are
+behavioral constraints; they do not enforce a sandbox or inherit native-agent
+tool restrictions. Record the actual protections and remaining gaps.
+
+Example task for the independently established reviewer:
+
+```text
+Load spec-design-validator. Review /project/docs/spec.md against /project.
+Apply all five lenses and return only the complete findings ledger, with
+source evidence for every rubric bullet. Leave files, index, history and
+agent memory unchanged. The caller will produce any report and verdict.
+```
+
 | Skill | What it does |
 |-------|--------------|
 | **`agentic-loop`** | The flagship pipeline. Takes a spec, task card, or GitHub issue and drives it end-to-end: planning → spec/plan validation gates → TDD execution loop → review loops → PR. Invoke it with "run the agentic loop", "implement this issue", or "take this from spec to PR". |
@@ -19,8 +43,8 @@ validation, code review, and documentation.
 
 Each skill bundles the role instructions it needs. Claude plugin installation also
 registers native agents; skills-only installation supplies the same instructions
-to generic fresh children. Required validation and review stop if the harness
-cannot create an independent child.
+to generic fresh children. Controller and loop validation and review stop if the harness
+cannot create an independent child; independent role-only review uses the standalone skill.
 
 
 | Agent | Role |
@@ -59,7 +83,7 @@ instructions consistent across the suite and Claude plugin agents.
 Registering the gate hooks (see [Hooks](#hooks)) is optional but makes those gates
 deterministic rather than model-enforced.
 
-With the Claude plugin, invoke the other two skills the same way:
+With the Claude plugin, invoke the supporting skills the same way:
 
 ```text
 /spec-to-pr:validating-specs docs/checkout-spec.md
@@ -101,7 +125,7 @@ pnpm dlx skills add simon-tanna/spec-to-pr --skill '*' -a codex -a claude-code -
 ```
 
 For one skill, replace `--skill '*'` with `--skill agentic-loop`,
-`--skill validating-specs`, or `--skill diataxis-docs`. Add `-g` for a
+`--skill validating-specs`, `--skill spec-design-validator`, or `--skill diataxis-docs`. Add `-g` for a
 user-wide installation, or `--copy` to copy files into agent directories instead
 of the default links. No npm release of this repository is needed: the installer
 reads the GitHub repository and includes each skill's supporting resources.
@@ -185,7 +209,7 @@ workflow, repo variables).
 
 ## Requirements / platform support
 
-- **Codex or Claude Code** with fresh-child spawning for required validation/review.
+- **Codex or Claude Code** with fresh-child spawning for controller/loop validation and review; independent role-only review requires read/search capabilities.
 - **Git**, a reachable `origin`, and a locally available base branch for loop
   initialization. Fresh runs require a clean tracked worktree and index;
   untracked source documents are allowed. See [interactive initialization](skills/agentic-loop/references/interactive-init.md).
@@ -194,6 +218,8 @@ workflow, repo variables).
   (`bash` + `jq` on `PATH`); they are not written for Windows `cmd.exe`.
 
 ## Verification status
+
+See the [proposed 0.5.0 acceptance record](docs/validation/0.5.0/independent-validator-validation.md) for independent-validator checks and publishing blockers.
 
 The release adds automated packaging, initialization, and shared-gate tests.
 Run `bash scripts/test.sh` for offline checks; see the

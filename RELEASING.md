@@ -36,7 +36,7 @@ marketplace with `source: "./"`.
    `python3 scripts/build-distribution.py --check`. Verify the loop contains its validation workflow and
    every skill contains its role/dispatch resources without sibling dependencies.
 5. Validate isolated Skills CLI installations from the proposed release checkout:
-   list exactly three public skills; install each alone and the whole suite for
+   list exactly four public skills; install each alone and the whole suite for
    Codex and Claude in disposable directories, in default and `--copy` modes.
    Verify bundled resources after making the source checkout unavailable. Never
    use global installation for these release tests.

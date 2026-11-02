@@ -16,7 +16,7 @@ def main():
     if not args.allow_network:
         parser.error('Explicit --allow-network is required; this eval invokes pnpm dlx')
     repo = Path(__file__).resolve().parents[2]
-    names = ['agentic-loop', 'validating-specs', 'diataxis-docs']
+    names = ['agentic-loop', 'validating-specs', 'diataxis-docs', 'spec-design-validator']
     with tempfile.TemporaryDirectory(prefix='spec-to-pr-install-') as tmp, args.evidence.open('a') as log:
         root = Path(tmp)
         source = root / 'source'
@@ -40,8 +40,8 @@ def main():
 
         run(['pnpm', 'dlx', 'skills', '--version'], root)
         listing = run(['pnpm', 'dlx', 'skills', 'add', str(source), '--list'], root)
-        if 'Found 3 skills' not in listing:
-            raise AssertionError('Expected exactly three discoverable skills')
+        if 'Found 4 skills' not in listing:
+            raise AssertionError('Expected exactly four discoverable skills')
         installations = []
         for mode in ['default', 'copy']:
             for selected in [['*'], *[[name] for name in names]]:
@@ -68,8 +68,8 @@ def main():
                         if not installed.is_file() or installed.read_bytes() != content:
                             raise AssertionError(f'Missing or changed installed asset: {installed}')
             log.write(f'PASS {destination.name}: both harness destinations, exact closure after source removal\n')
-        log.write('PASS 8 installs; counts ' + json.dumps({k: len(v) for k, v in snapshots.items()}) + '\n')
-        print(f'PASS: 8 isolated installations; evidence {args.evidence}')
+        log.write('PASS 10 installs; counts ' + json.dumps({k: len(v) for k, v in snapshots.items()}) + '\n')
+        print(f'PASS: 10 isolated installations; evidence {args.evidence}')
 
 
 if __name__ == '__main__':

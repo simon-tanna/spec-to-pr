@@ -121,3 +121,30 @@ PASS.
 
 Store raw evidence locally, not in the repository. These samples do not
 establish statistical reliability or cross-harness compatibility.
+
+## Standalone and generated distributions (0.5.0)
+
+Repeat applicable scenarios with only `skills/spec-design-validator/SKILL.md`
+loaded, and separately with the generated validation role plus filled instance
+prompt. Repeat worker/controller checks using the loop's bundled resources.
+For direct invocation check the nine-section report and last verdict line;
+requested ledgers must contain five blocks and account for all 26 rubric bullets.
+
+Establish the reviewer in fresh context, independently of the author. Configure
+only read/search/lookup capabilities; disable mutation, memory updates and helper
+creation where the host supports enforcement. Record actual allowed tools and
+sandbox configuration, including gaps. A skill's read-only instruction is not a
+filesystem sandbox. Evaluate the README caller prompt without extra guidance.
+
+Use a disposable initialized Git repository with existing tracked and untracked
+state and a memory sentinel. Independently compare sorted file/hash manifests,
+worktree status, index entries, commit history and memory before and after each
+run. Include real external memory where accessible; inaccessible checks remain
+INCOMPLETE. Keep raw prompts, resource hashes, probes and outputs local and
+commit only a concise results/limitations record.
+
+For both controller and loop, verify an author with no available child cannot
+substitute inline self-review or produce a successful validation verdict.
+For every scenario classify actual results as PASS, FAIL or INCOMPLETE. Genuine
+behavior failures are FAIL; unavailable restrictions and harness acceptance are
+INCOMPLETE and cannot support publishing claims.

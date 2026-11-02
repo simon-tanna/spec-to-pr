@@ -46,16 +46,14 @@ class DistributionTests(unittest.TestCase):
 
     def test_shared_role_paragraphs_are_identical(self):
         roles = [ROOT / "skills/agentic-loop/references/roles/code-reviewer.md",
-                 ROOT / "skills/agentic-loop/references/roles/team-lead.md",
-                 ROOT / "skills/validating-specs/references/validator-role.md"]
+                 ROOT / "skills/agentic-loop/references/roles/team-lead.md"]
         dispatch_scope = re.compile(r"(?ms)^## Dispatch scope\n\n.*?\n(?=\n)")
         precedence = re.compile(r"(?m)^When the task prompt specifies an output format.*$")
         # The one intended divergence: the validator leaves agent memory unchanged,
         # while code-reviewer and team-lead exempt it. Strip each side's clause,
         # requiring it to occur exactly once, then compare all three copies.
         memory_clause = {roles[0]: " (agent memory files excepted)",
-                         roles[1]: " (agent memory files excepted)",
-                         roles[2]: " Leave agent memory files unchanged."}
+                         roles[1]: " (agent memory files excepted)"}
         for pattern in (dispatch_scope, precedence):
             found = []
             for role in roles:
@@ -116,6 +114,7 @@ class DistributionTests(unittest.TestCase):
 
     def test_independent_skill_resources(self):
         required = {
+            "spec-design-validator": [],
             "agentic-loop": ["references/dispatch.md", "references/roles/code-reviewer.md", "references/roles/team-lead.md", "references/validation/workflow.md", "references/validation/references/validator-role.md", "references/validation/references/report-format.md", "references/validation/prompts/validator-instance.md", "scripts/check-gates.sh", "setup/hooks/lib-gates.sh", "scripts/init-run.sh"],
             "validating-specs": ["references/dispatch.md", "references/validator-role.md", "references/report-format.md", "prompts/validator-instance.md"],
             "diataxis-docs": ["references/quadrant-tutorial.md", "references/quadrant-how-to.md", "references/quadrant-reference.md", "references/quadrant-explanation.md"],
