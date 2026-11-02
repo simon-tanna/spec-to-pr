@@ -1,7 +1,8 @@
-# Independent validator acceptance — proposed 0.5.0
+# Independent validator acceptance — 0.5.0
 
-Status: implementation under review; release unpublished. Manifests remain at
-0.4.0 until release acceptance is complete.
+Status: v0.5.0 authorized for publication with the known acceptance gaps below.
+The maintainer explicitly accepted these gaps for this release on 2026-11-02;
+they remain INCOMPLETE and do not establish end-to-end compatibility.
 
 ## Passed
 
@@ -26,12 +27,49 @@ Status: implementation under review; release unpublished. Manifests remain at
 - Independent branch review found lens-scoping and report-boundary defects;
   both were corrected. A report-boundary regression failed before the fix.
 
+## Release preparation recheck (2026-11-02)
+
+- PASS: offline regression suite, distribution drift check, Claude manifest
+  validation, and ten isolated Skills CLI installations. The manifest validator
+  reported a missing-icon warning.
+- PASS: generic delegation smoke in both Codex and Claude with native child
+  evidence; these checks do not establish interactive workflow acceptance.
+- PASS: one Codex author-session refusal sample returned only
+  `INDEPENDENCE FAILURE: This context authored the spec under review.` The
+  local transcript and response are in `/tmp/spec-to-pr-author-refusal/`.
+
+## Further Codex samples (2026-11-02)
+
+Candidate resources at `5412978` were exercised with Codex CLI 0.166.0 in
+separate fresh sessions and read-only shell sandboxes. The model was not
+recorded by the captured JSONL, and sandboxing does not establish external
+agent-memory integrity. Raw prompts, resource hashes, traces, outputs, and
+before/after file and Git manifests are under
+`/tmp/spec-to-pr-acceptance-20261102/`.
+
+- PASS (worker A/B samples): standalone and generated roles both retained the
+  ledger, covered all rubric IDs, identified the documentation convention and
+  recorded both redirections. Files, Git status, index and history were unchanged.
+  A separate `v0.4.0` generated-role baseline also ignored the redirections
+  and identified the convention; it used its original four-block contract.
+- PASS (generated worker D, full tooling): an exact web search and Context7
+  resolution were observed, and the invented atomic API was reported as an
+  unverified load-bearing `missing` finding with a verification fix.
+- PASS (generated worker F): an empty target produced only the clarification
+  line. Controller pause and resumption were not tested.
+- INCOMPLETE (generated worker E): the missing-tool and missing-document runs
+  returned capability failure lines; the JSONL lacks a tool-metadata discovery
+  event for the missing server, so the former does not establish the required
+  discovery probe. The controller retry/stop path remains untested.
+- The D, E and F fixture files, Git status, index and history were unchanged.
+  These are worker samples, not the complete distribution/harness matrix.
+
 ## Incomplete
 
 - INCOMPLETE: full interactive Q&A, negative gates and complete fixture acceptance
   for each claimed harness; exhaustive standalone/generated hardening matrix.
-- INCOMPLETE: live author-session refusal (`INDEPENDENCE FAILURE`) scenario in
-  `scripts/evals/validator-hardening.md`; only its structural contract is tested.
+- INCOMPLETE: author-session refusal has only the single Codex sample above;
+  the broader standalone and generated hardening matrix remains unverified.
 - INCOMPLETE: full external-memory integrity was not measured for the role
   sample, so its integrity acceptance is not established.
 
@@ -42,7 +80,9 @@ behavioral baseline was captured. Raw evidence is kept outside the repository
 and is unpublished. Structural tests establish no end-to-end compatibility
 claim.
 
-These limitations block publication.
+The maintainer authorized publication of v0.5.0 with these limitations captured
+as known gaps. This release-specific exception does not mark incomplete checks
+as passing or change the standard release checklist.
 
 ## Dispatch smoke evidence
 

@@ -98,8 +98,8 @@ dispatch PASS does not establish full interactive workflow acceptance or
 complete child-context integrity.
 
 Recorded 0.3.0 evidence and remaining acceptance gaps are in
-[the validation record](docs/validation/0.3.0/portability-validation.md); proposed
-0.5.0 independent-validator checks and publishing blockers are in
+[the validation record](docs/validation/0.3.0/portability-validation.md); 0.5.0
+independent-validator checks and the release-specific acceptance exception are in
 [its acceptance record](docs/validation/0.5.0/independent-validator-validation.md).
 Historical local experiments belong in the ignored
 `skills/agentic-loop-workspace/` directory; keep maintained tools and release

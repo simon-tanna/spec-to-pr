@@ -230,7 +230,7 @@ workflow, repo variables).
 
 ## Verification status
 
-See the [proposed 0.5.0 acceptance record](docs/validation/0.5.0/independent-validator-validation.md) for independent-validator checks and publishing blockers.
+See the [0.5.0 acceptance record](docs/validation/0.5.0/independent-validator-validation.md) for independent-validator checks and known acceptance gaps accepted for this release.
 
 The 0.3.0 release adds automated packaging, initialization, and shared-gate tests.
 Run `bash scripts/test.sh` for offline checks; see the

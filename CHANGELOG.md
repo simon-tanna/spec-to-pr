@@ -6,6 +6,8 @@ project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-11-02
+
 ### Added
 
 - `--min-severity` and `minimum_severity` support `all` (default), `Nit`,
@@ -100,6 +102,22 @@ project adheres to [Semantic Versioning](https://semver.org/).
   review target requests clarification without consuming a failure retry or
   producing a report or verdict; a supplied target that cannot be read is a
   capability failure.
+
+### Fixed
+
+- Codex V2 delegation smoke now captures correlated native spawn and child-reply
+  evidence from the verified persisted session when controller JSONL omits it
+  (#18). Missing evidence remains INCOMPLETE.
+
+### Known acceptance gaps
+
+- v0.5.0 ships with maintainer acceptance of incomplete interactive Q&A
+  pause/resume, controller retry/stop and negative-gate evidence, complete
+  spec-to-PR fixtures for both harnesses, the full standalone/generated validator
+  hardening matrix, and external-memory integrity checks. Generic delegation
+  probes and worker samples do not establish full end-to-end compatibility.
+  See the [acceptance record](docs/validation/0.5.0/independent-validator-validation.md)
+  for passed checks, incomplete evidence and limitations.
 
 ## [0.4.0] - 2026-10-23
 
@@ -240,6 +258,7 @@ project adheres to [Semantic Versioning](https://semver.org/).
   (block destructive git, block env/secret reads, block secret exfil,
   block TypeScript violations) and a CI skill-forcing hook.
 
+[0.5.0]: https://github.com/simon-tanna/spec-to-pr/releases/tag/v0.5.0
 [0.4.0]: https://github.com/simon-tanna/spec-to-pr/releases/tag/v0.4.0
 [0.3.0]: https://github.com/simon-tanna/spec-to-pr/releases/tag/v0.3.0
 [0.2.0]: https://github.com/simon-tanna/spec-to-pr/releases/tag/v0.2.0
