@@ -1,0 +1,86 @@
+{
+  "issue": null,
+  "branch": "feat/native-validator-registration-1317f6d8",
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "Generate standalone adapters and reference payloads",
+      "domain": "general-purpose",
+      "file_targets": [
+        "scripts/build-distribution.py",
+        "adapters/claude/spec-design-validator-standalone.json",
+        "adapters/codex/spec-design-validator.json",
+        "skills/spec-design-validator/references/native-validator/claude.md",
+        "skills/spec-design-validator/references/native-validator/codex.toml",
+        "skills/spec-design-validator/references/native-validator/references/ledger.schema.json",
+        "skills/spec-design-validator/references/native-validator/references/project-checks.md",
+        "skills/validating-specs/references/native-validator/claude.md",
+        "skills/validating-specs/references/native-validator/codex.toml",
+        "skills/validating-specs/references/native-validator/references/ledger.schema.json",
+        "skills/validating-specs/references/native-validator/references/project-checks.md",
+        "skills/agentic-loop/references/native-validator/claude.md",
+        "skills/agentic-loop/references/native-validator/codex.toml",
+        "skills/agentic-loop/references/native-validator/references/ledger.schema.json",
+        "skills/agentic-loop/references/native-validator/references/project-checks.md",
+        "tests/test_native_generation.py"
+      ],
+      "deps": [],
+      "status": "pending",
+      "commit_sha": null,
+      "task_start_sha": null,
+      "spec_review_sha": null,
+      "quality_review_sha": null,
+      "blocker_count": 0
+    },
+    {
+      "id": "T2",
+      "title": "Ship safe setup in three independently installed skills",
+      "domain": "general-purpose",
+      "file_targets": [
+        "scripts/setup-validator.py",
+        "scripts/build-distribution.py",
+        "skills/spec-design-validator/scripts/setup-validator.py",
+        "skills/validating-specs/scripts/setup-validator.py",
+        "skills/agentic-loop/scripts/setup-validator.py",
+        "tests/test_validator_setup.py"
+      ],
+      "deps": [
+        "T1"
+      ],
+      "status": "pending",
+      "commit_sha": null,
+      "task_start_sha": null,
+      "spec_review_sha": null,
+      "quality_review_sha": null,
+      "blocker_count": 0
+    },
+    {
+      "id": "T3",
+      "title": "Prefer selectable native reviewers and verify installation closure",
+      "domain": "general-purpose",
+      "file_targets": [
+        "skills/validating-specs/references/dispatch.md",
+        "skills/agentic-loop/references/dispatch.md",
+        "skills/agentic-loop/references/validation/references/dispatch.md",
+        "skills/agentic-loop/references/validation/workflow.md",
+        "skills/validating-specs/SKILL.md",
+        "skills/agentic-loop/setup/SETUP.md",
+        "skills/spec-design-validator/setup/SETUP.md",
+        "README.md",
+        "scripts/evals/test_skills_install.py",
+        "tests/test_validator_contract.py",
+        "tests/test_native_installation.py"
+      ],
+      "deps": [
+        "T1",
+        "T2"
+      ],
+      "status": "pending",
+      "commit_sha": null,
+      "task_start_sha": null,
+      "spec_review_sha": null,
+      "quality_review_sha": null,
+      "blocker_count": 0
+    }
+  ]
+}
