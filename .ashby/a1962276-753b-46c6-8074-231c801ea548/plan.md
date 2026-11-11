@@ -69,7 +69,7 @@ No repository text, issue text, feed comment or session message asked for work o
 
 1. **Verify authorization.** Match the work item, repository, branch, base, Spec and Plan to both human approval records. **Done when** every identity matches.
 2. **Load required context.** Read the approved Spec, this Plan, each Spec evidence range through the managed context tools, and the pinned supporting sources. **Done when** every reference resolves at its recorded version.
-3. **Read baseline results.** Read the recorded Baseline runs of F1 and F2 at `4b106b401c5976e6f19103557e07004344fac3f1`. Expected result: both exit 0. F1 runs 27 tests, OK. F2 reports `Ran 107 tests ... OK (skipped=12)` and `Ran 29 tests ... OK`, and all hook scenarios pass; the 12 skips are the jsonschema-backed tests plus one pre-3.10 interpreter test, because `uv` is absent. Record any failures or unavailable results, then continue under human Plan approval.
+3. **Read baseline results.** Read the recorded Baseline runs of F1 and F2 at `4b106b401c5976e6f19103557e07004344fac3f1`. Expected result: both exit 0. F1 runs 27 tests, OK. F2 reports `Ran 107 tests ... OK (skipped=12)` and `Ran 29 tests ... OK`, and all hook scenarios pass; the 12 skips are the jsonschema-backed tests plus one pre-3.10 interpreter test, because `uv` is not installed. Record any failures or unavailable results, then continue under human Plan approval.
 
 Startup gate complete only when all three steps are complete.
 
@@ -93,7 +93,7 @@ Startup gate complete only when all three steps are complete.
 - `skills/agentic-loop/references/native-validator/codex.toml` (existing, inspected https://github.com/simon-tanna/spec-to-pr/blob/4b106b401c5976e6f19103557e07004344fac3f1/skills/agentic-loop/references/native-validator/codex.toml)
 - `agents/spec-design-validator.md` (existing, inspected https://github.com/simon-tanna/spec-to-pr/blob/4b106b401c5976e6f19103557e07004344fac3f1/agents/spec-design-validator.md)
 
-**Required context:** https://github.com/simon-tanna/spec-to-pr/blob/4b106b401c5976e6f19103557e07004344fac3f1/scripts/build-distribution.py, https://github.com/simon-tanna/spec-to-pr/blob/4b106b401c5976e6f19103557e07004344fac3f1/scripts/test.sh, `repository:file:skills/spec-design-validator/SKILL.md`, `repository:file:tests/test_validator_contract.py`, `repository:file:scripts/build-distribution.py`, `repository:file:skills/validating-specs/prompts/validator-instance.md`, `cc11cebd-ac43-48b8-8b0a-07e070be6e73`, `9dbe4b43-c080-4c78-a263-5a09afd42891`, `efc0cc1f-cf13-40ed-be8d-b0ca0594c908`, `cce26eaf-778d-46a1-9717-d45815c19b11`
+**Required context:** `https://github.com/simon-tanna/spec-to-pr/blob/4b106b401c5976e6f19103557e07004344fac3f1/scripts/build-distribution.py` `https://github.com/simon-tanna/spec-to-pr/blob/4b106b401c5976e6f19103557e07004344fac3f1/scripts/test.sh` `repository:file:skills/spec-design-validator/SKILL.md` `repository:file:tests/test_validator_contract.py` `repository:file:scripts/build-distribution.py` `repository:file:skills/validating-specs/prompts/validator-instance.md` `cc11cebd-ac43-48b8-8b0a-07e070be6e73` `9dbe4b43-c080-4c78-a263-5a09afd42891` `efc0cc1f-cf13-40ed-be8d-b0ca0594c908` `cce26eaf-778d-46a1-9717-d45815c19b11`
 
 **Actions:**
 
@@ -166,7 +166,7 @@ Startup gate complete only when all three steps are complete.
 
 none
 
-**Required context:** https://github.com/simon-tanna/spec-to-pr/blob/4b106b401c5976e6f19103557e07004344fac3f1/scripts/evals/validator-hardening.md, `repository:file:scripts/evals/validator-hardening.md`
+**Required context:** `https://github.com/simon-tanna/spec-to-pr/blob/4b106b401c5976e6f19103557e07004344fac3f1/scripts/evals/validator-hardening.md` `repository:file:scripts/evals/validator-hardening.md`
 
 **Actions:**
 
