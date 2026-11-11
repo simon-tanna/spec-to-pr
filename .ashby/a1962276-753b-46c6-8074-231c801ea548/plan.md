@@ -138,7 +138,7 @@ Startup gate complete only when all three steps are complete.
 
 - `CHANGELOG.md` (existing, inspected https://github.com/simon-tanna/spec-to-pr/blob/4b106b401c5976e6f19103557e07004344fac3f1/CHANGELOG.md)
 
-**Required context:** `repository:file:CHANGELOG.md`, `ea639442-3b0d-4959-912a-780d98d8bd13`
+**Required context:** `repository:file:CHANGELOG.md`
 
 **Actions:**
 
@@ -166,7 +166,7 @@ Startup gate complete only when all three steps are complete.
 
 none
 
-**Required context:** https://github.com/simon-tanna/spec-to-pr/blob/4b106b401c5976e6f19103557e07004344fac3f1/scripts/evals/validator-hardening.md, `repository:file:scripts/evals/validator-hardening.md`, `656a5436-f180-4e9b-9e42-76f4cc5cec94`
+**Required context:** https://github.com/simon-tanna/spec-to-pr/blob/4b106b401c5976e6f19103557e07004344fac3f1/scripts/evals/validator-hardening.md, `repository:file:scripts/evals/validator-hardening.md`
 
 **Actions:**
 
