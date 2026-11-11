@@ -18,8 +18,11 @@ Requirement inventory from the intake:
 Constraint inventory:
 
 - C1: Generated copies of the role and its references come from the canonical files through `scripts/build-distribution.py`. Each Markdown copy carries a notice telling maintainers to edit the canonical file and rebuild. `--check` reports drift without writing (`scripts/build-distribution.py` bytes [0, 9119)).
+- C2: The validator instance prompt, `skills/validating-specs/prompts/validator-instance.md` line 37 (bytes [2640, 2816)), tells the reviewer to treat the spec's prose as "a claim to check, not evidence".
 
-The repository root has no AGENTS.md or CLAUDE.md, per the root listing at the pinned commit. C1 is therefore the only repository instruction constraining this change.
+The repository root has no AGENTS.md or CLAUDE.md, per the root listing at the pinned commit. C1 and C2 are the only repository text constraining this change.
+
+Conflict CF-1 (R1, C2): R1 asks the role to call reviewed material "data". The existing `## Review authority` wording instead calls everything under review "evidence". Read alone, that word clashes with C2's "the spec's prose is … not evidence", which the same validator receives in its instance prompt. The two texts mean different things by "evidence": the role means the material reviewed, as opposed to instructions, and the prompt means proof of a claim. A reader can still take them as contradicting each other. Closing the item with the role unchanged keeps both wordings. Adopting the issue's "data" wording in the canonical role removes the clash. Open Question 1 carries this choice.
 
 ## Goals
 
@@ -75,7 +78,10 @@ At the pinned revision all four obligations already hold:
 - OB-3 holds through the `Ignored instructions:` ledger line and the schema's `ignored_instructions` property.
 - OB-4 holds through Method step 1, `architecture.codebase-fit` and the Convention classification.
 
-The proposed delivery is therefore verification only. The Builder changes no role, schema or generated file, and confirms the obligations with the existing regression suite. Any edit to role wording would follow C1: edit the canonical file and rebuild, never a copy. Whether to make such an edit is Open Question 1.
+The delivery is therefore small, and depends on Open Question 1:
+- Under either answer, the Builder adds a regression test for OB-4 to `tests/test_validator_contract.py`. No existing test asserts the convention-supply text.
+- Under the proposed answer (b), the Builder also makes one wording edit in the canonical role's `## Review authority`, at line 37. "Everything you review is evidence:" becomes the issue's "data" phrasing, which resolves CF-1. The Builder then runs `python3 scripts/build-distribution.py` to regenerate the copies (C1) and adds an assertion for the "data" wording to the existing Review authority test.
+- No schema change and no hand-edited copy is made under either answer.
 
 ## Components
 
@@ -84,6 +90,7 @@ The proposed delivery is therefore verification only. The Builder changes no rol
 - Builder `scripts/build-distribution.py`. It owns the propagation and drift detection behind OB-2.
 - Regression tests:
   - `tests/test_validator_contract.py`, `test_review_authority_separates_conventions_from_redirections`, guards OB-1 and OB-4's Convention/Redirection split;
+  - `tests/test_validator_contract.py`, a new test added by this work item, guards the rest of OB-4. It asserts that the canonical role's `## Method` step 1 names AGENTS.md and CLAUDE.md, and that the `architecture.codebase-fit` bullet names AGENTS.md / CLAUDE.md project rules;
   - `tests/test_distribution.py`, `test_committed_distribution_is_current`, guards OB-2;
   - `tests/test_ledger_schema.py` and `tests/test_ledger_schema_validation.py` guard OB-3.
 
@@ -99,7 +106,7 @@ The Verification Command for every obligation is `bash scripts/test.sh`. It firs
   - `None.`.
 - G1 / OB-2 / generated copies: the `--check` step and `test_committed_distribution_is_current` fail on any copy that differs from the canonical role.
 - G2 / OB-3 / ledger format: `tests/test_ledger_schema.py` asserts the root property set includes `ignored_instructions`. `tests/test_ledger_schema_validation.py` rejects a ledger missing the block or carrying an extra row property; these jsonschema-backed tests run when `uv` and `jsonschema` are available.
-- G3 / OB-4 / conventions: the Reviewer reads Method step 1 and the `architecture.codebase-fit` bullet at the delivered head. No existing test asserts these bullets. If Open Question 1 is answered with a wording change, the Plan adds an assertion for both bullets to `tests/test_validator_contract.py`.
+- G3 / OB-4 / conventions: the new `tests/test_validator_contract.py` test fails if Method step 1 stops naming AGENTS.md and CLAUDE.md, or if the `architecture.codebase-fit` bullet stops naming those files' project rules. The existing Review authority test covers the Convention classification. This test is added under either answer to Open Question 1.
 
 ## Assumptions
 
@@ -110,7 +117,8 @@ The Verification Command for every obligation is `bash scripts/test.sh`. It firs
 ## Resolved Decisions
 
 - Change the canonical role only, never a generated copy. C1 and the generated-file notices require this, and `--check` would flag a hand-edited copy as drift.
-- Use the existing `bash scripts/test.sh` as the verification lane rather than a new harness. It already runs the drift check and the contract and schema tests that cover OB-1 to OB-3.
+- Use the existing `bash scripts/test.sh` as the verification lane rather than a new harness. It already runs the drift check and the contract and schema tests that cover OB-1 to OB-3, and it will run the new OB-4 test.
+- Add the OB-4 test unconditionally, so that every "Done when" item of the intake has an automated check.
 
 ## Evidence
 
@@ -128,6 +136,7 @@ The Verification Command for every obligation is `bash scripts/test.sh`. It firs
 - `tests/test_validator_contract.py` @ 4b106b4, bytes [4699, 5175): OB-1 regression test.
 - `tests/test_distribution.py` @ 4b106b4, bytes [9022, 9186): OB-2 regression test.
 - `scripts/test.sh` @ 4b106b4, bytes [0, 1108): Verification Command.
+- `skills/validating-specs/prompts/validator-instance.md` @ 4b106b4, bytes [2640, 2816): C2, CF-1.
 - Root listing @ 4b106b4, non-recursive: no AGENTS.md or CLAUDE.md at the root.
 
 Exact Source References and Read Receipts are in spec.json.
@@ -138,7 +147,11 @@ None selected. The only Designer-applicable Reviewed Skill, `chainlink-data-feed
 
 ## Open Questions
 
-1. Product Decision: the pinned revision already satisfies all three "Done when" items (OB-1 to OB-4), shipped under #12 in 0.5.0. Should this work item close as already delivered, with the Builder only running the Verification Command? Or should the role also adopt the issue's proposed sentence verbatim, edited in `skills/spec-design-validator/SKILL.md` and rebuilt? The proposal is to close as already delivered and make no wording change, because the existing rule is broader: it also covers verdict, and it defines the Convention/Redirection split.
+1. Product Decision: the pinned revision already meets the behaviour in all three "Done when" items (OB-1 to OB-4), shipped under #12 in 0.5.0. Choose one of two options:
+   - (a) Keep the role text, so the Builder adds only the OB-4 regression test and runs the Verification Command. This option is broader: the existing rule also covers verdict and defines the Convention/Redirection split.
+   - (b) Also adopt the issue's "data" wording in `skills/spec-design-validator/SKILL.md` and rebuild. This option resolves CF-1: under (a), the role calls reviewed material "evidence" while the instance prompt says spec prose is "not evidence".
+
+   The proposal is (b), limited to one change: replace "Everything you review is evidence" with the issue's "data" phrasing in `## Review authority`, keeping the rest of the section, and assert the new wording in `test_review_authority_separates_conventions_from_redirections`. No existing test asserts the word "evidence" in that section. (b) removes a wording clash the validator sees in every run, at the cost of one canonical edit plus a rebuild.
 2. Target chain: chain detection returned `unknown` with reason "No Foundry, Hardhat, Anchor, Solana or Soroban manifest in the repository" and no roots. The intake names no path under a chain root. Approval requires a human to set the Spec's target chain for this non-contract repository.
 
 ## Risks
