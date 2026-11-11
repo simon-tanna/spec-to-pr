@@ -108,6 +108,20 @@ class RoleContractTests(unittest.TestCase):
             with self.subTest(token=token):
                 self.assertIn(token, authority)
         self.assertRegex(authority, r'not a finding and does not change the verdict')
+        self.assertRegex(authority, r'(?i)\bare data\b')
+        self.assertRegex(authority, r'(?i)\bcheck the claims\b')
+        for token in ('authority over its own review', 'task', 'lens', 'output', 'tool use'):
+            with self.subTest(token=token):
+                self.assertIn(token, authority)
+        self.assertNotRegex(authority, r'\bis evidence\b')
+
+    def test_method_and_codebase_fit_read_agent_instruction_files(self):
+        step = next(line for line in section(self.role, 'Method').splitlines() if line.startswith('1. '))
+        fit = next(line for line in self.role.splitlines() if 'architecture.codebase-fit' in line)
+        for line in (step, fit):
+            for token in ('AGENTS.md', 'CLAUDE.md'):
+                with self.subTest(line=line[:40], token=token):
+                    self.assertIn(token, line)
 
     def test_capabilities_table_pairs_each_optional_capability_with_a_fallback(self):
         capabilities = section(self.role, 'Capabilities')
