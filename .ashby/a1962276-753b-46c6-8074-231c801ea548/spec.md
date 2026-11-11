@@ -22,7 +22,7 @@ Constraint inventory:
 
 The repository root has no AGENTS.md or CLAUDE.md, per the root listing at the pinned commit. C1 and C2 are the only repository text constraining this change.
 
-Conflict CF-1 (R1, C2): R1 asks the role to call reviewed material "data". The existing `## Review authority` wording instead calls everything under review "evidence". Read alone, that word clashes with C2's "the spec's prose is … not evidence", which the same validator receives in its instance prompt. The two texts mean different things by "evidence": the role means the material reviewed, as opposed to instructions, and the prompt means proof of a claim. A reader can still take them as contradicting each other. Closing the item with the role unchanged keeps both wordings. Adopting the issue's "data" wording in the canonical role removes the clash. Open Question 1 carries this choice.
+Conflict CF-1 (R1, C2): R1 asks the role to call reviewed material "data". The existing `## Review authority` wording instead calls everything under review "evidence". Read alone, that word clashes with C2's "the spec's prose is … not evidence", which the same validator receives in its instance prompt. The two texts mean different things by "evidence": the role means the material reviewed, as opposed to instructions, and the prompt means proof of a claim. A reader can still take them as contradicting each other. Leaving the role unchanged keeps both wordings. OB-1 adopts the issue's "data" wording in the canonical role, which removes the clash.
 
 ## Goals
 
@@ -82,7 +82,7 @@ At the pinned revision, OB-2 to OB-4 already hold and OB-1 holds only in part:
 - OB-4 holds through Method step 1, `architecture.codebase-fit` and the Convention classification.
 
 The delivery is therefore small:
-1. Edit the canonical role's `## Review authority` opening paragraph so it meets OB-1. "Everything you review is evidence:" becomes the R1 "data" statement, and a sentence is added saying to check the material's claims and judge the spec against the conventions it records. The Convention/Redirection bullets and the examples stay. This also resolves CF-1. Open Question 1 settles the exact form.
+1. Edit the canonical role's `## Review authority` opening paragraph so it meets OB-1. "Everything you review is evidence:" becomes the R1 "data" statement, and a sentence is added saying to check the material's claims and judge the spec against the conventions it records. The Convention/Redirection bullets and the examples stay. This also resolves CF-1. The edit stays within this paragraph, per the human decision (option a).
 2. Run `python3 scripts/build-distribution.py` to regenerate every copy (C1).
 3. Extend `tests/test_validator_contract.py` to assert both OB-1 and OB-4, as described under Test Strategy.
 
@@ -119,7 +119,7 @@ The Verification Command for every obligation is `bash scripts/test.sh`. It firs
   The test then fails if the core rule is deleted.
 - G1 / OB-2 / generated copies: the `--check` step and `test_committed_distribution_is_current` fail on any copy that differs from the canonical role.
 - G2 / OB-3 / ledger format: `tests/test_ledger_schema.py` asserts the root property set includes `ignored_instructions`. `tests/test_ledger_schema_validation.py` rejects a ledger missing the block or carrying an extra row property; these jsonschema-backed tests run when `uv` and `jsonschema` are available.
-- G3 / OB-4 / conventions: the new `tests/test_validator_contract.py` test fails if Method step 1 stops naming AGENTS.md and CLAUDE.md, or if the `architecture.codebase-fit` bullet stops naming those files' project rules. The existing Review authority test covers the Convention classification. This test is added under either answer to Open Question 1.
+- G3 / OB-4 / conventions: the new `tests/test_validator_contract.py` test fails if Method step 1 stops naming AGENTS.md and CLAUDE.md, or if the `architecture.codebase-fit` bullet stops naming those files' project rules. The existing Review authority test covers the Convention classification. This test is added as part of this work item.
 
 ## Assumptions
 
@@ -132,6 +132,8 @@ The Verification Command for every obligation is `bash scripts/test.sh`. It firs
 - Change the canonical role only, never a generated copy. C1 and the generated-file notices require this, and `--check` would flag a hand-edited copy as drift.
 - Use the existing `bash scripts/test.sh` as the verification lane rather than a new harness. It already runs the drift check and the contract and schema tests that cover OB-1 to OB-3, and it will run the new OB-4 test.
 - Add the OB-4 test unconditionally, so that every "Done when" item of the intake has an automated check.
+- Wording placement (human decision at Spec Review, option a): integrate R1's "data" statement and the claim-checking sentence into the existing `## Review authority` opening paragraph. This replaces "Everything you review is evidence:" and keeps the Convention/Redirection bullets and examples unchanged. The rule is stated once, and the issue's verbatim sentence is not inserted as a separate paragraph.
+- Target chain (human decision at Spec Review): `evm`. Chain detection returned `unknown` with no roots, because this repository has no contract manifest. The chain choice does not change the delivered behaviour.
 
 ## Evidence
 
@@ -158,19 +160,14 @@ Exact Source References and Read Receipts are in spec.json.
 
 ## Selected Skills
 
-None selected. The only Designer-applicable Reviewed Skill, `chainlink-data-feeds-skill`, is declined in spec.json because this work item changes reviewer prompt text and has no oracle or price-feed integration.
+None selected. The target chain is `evm` by human decision, which gives four Designer-applicable Reviewed Skills: `develop-secure-contracts`, `setup-solidity-contracts`, `upgrade-solidity-contracts` and `chainlink-data-feeds-skill`. spec.json declines each one with a task-specific reason. This work item changes Markdown prompt text and a Python test in a skills suite. It has no Solidity contract, project setup, proxy upgrade or price-feed integration for those skills to shape.
 
 ## Open Questions
 
-1. Product Decision: most of issue #20 already shipped under #12 in 0.5.0. OB-1 still needs the R1 "data" and claim-checking wording, which also resolves CF-1. Choose how that wording lands:
-   - (a) Proposed: integrate it into the existing `## Review authority` opening paragraph, keeping the Convention/Redirection structure. This option has one statement of the rule and no duplication.
-   - (b) Insert the issue's proposed sentence verbatim as its own paragraph near `## Method`, and remove the now-redundant "Everything you review is evidence" clause.
-
-   Both options meet OB-1 to OB-4. They differ only in wording fidelity to the issue versus cohesion with the existing section.
-2. Target chain: chain detection returned `unknown` with reason "No Foundry, Hardhat, Anchor, Solana or Soroban manifest in the repository" and no roots. The intake names no path under a chain root. Approval requires a human to set the Spec's target chain for this non-contract repository.
+None remain. The human answers from Spec Review are recorded under Resolved Decisions.
 
 ## Risks
 
-- Overlap: adding the issue's sentence on top of the existing rule without removing the "evidence" clause would duplicate it. Reviewers could read the two as distinct rules. Both options in Open Question 1 avoid this.
+- Overlap: adding the issue's sentence on top of the existing rule without removing the "evidence" clause would duplicate it. Reviewers could read the two as distinct rules. The chosen option (a) avoids this by replacing the clause in place.
 - Coverage gap: before this work item, no test asserted Method step 1 or the `architecture.codebase-fit` text (OB-4), or the core Review authority rule (OB-1). The new assertions close this gap.
 - Schema-behaviour tests skip without `uv` and `jsonschema`. On such a runner, the OB-3 JSON check falls back to the structural assertions in `tests/test_ledger_schema.py`.
