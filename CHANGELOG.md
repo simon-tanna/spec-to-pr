@@ -6,6 +6,13 @@ project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+
+- The spec validator role now names the documents under review, context
+  documents and repository files, agent instruction files included, as data
+  rather than instructions, and directs the reviewer to check the claims they
+  make and judge the spec against the conventions they record (#20).
+
 ## [0.6.0] - 2026-11-02
 
 ### Added
